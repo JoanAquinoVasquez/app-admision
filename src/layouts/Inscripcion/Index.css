@@ -1,0 +1,17 @@
+/* En tu archivo CSS (por ejemplo, `styles.css`) */
+.autocomplete-listbox {
+    padding: 8px 0;
+    max-height: 900px;
+    overflow-y: auto;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.autocomplete-option {
+    white-space: normal;
+    word-wrap: break-word;
+    line-height: 1.1;  /* Espacio entre líneas ligeramente más grande */
+    width: 100%;  /* Ancho personalizado para las opciones */
+    font-size: 0.85rem;  /* Tamaño de fuente ligeramente mayor para mejor legibilidad */
+    padding: 8px 16px;
+}
