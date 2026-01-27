@@ -46,8 +46,8 @@ const PROGRAMAS = [
         img: info,
         title: "Más información",
         desc: "Resuelve tus dudas aquí.",
-        url: "https://drive.google.com/drive/folders/16T25dlTLguHquliVVtOb0WyJEzm_Y5BA?usp=drive_link",
-        isInternal: false,
+        url: "/prospecto",
+        isInternal: true,
     },
 ];
 
