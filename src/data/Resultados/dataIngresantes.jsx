@@ -7,9 +7,11 @@ const useDataIngresantes = () => {
     const fetchIngresantes = useCallback(async () => {
         try {
             const response = await axios.get("/resultados-ingresantes");
-            setIngresantes(response.data);
+            // Aseguramos que siempre sea un array
+            setIngresantes(Array.isArray(response.data) ? response.data : []);
         } catch (err) {
             console.error("Error al cargar los datos de ingresantes:", err);
+            setIngresantes([]); // En caso de error, mantener array vacío
         }
     }, []);
 

@@ -25,11 +25,8 @@ const EstadoGeneralEvaluacion = ({ docenteResumen }) => {
         return (
             <Card
                 shadow="sm"
-                className="mt-6 rounded-2xl border border-gray-100 p-6 flex flex-col items-center justify-center gap-4 h-[300px]"
-            >
-                <div className="w-32 h-6" />
-                <Spinner color="primary" size="lg" />
-                <div className="flex gap-2 mt-10"></div>
+                className="mt-6 rounded-2xl border border-gray-100 p-6 flex flex-col items-center justify-center gap-4 h-[300px]">
+                <p className="text-gray-500">No hay datos de evaluación disponibles</p>
             </Card>
         );
     }

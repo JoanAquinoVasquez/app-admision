@@ -98,12 +98,10 @@ const INITIAL_VISIBLE_COLUMNS = [
 
 export default function TableResultados({ ingresantesPrograma, grados }) {
     // ✅ Aseguramos que `ingresantesPrograma` tenga datos antes de mapear
-    const [loading, setLoading] = useState(true);
     const users = React.useMemo(() => {
         if (!ingresantesPrograma || ingresantesPrograma.length === 0) {
             return []; // Evita errores si aún no hay datos
         }
-        setLoading(false);
         return ingresantesPrograma.map((item) => ({
             grado_programa: item.grado_programa,
             ingresantes_total: item.ingresantes_total,
@@ -200,7 +198,7 @@ export default function TableResultados({ ingresantesPrograma, grados }) {
         });
     }, [filteredItems, sortDescriptor]);
 
-    const pages = Math.ceil(filteredItems.length / rowsPerPage);
+    const pages = Math.max(1, Math.ceil(filteredItems.length / rowsPerPage));
 
     const items = React.useMemo(() => {
         const start = (page - 1) * rowsPerPage;
@@ -438,81 +436,75 @@ export default function TableResultados({ ingresantesPrograma, grados }) {
 
     return (
         <div>
-            {loading ? (
-                <div className="flex items-center justify-center ml-[60px] w-full h-[400px]">
-                    <Spinner color="primary" />
-                </div>
-            ) : (
-                <div>
-                    <strong>Resumen Resultados Proc. Admisión 2025 - I</strong>
-                    <Table
-                        aria-label="Example table"
-                        layout="fixed" // Usa fixed para que se respeten los anchos definidos
-                        isHeaderSticky
-                        bottomContent={bottomContent}
-                        bottomContentPlacement="outside"
-                        classNames={{
-                            wrapper:
-                                "max-h-[280px] min-h-[260px] overflow-auto w-full p-2 m-0",
-                        }}
-                        selectedKeys={selectedKeys}
-                        sortDescriptor={sortDescriptor}
-                        topContent={topContent}
-                        topContentPlacement="outside"
-                        onSelectionChange={setSelectedKeys}
-                        onSortChange={setSortDescriptor}
-                    >
-                        <TableHeader columns={headerColumns}>
-                            {(column) => (
-                                <TableColumn
-                                    key={column.uid}
-                                    align={
-                                        column.uid === "grado_programa"
-                                            ? "start"
-                                            : "center"
-                                    }
-                                    allowsSorting={column.sortable}
-                                    // Aplica estilos en línea para forzar el ancho y evitar el wrapping
-                                    style={
-                                        column.uid === "grado_programa"
-                                            ? { width: "230px" } // Grado y Programa
-                                            : column.uid === "promedio_nota"
+            <div>
+                <strong>Resumen Resultados Proc. Admisión 2025 - I</strong>
+                <Table
+                    aria-label="Example table"
+                    layout="fixed" // Usa fixed para que se respeten los anchos definidos
+                    isHeaderSticky
+                    bottomContent={bottomContent}
+                    bottomContentPlacement="outside"
+                    classNames={{
+                        wrapper:
+                            "max-h-[280px] min-h-[260px] overflow-auto w-full p-2 m-0",
+                    }}
+                    selectedKeys={selectedKeys}
+                    sortDescriptor={sortDescriptor}
+                    topContent={topContent}
+                    topContentPlacement="outside"
+                    onSelectionChange={setSelectedKeys}
+                    onSortChange={setSortDescriptor}
+                >
+                    <TableHeader columns={headerColumns}>
+                        {(column) => (
+                            <TableColumn
+                                key={column.uid}
+                                align={
+                                    column.uid === "grado_programa"
+                                        ? "start"
+                                        : "center"
+                                }
+                                allowsSorting={column.sortable}
+                                // Aplica estilos en línea para forzar el ancho y evitar el wrapping
+                                style={
+                                    column.uid === "grado_programa"
+                                        ? { width: "230px" } // Grado y Programa
+                                        : column.uid === "promedio_nota"
                                             ? { width: "40px" }
                                             : column.uid === "inscritos_total"
-                                            ? { width: "40px" } // inscritos_total o promedio_nota
-                                            : column.uid === "ingresantes_total"
-                                            ? { width: "40px" }
-                                            : { width: "10px" } // Otras columnas
-                                    }
-                                    className="text-xs"
-                                    aria-label={column.name}
-                                    scope="col"
-                                >
-                                    {column.name}
-                                </TableColumn>
-                            )}
-                        </TableHeader>
-                        <TableBody
-                            emptyContent={"No se encontró información"}
-                            items={items}
-                            className="space-y-1"
-                        >
-                            {(item) => (
-                                <TableRow
-                                    key={item.grado_programa}
-                                    className="p-1 text-sm leading-tight"
-                                >
-                                    {(columnKey) => (
-                                        <TableCell className="p-0 text-sm">
-                                            {renderCell(item, columnKey)}
-                                        </TableCell>
-                                    )}
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
-            )}
+                                                ? { width: "40px" } // inscritos_total o promedio_nota
+                                                : column.uid === "ingresantes_total"
+                                                    ? { width: "40px" }
+                                                    : { width: "10px" } // Otras columnas
+                                }
+                                className="text-xs"
+                                aria-label={column.name}
+                                scope="col"
+                            >
+                                {column.name}
+                            </TableColumn>
+                        )}
+                    </TableHeader>
+                    <TableBody
+                        emptyContent={"No se encontró información"}
+                        items={items}
+                        className="space-y-1"
+                    >
+                        {(item) => (
+                            <TableRow
+                                key={item.grado_programa}
+                                className="p-1 text-sm leading-tight"
+                            >
+                                {(columnKey) => (
+                                    <TableCell className="p-0 text-sm">
+                                        {renderCell(item, columnKey)}
+                                    </TableCell>
+                                )}
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
+            </div>
         </div>
     );
 }

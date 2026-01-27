@@ -28,30 +28,6 @@ export function capitalize(s) {
 export default function GraphicSummaryInscritos({ inscripciones }) {
     const [selectedGrados, setSelectedGrados] = useState(new Set()); // Cambiado a Set
     const [showAccumulated, setShowAccumulated] = useState(false); // Estado para mostrar acumulados
-    const [isLoading, setIsLoading] = useState(true);
-
-    // Lista de colores definidos para asignar a cada línea
-    const COLORS = [
-        "#8884d8",
-        "#82ca9d",
-        "#ffc658",
-        "#ff8042",
-        "#0088FE",
-        "#FFBB28",
-        "#FF8042",
-        "#00C49F",
-        "#FF4500",
-        "#8A2BE2",
-        "#7CFC00",
-        "#D2691E",
-    ];
-
-    useEffect(() => {
-        // Solo cambia a `false` cuando la carga de datos haya finalizado
-        if (inscripciones.length > 0) {
-            setIsLoading(false); // Esto indica que los datos están listos
-        }
-    }, [inscripciones, showAccumulated]);
 
     const grados = useMemo(() => {
         const gradosSet = new Set(
@@ -270,9 +246,9 @@ export default function GraphicSummaryInscritos({ inscripciones }) {
                     </div>
 
                     <div className="flex items-center justify-between w-auto h-auto ml-[-40px]">
-                        {isLoading ? (
+                        {inscripciones.length === 0 ? (
                             <div className="flex items-center justify-center ml-[60px] w-full h-[400px]">
-                                <Spinner color="primary" />
+                                <p className="text-gray-500">No hay datos disponibles</p>
                             </div>
                         ) : (
                             <ResponsiveContainer width="100%" height={400}>

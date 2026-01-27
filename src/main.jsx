@@ -20,6 +20,12 @@ const Footer = lazy(() => import("./components/Footer/Footer.jsx"));
 const Notfound = lazy(() => import("./pages/NotFound/NotFound.jsx"));
 const ProtectedRouteDocente = lazy(() => import("./services/ProtectedRouteDocente.jsx"));
 
+// Landing pages de posgrado
+const Maestrias = lazy(() => import("./layouts/Maestrias/Maestrias.jsx"));
+const Doctorados = lazy(() => import("./layouts/Doctorados/Doctorados.jsx"));
+const Prospecto = lazy(() => import("./layouts/Prospecto/Prospecto.jsx"));
+const SegundasEspecialidades = lazy(() => import("./layouts/SegundasEspecialidades/SegundasEspecialidades.jsx"));
+
 // Import providers (keep these eager as they're needed immediately)
 import { DocenteProvider } from "./services/UserContextDocente.jsx";
 import { UserProvider } from "./services/UserContext.jsx";
@@ -58,6 +64,12 @@ const App = () => {
                                             path="/inscripcion/confirmacion"
                                             element={<IndexValidacion />}
                                         />
+
+                                        {/* Landing pages de posgrado */}
+                                        <Route path="/maestrias" element={<Maestrias />} />
+                                        <Route path="/doctorados" element={<Doctorados />} />
+                                        <Route path="/prospecto" element={<Prospecto />} />
+                                        <Route path="/segundas-especialidades" element={<SegundasEspecialidades />} />
 
                                         {/* Rutas de docente (login y protegidas) */}
                                         <Route

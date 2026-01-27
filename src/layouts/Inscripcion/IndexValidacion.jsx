@@ -18,7 +18,7 @@ import SelectDPD from "../../components/Select/SelectDPD";
 import SelectGradoPrograma from "../../components/Select/SelectGradoPrograma";
 import FormularioUsuario from "../../components/Inputs/DatosPersonales";
 import FileUploadSection from "../../components/FileUploadSection/FileUploadSection";
-import cronograma from "../../assets/Img/1.webp";
+import cronograma from "../../assets/Img/pasos.webp";
 import fechaPagos from "../../assets/Img/4.webp";
 import cronogramaAdmision from "../../assets/Img/3.webp";
 import { admissionConfig } from "../../config/admission";
@@ -161,8 +161,8 @@ function InscripcionForm({ datosPago }) {
 
     const slides = [
         {
-            title: "Cronograma Proceso Admisión",
-            text: "Consulta aquí el cronograma de actividades.",
+            title: "Pasos del Proceso Admisión",
+            text: "Consulta aquí el paso a paso del proceso de admisión.",
             image: cronograma,
         },
         {

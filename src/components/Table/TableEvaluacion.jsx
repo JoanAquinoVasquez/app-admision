@@ -104,12 +104,10 @@ const INITIAL_VISIBLE_COLUMNS = [
 
 export default function App({ resumenEvaluacion, grados }) {
     // ✅ Aseguramos que `resumenEvaluacion` tenga datos antes de mapear
-    const [loading, setLoading] = useState(true);
     const users = React.useMemo(() => {
         if (!resumenEvaluacion || resumenEvaluacion.length === 0) {
             return []; // Evita errores si aún no hay datos
         }
-        setLoading(false);
         return resumenEvaluacion.map((item) => ({
             grado_programa: item.grado_programa,
             inscritos: item.inscritos,
@@ -208,7 +206,7 @@ export default function App({ resumenEvaluacion, grados }) {
         });
     }, [filteredItems, sortDescriptor]);
 
-    const pages = Math.ceil(filteredItems.length / rowsPerPage);
+    const pages = Math.max(1, Math.ceil(filteredItems.length / rowsPerPage));
 
     const items = React.useMemo(() => {
         const start = (page - 1) * rowsPerPage;
@@ -469,80 +467,74 @@ export default function App({ resumenEvaluacion, grados }) {
             title="Resumen Evaluación Proc. Admisión 2025 - I"
             icon={<ChevronDownIcon className="text-green-500" />}
         >
-            {loading ? (
-                <div className="flex items-center justify-center ml-[60px] w-full h-[400px]">
-                    <Spinner color="primary" />
-                </div>
-            ) : (
-                <Table
-                    aria-label="Tabla de resumen de evaluación"
-                    layout="fixed" // Usa fixed para que se respeten los anchos definidos
-                    isHeaderSticky
-                    bottomContent={bottomContent}
-                    bottomContentPlacement="outside"
-                    classNames={{
-                        wrapper:
-                            "max-h-[317px] min-h-[317px] overflow-auto w-full p-2 m-0",
-                    }}
-                    selectedKeys={selectedKeys}
-                    sortDescriptor={sortDescriptor}
-                    topContent={topContent}
-                    topContentPlacement="outside"
-                    onSelectionChange={setSelectedKeys}
-                    onSortChange={setSortDescriptor}
-                >
-                    <TableHeader columns={headerColumns}>
-                        {(column) => (
-                            <TableColumn
-                                key={column.uid}
-                                aria-label={column.uid}
-                                align={
-                                    column.uid === "grado_programa"
-                                        ? "start"
-                                        : "center"
-                                }
-                                allowsSorting={column.sortable}
-                                // Aplica estilos en línea para forzar el ancho y evitar el wrapping
-                                style={
-                                    column.uid === "grado_programa"
-                                        ? { width: "310px" } // Grado y Programa
-                                        : column.uid === "docente"
+            <Table
+                aria-label="Tabla de resumen de evaluación"
+                layout="fixed" // Usa fixed para que se respeten los anchos definidos
+                isHeaderSticky
+                bottomContent={bottomContent}
+                bottomContentPlacement="outside"
+                classNames={{
+                    wrapper:
+                        "max-h-[317px] min-h-[317px] overflow-auto w-full p-2 m-0",
+                }}
+                selectedKeys={selectedKeys}
+                sortDescriptor={sortDescriptor}
+                topContent={topContent}
+                topContentPlacement="outside"
+                onSelectionChange={setSelectedKeys}
+                onSortChange={setSortDescriptor}
+            >
+                <TableHeader columns={headerColumns}>
+                    {(column) => (
+                        <TableColumn
+                            key={column.uid}
+                            aria-label={column.uid}
+                            align={
+                                column.uid === "grado_programa"
+                                    ? "start"
+                                    : "center"
+                            }
+                            allowsSorting={column.sortable}
+                            // Aplica estilos en línea para forzar el ancho y evitar el wrapping
+                            style={
+                                column.uid === "grado_programa"
+                                    ? { width: "310px" } // Grado y Programa
+                                    : column.uid === "docente"
                                         ? { width: "150px" }
                                         : column.uid === "cobertura"
-                                        ? { width: "62px" } // Cobertura o docente
-                                        : column.uid === "facultad"
-                                        ? { width: "59px" }
-                                        : { width: "50px" } // Otras columnas
-                                }
-                                className="text-xs"
-                                scope="col"
-                            >
-                                {column.name}
-                            </TableColumn>
-                        )}
-                    </TableHeader>
-                    <TableBody
-                        emptyContent={"No se encontró información"}
-                        items={items}
-                        className="space-y-1"
-                        aria-label="Cuerpo de la tabla"
-                    >
-                        {(item) => (
-                            <TableRow
-                                key={item.grado_programa}
-                                aria-label={item.grado_programa}
-                                className="p-1 text-sm leading-tight"
-                            >
-                                {(columnKey) => (
-                                    <TableCell className="p-1 text-sm">
-                                        {renderCell(item, columnKey)}
-                                    </TableCell>
-                                )}
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            )}
+                                            ? { width: "62px" } // Cobertura o docente
+                                            : column.uid === "facultad"
+                                                ? { width: "59px" }
+                                                : { width: "50px" } // Otras columnas
+                            }
+                            className="text-xs"
+                            scope="col"
+                        >
+                            {column.name}
+                        </TableColumn>
+                    )}
+                </TableHeader>
+                <TableBody
+                    emptyContent={"No se encontró información"}
+                    items={items}
+                    className="space-y-1"
+                    aria-label="Cuerpo de la tabla"
+                >
+                    {(item) => (
+                        <TableRow
+                            key={item.grado_programa}
+                            aria-label={item.grado_programa}
+                            className="p-1 text-sm leading-tight"
+                        >
+                            {(columnKey) => (
+                                <TableCell className="p-1 text-sm">
+                                    {renderCell(item, columnKey)}
+                                </TableCell>
+                            )}
+                        </TableRow>
+                    )}
+                </TableBody>
+            </Table>
         </DashboardCard>
     );
 }

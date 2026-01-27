@@ -48,7 +48,7 @@ const ResumenAdmision = ({ resumenGeneral }) => {
     if (!resumen || resumenes.length === 0) {
         return (
             <div className="flex items-center justify-center h-[425px]">
-                <Spinner color="primary" />
+                <p className="text-gray-500">No hay datos disponibles</p>
             </div>
         );
     }

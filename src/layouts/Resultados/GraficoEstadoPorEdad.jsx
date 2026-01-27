@@ -47,7 +47,7 @@ const GraficoEstadoPorEdad = ({ resumenEdad }) => {
     if (!resumenEdad || resumenEdad.length === 0) {
         return (
             <div className="flex items-center justify-center h-64">
-                <Spinner color="primary" />
+                <p className="text-gray-500">No hay datos disponibles</p>
             </div>
         );
     }

@@ -8,7 +8,7 @@ import Carrusel from "../../components/Carrusel/Carrusel";
 
 // Assets
 import logoWithTextImage from "../../assets/Isotipos/isotipo_color_epg.webp";
-import cronograma from "../../assets/Img/1.webp";
+import cronograma from "../../assets/Img/mas-informacion.webp";
 import fechaPagos from "../../assets/Img/4.webp";
 import cronogramaAdmision from "../../assets/Img/3.webp";
 import InscripcionForm from "./IndexValidacion"; // Reutilizamos el archivo refactorizado
@@ -20,8 +20,8 @@ const config = admissionConfig?.cronograma || {};
 
 const SLIDES_DATA = [
     {
-        title: "Cronograma Proceso Admisión",
-        text: "Consulta aquí el cronograma de actividades.",
+        title: "Pasos del Proceso Admisión",
+        text: "Consulta aquí el paso a paso del proceso de admisión.",
         image: cronograma,
     },
     {

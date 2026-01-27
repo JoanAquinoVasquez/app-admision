@@ -15,7 +15,7 @@ import useGrados from "../../data/dataGrados";
 import useProgramas from "../../data/dataProgramas";
 
 // Assets
-import cronograma from "../../assets/Img/1.webp";
+import cronograma from "../../assets/Img/mas-informacion.webp";
 import fechaPagos from "../../assets/Img/4.webp";
 import cronogramaAdmision from "../../assets/Img/3.webp";
 import logoWithTextImage from "../../assets/Isotipos/isotipo_color_epg.webp";
@@ -25,8 +25,8 @@ import { admissionConfig, getAdmissionStage } from "../../config/admission";
 // DATOS ESTÁTICOS (Slides del Carrusel)
 const SLIDES_DATA = [
     {
-        title: "Cronograma Proceso Admisión",
-        text: "Consulta aquí el cronograma de actividades para el proceso de admisión.",
+        title: "Pasos del Proceso Admisión",
+        text: "Consulta aquí el paso a paso del proceso de admisión.",
         image: cronograma,
     },
     {

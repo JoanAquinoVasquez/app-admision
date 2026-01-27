@@ -223,13 +223,6 @@ export default function App() {
         });
     }, [inscripcionesInhabilitadas]);
 
-    useEffect(() => {
-        setLoading(
-            !inscripcionesInhabilitadas ||
-            inscripcionesInhabilitadas.length === 0
-        );
-    }, [inscripcionesInhabilitadas]);
-
     const [programa_id, setPrograma_id] = useState(null);
     const [grado_id, setGrado_id] = useState(null);
 

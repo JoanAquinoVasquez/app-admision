@@ -22,6 +22,7 @@ import {
 import useDataIngresantes from "../../data/Resultados/dataIngresantes";
 import Select from "../../components/Select/Select";
 import useProgramasHabilitados from "../../data/Inscripcion/dataProgramasHabilitados";
+import axios from "../../axios";
 
 export const columns = [
     { name: "ID", uid: "id", sortable: true },
@@ -151,10 +152,8 @@ export default function App() {
     // ✅ Aseguramos que `ingresantes` tenga datos antes de mapear
     const users = useMemo(() => {
         if (!ingresantes || ingresantes.length === 0) {
-            setLoading(true);
             return []; // Evita errores si aún no hay datos
         }
-        setLoading(false);
         return ingresantes.map((item) => {
             return {
                 id: item.inscripcion_id,
@@ -238,7 +237,7 @@ export default function App() {
             return sortDescriptor.direction === "descending" ? -cmp : cmp;
         });
     }, [sortDescriptor, filteredItems]);
-    const pages = Math.ceil(filteredItems.length / rowsPerPage);
+    const pages = Math.max(1, Math.ceil(filteredItems.length / rowsPerPage));
     const items = useMemo(() => {
         const start = (page - 1) * rowsPerPage;
         return sortedItems.slice(start, start + rowsPerPage);
@@ -504,12 +503,12 @@ export default function App() {
                             defaultItems={
                                 gradoFilter !== "all"
                                     ? filteredProgramasHabilitados.map(
-                                          (item) => ({
-                                              key: item.id.toString(),
-                                              textValue: item.nombre,
-                                              ...item,
-                                          })
-                                      )
+                                        (item) => ({
+                                            key: item.id.toString(),
+                                            textValue: item.nombre,
+                                            ...item,
+                                        })
+                                    )
                                     : [] // Si no hay grado seleccionado, no mostrar opciones
                             }
                             className="w-full min-h-[50px]"
@@ -704,7 +703,7 @@ export default function App() {
                         key={column.uid}
                         align={
                             column.uid === "nombre_completo" ||
-                            column.uid === "grado"
+                                column.uid === "grado"
                                 ? "start"
                                 : "center"
                         }

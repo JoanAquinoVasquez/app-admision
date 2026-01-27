@@ -177,7 +177,7 @@ const INITIAL_VISIBLE_COLUMNS = [
 ];
 
 export default function App() {
-    const { inscripciones, fetchInscripciones } = useInscripcion();
+    const { inscripciones, fetchInscripciones, loading: dataLoading } = useInscripcion();
     const [isValidarOpen, setIsValidarOpen] = useState(false);
     const [validarId, setValidarId] = useState(null);
     const [isObservarOpen, setIsObservarOpen] = useState(false);
@@ -232,10 +232,8 @@ export default function App() {
     // ✅ Aseguramos que `inscripciones` tenga datos antes de mapear
     const users = useMemo(() => {
         if (!inscripciones || inscripciones.length === 0) {
-            setLoading(true);
             return []; // Evita errores si aún no hay datos
         }
-        setLoading(false);
         return inscripciones
             .filter((item) => item.val_digital == 1) // Filtra solo los elementos con val_fisico === 0
             .map((item) => {

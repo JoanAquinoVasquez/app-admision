@@ -199,10 +199,8 @@ export default function App() {
     // ✅ Aseguramos que `inscripcioNota` tenga datos antes de mapear
     const users = useMemo(() => {
         if (!inscripcioNota || inscripcioNota.length === 0) {
-            setLoading(true);
             return []; // Evita errores si aún no hay datos
         }
-        setLoading(false);
         return inscripcioNota
             .filter((item) => item.val_fisico == 1) // Filtra solo los elementos con val_fisico === 1
             .map((item) => {
@@ -641,7 +639,7 @@ export default function App() {
         } catch (error) {
             toast.error(
                 error.response?.data?.message ||
-                    "Hubo un problema al subir el archivo."
+                "Hubo un problema al subir el archivo."
             );
         } finally {
             setLoading(false);
@@ -672,7 +670,7 @@ export default function App() {
         } catch (error) {
             toast.error(
                 error.response?.data?.message ||
-                    "Hubo un problema al guardar la nota."
+                "Hubo un problema al guardar la nota."
             );
         }
     };
@@ -818,10 +816,10 @@ export default function App() {
                             defaultItems={
                                 gradoFilter !== "all"
                                     ? filteredProgramas.map((item) => ({
-                                          key: item.id.toString(),
-                                          textValue: item.nombre,
-                                          ...item,
-                                      }))
+                                        key: item.id.toString(),
+                                        textValue: item.nombre,
+                                        ...item,
+                                    }))
                                     : [] // Si no hay grado seleccionado, no mostrar opciones
                             }
                             className="w-full min-h-[50px]"
@@ -1005,7 +1003,7 @@ export default function App() {
                         key={column.uid}
                         align={
                             column.uid === "nombre_completo" ||
-                            column.uid === "grado"
+                                column.uid === "grado"
                                 ? "start"
                                 : "center"
                         }

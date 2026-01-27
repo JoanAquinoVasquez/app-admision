@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, Link as RouterLink } from "react-router-dom";
 import {
     Button,
     Card,
@@ -15,7 +15,7 @@ import Fondo from "../Fondo/Fondo";
 import mae from "../../assets/Img/maestrias.webp";
 import doc from "../../assets/Img/doctorados.webp";
 import seg from "../../assets/Img/segundas-especialidades.webp";
-import info from "../../assets/Img/informacion.webp";
+import info from "../../assets/Img/mas-informacion.webp";
 import banner from "../../assets/Img/banner_epg.webp";
 import { admissionConfig, getAdmissionStage } from "../../config/admission";
 
@@ -25,25 +25,29 @@ const PROGRAMAS = [
         img: mae,
         title: "Maestrías",
         desc: "Especialización profesional avanzada.",
-        url: "https://drive.google.com/drive/folders/1u5OX9GF-uQfwueMLUPhPl7ulO4JPI-C7?usp=drive_link",
+        url: "/maestrias",
+        isInternal: true,
     },
     {
         img: doc,
         title: "Doctorados",
         desc: "Investigación y desarrollo académico.",
-        url: "https://drive.google.com/drive/folders/1p-yszTehpMpTODTAxMkgC53e-AsmWJaK?usp=drive_link",
+        url: "/doctorados",
+        isInternal: true,
     },
     {
         img: seg,
         title: "Segundas Especialidades",
         desc: "Especialízate en un nuevo enfoque y diversifica tus habilidades.",
-        url: "https://drive.google.com/drive/folders/1CpQ-_LLwe59JB49Y7WaKYcVAkBW_bsK8?usp=drive_link",
+        url: "/segundas-especialidades",
+        isInternal: true,
     },
     {
         img: info,
         title: "Más información",
         desc: "Resuelve tus dudas aquí.",
-        url: "https://drive.google.com/drive/folders/14WZxQ6TkA4TUGFKeVEcpVY06rH8Qg199?usp=sharing",
+        url: "https://drive.google.com/drive/folders/16T25dlTLguHquliVVtOb0WyJEzm_Y5BA?usp=drive_link",
+        isInternal: false,
     },
 ];
 
@@ -186,21 +190,34 @@ export default function Index() {
 
                 {/* Grid de programas */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 min-[1700px]:gap-8 px-2 sm:px-4 mt-3 min-[1700px]:mt-8 w-full min-[1700px]:max-w-6xl">
-                    {PROGRAMAS.map(({ img, title, desc, url }, i) => (
+                    {PROGRAMAS.map(({ img, title, desc, url, isInternal }, i) => (
                         <Card key={i} className="w-full h-full shadow-md hover:shadow-xl transition-shadow">
                             <CardHeader className="p-0 group overflow-hidden">
-                                <a
-                                    href={url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="block w-full h-full"
-                                >
-                                    <img
-                                        src={img}
-                                        alt={title}
-                                        className="w-full h-32 md:h-40 min-[1700px]:h-64 object-contain rounded-t-lg transition-transform duration-300 ease-in-out group-hover:scale-110"
-                                    />
-                                </a>
+                                {isInternal ? (
+                                    <RouterLink
+                                        to={url}
+                                        className="block w-full h-full"
+                                    >
+                                        <img
+                                            src={img}
+                                            alt={title}
+                                            className="w-full h-32 md:h-40 min-[1700px]:h-64 object-contain rounded-t-lg transition-transform duration-300 ease-in-out group-hover:scale-110"
+                                        />
+                                    </RouterLink>
+                                ) : (
+                                    <a
+                                        href={url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="block w-full h-full"
+                                    >
+                                        <img
+                                            src={img}
+                                            alt={title}
+                                            className="w-full h-32 md:h-40 min-[1700px]:h-64 object-contain rounded-t-lg transition-transform duration-300 ease-in-out group-hover:scale-110"
+                                        />
+                                    </a>
+                                )}
                             </CardHeader>
 
                             <CardBody className="py-2 px-3">
@@ -213,19 +230,31 @@ export default function Index() {
                             </CardBody>
 
                             <CardFooter className="flex justify-center pt-0 pb-2 px-4">
-                                <a
-                                    href={url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    <Button
-                                        color="primary"
-                                        variant="shadow"
-                                        size="sm"
+                                {isInternal ? (
+                                    <RouterLink to={url}>
+                                        <Button
+                                            color="primary"
+                                            variant="shadow"
+                                            size="sm"
+                                        >
+                                            Ver más
+                                        </Button>
+                                    </RouterLink>
+                                ) : (
+                                    <a
+                                        href={url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
                                     >
-                                        Ver más
-                                    </Button>
-                                </a>
+                                        <Button
+                                            color="primary"
+                                            variant="shadow"
+                                            size="sm"
+                                        >
+                                            Ver más
+                                        </Button>
+                                    </a>
+                                )}
                             </CardFooter>
                         </Card>
                     ))}

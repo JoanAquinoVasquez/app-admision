@@ -28,15 +28,6 @@ export function capitalize(s) {
 export default function GraphicSummary({ preInscripciones, grados }) {
     const [selectedGrados, setSelectedGrados] = useState(new Set());
     const [showAccumulated, setShowAccumulated] = useState(false);
-    const [loading, setLoading] = useState(true);
-
-    // Simular carga de datos
-    useEffect(() => {
-        // Solo cambia a `false` cuando la carga de datos haya finalizado
-        if (preInscripciones.length > 0) {
-            setLoading(false); // Esto indica que los datos están listos
-        }
-    }, [preInscripciones, showAccumulated]);
 
     const COLORS = [
         "#8884d8",
@@ -186,10 +177,8 @@ export default function GraphicSummary({ preInscripciones, grados }) {
 
                     {/* Gráfico */}
                     <div className="w-full min-w-0 h-[300px] sm:h-[400px] flex justify-center items-center ml-[-10px]">
-                        {loading ? (
-                            <div className="flex items-center justify-center ml-[60px] w-full h-[400px]">
-                                <Spinner color="primary" />
-                            </div>
+                        {preInscripciones.length === 0 ? (
+                            <p className="text-gray-500">No hay datos disponibles</p>
                         ) : (
                             <ResponsiveContainer
                                 width="100%"

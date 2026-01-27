@@ -15,7 +15,9 @@ export const useProgramas = (initialGradoId = null) => {
         try {
             setLoading(true);
             setError(null);
-            const data = await programaApi.getAll(params);
+            const response = await programaApi.getAll(params);
+            // Extract data array from API response structure
+            const data = Array.isArray(response) ? response : (response.data || []);
             setProgramas(data);
             setFilteredProgramas(data);
         } catch (err) {
@@ -31,7 +33,7 @@ export const useProgramas = (initialGradoId = null) => {
             setFilteredProgramas(programas);
         } else {
             const filtered = programas.filter(
-                (programa) => programa.grado_id === parseInt(gradoId)
+                (programa) => Number(programa.grado_id) === Number(gradoId)
             );
             setFilteredProgramas(filtered);
         }

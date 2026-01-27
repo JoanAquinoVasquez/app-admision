@@ -132,10 +132,8 @@ export default function App() {
     // ✅ Aseguramos que `preInscripciones` tenga datos antes de mapear
     const users = useMemo(() => {
         if (!preInscripciones || preInscripciones.length === 0) {
-            setLoading(true);
             return []; // Evita errores si aún no hay datos
         }
-        setLoading(false); // Cambia a false una vez que los datos están disponibles
         return preInscripciones.map((item) => {
             const formatoFechaHora = (fechaHora) => {
                 if (!fechaHora)
