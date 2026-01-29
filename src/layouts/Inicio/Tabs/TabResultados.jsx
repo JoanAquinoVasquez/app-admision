@@ -8,7 +8,7 @@ import useResumenEdad from "../../../data/Resultados/dataResumenEdad";
 import ResumenAdmision from "../../Resultados/ResumenAdmision";
 import HistogramaNotas from "../../Resultados/HistogramaNotas";
 
-export default function TabResultados({}) {
+export default function TabResultados({ }) {
     const { ingresantesPrograma } = useIngresantesPrograma();
     const { resumenGeneral } = useResumenGeneral();
     const { resumenEdad } = useResumenEdad();
@@ -27,6 +27,7 @@ export default function TabResultados({}) {
                     <div className="bg-white shadow-md rounded-lg p-3">
                         <TableResultados
                             ingresantesPrograma={ingresantesPrograma}
+                            loading={loading}
                         />
                     </div>
                 </div>

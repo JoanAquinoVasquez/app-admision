@@ -104,14 +104,12 @@ const INITIAL_VISIBLE_COLUMNS = [
     "recaudación",
 ];
 
-export default function App({ resumenInscripcion }) {
+export default function App({ resumenInscripcion, loading }) {
     // ✅ Aseguramos que `resumenInscripcion` tenga datos antes de mapear
-    const [loading, setLoading] = useState(true);
     const users = React.useMemo(() => {
         if (!resumenInscripcion || resumenInscripcion.length === 0) {
             return []; // Evita errores si aún no hay datos
         }
-        setLoading(false);
         return resumenInscripcion.map((item) => ({
             grado_programa: item.grado_programa,
             inscritos: item.inscritos,
@@ -466,78 +464,74 @@ export default function App({ resumenInscripcion }) {
             title="Resumen Proc. Admisión 2025 - I"
             icon={<ChevronDownIcon className="text-green-500" />}
         >
-            {loading ? (
-                <div className="flex items-center justify-center ml-[60px] w-full h-[400px]">
-                    <Spinner color="primary" />
-                </div>
-            ) : (
-                <Table
-                    aria-label="Example table"
-                    layout="fixed" // Usa fixed para que se respeten los anchos definidos
-                    isHeaderSticky
-                    bottomContent={bottomContent}
-                    bottomContentPlacement="outside"
-                    classNames={{
-                        wrapper:
-                            "max-h-[317px] min-h-[317px] overflow-auto w-full p-2 m-0",
-                    }}
-                    selectedKeys={selectedKeys}
-                    sortDescriptor={sortDescriptor}
-                    topContent={topContent}
-                    topContentPlacement="outside"
-                    onSelectionChange={setSelectedKeys}
-                    onSortChange={setSortDescriptor}
-                >
-                    <TableHeader columns={headerColumns}>
-                        {(column) => (
-                            <TableColumn
-                                key={column.uid}
-                                align={
-                                    column.uid === "grado_programa"
-                                        ? "start"
-                                        : "center"
-                                }
-                                allowsSorting={column.sortable}
-                                // Aplica estilos en línea para forzar el ancho y evitar el wrapping
-                                style={
-                                    column.uid === "grado_programa"
-                                        ? { width: "310px" } // Grado y Programa
-                                        : column.uid === "recaudación"
+            <Table
+                aria-label="Example table"
+                layout="fixed" // Usa fixed para que se respeten los anchos definidos
+                isHeaderSticky
+                bottomContent={bottomContent}
+                bottomContentPlacement="outside"
+                classNames={{
+                    wrapper:
+                        "max-h-[317px] min-h-[317px] overflow-auto w-full p-2 m-0",
+                }}
+                selectedKeys={selectedKeys}
+                sortDescriptor={sortDescriptor}
+                topContent={topContent}
+                topContentPlacement="outside"
+                onSelectionChange={setSelectedKeys}
+                onSortChange={setSortDescriptor}
+            >
+                <TableHeader columns={headerColumns}>
+                    {(column) => (
+                        <TableColumn
+                            key={column.uid}
+                            align={
+                                column.uid === "grado_programa"
+                                    ? "start"
+                                    : "center"
+                            }
+                            allowsSorting={column.sortable}
+                            // Aplica estilos en línea para forzar el ancho y evitar el wrapping
+                            style={
+                                column.uid === "grado_programa"
+                                    ? { width: "310px" } // Grado y Programa
+                                    : column.uid === "recaudación"
                                         ? { width: "100px" }
                                         : column.uid === "cobertura"
-                                        ? { width: "62px" } // Cobertura o Recaudación
-                                        : column.uid === "facultad"
-                                        ? { width: "59px" }
-                                        : { width: "50px" } // Otras columnas
-                                }
-                                className="text-xs"
-                                aria-label={column.name}
-                                scope="col"
-                            >
-                                {column.name}
-                            </TableColumn>
-                        )}
-                    </TableHeader>
-                    <TableBody
-                        emptyContent={"No se encontró información"}
-                        items={items}
-                        className="space-y-1"
-                    >
-                        {(item) => (
-                            <TableRow
-                                key={item.grado_programa}
-                                className="p-1 text-sm leading-tight"
-                            >
-                                {(columnKey) => (
-                                    <TableCell className="p-1 text-sm">
-                                        {renderCell(item, columnKey)}
-                                    </TableCell>
-                                )}
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            )}
+                                            ? { width: "62px" } // Cobertura o Recaudación
+                                            : column.uid === "facultad"
+                                                ? { width: "59px" }
+                                                : { width: "50px" } // Otras columnas
+                            }
+                            className="text-xs"
+                            aria-label={column.name}
+                            scope="col"
+                        >
+                            {column.name}
+                        </TableColumn>
+                    )}
+                </TableHeader>
+                <TableBody
+                    emptyContent={loading ? " " : "No se encontró información"}
+                    isLoading={loading}
+                    loadingContent={<Spinner label="Cargando..." />}
+                    items={items}
+                    className="space-y-1"
+                >
+                    {(item) => (
+                        <TableRow
+                            key={item.grado_programa}
+                            className="p-1 text-sm leading-tight"
+                        >
+                            {(columnKey) => (
+                                <TableCell className="p-1 text-sm">
+                                    {renderCell(item, columnKey)}
+                                </TableCell>
+                            )}
+                        </TableRow>
+                    )}
+                </TableBody>
+            </Table>
         </DashboardCard>
     );
 }

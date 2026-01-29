@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
-import Spinner from "../../components/Spinner/Spinner"; // Spinner
+// import Spinner from "../../components/Spinner/Spinner"; // Spinner
 import { toast, Toaster } from "react-hot-toast";
 import { FormControl, Box } from "@mui/material";
 import {
@@ -26,6 +26,7 @@ import {
     RadioGroup,
     Pagination,
     Select,
+    Spinner,
     user,
 } from "@nextui-org/react";
 import Typography from "@mui/material/Typography";
@@ -300,8 +301,7 @@ export default function App() {
             });
             fetchUsers(); // 🔄 refrescar lista
             toast.success(
-                `Usuario ${
-                    !user.estado ? "habilitado" : "inhabilitado"
+                `Usuario ${!user.estado ? "habilitado" : "inhabilitado"
                 } correctamente`
             );
         } catch (error) {
@@ -376,7 +376,7 @@ export default function App() {
         } catch (error) {
             toast.error(
                 error.response?.data?.email ||
-                    "Hubo un error al actualizar el usuario."
+                "Hubo un error al actualizar el usuario."
             );
         } finally {
             setLoading(false);
@@ -534,11 +534,10 @@ export default function App() {
                     isOpen={isValidarOpen}
                     onClose={() => setIsValidarOpen(false)}
                     onConfirm={() => handleValidar(validarId)}
-                    message={`¿Estás seguro que deseas ${
-                        users.find((u) => u.id === validarId)?.estado
-                            ? "inhabilitar"
-                            : "habilitar"
-                    } este usuario?`}
+                    message={`¿Estás seguro que deseas ${users.find((u) => u.id === validarId)?.estado
+                        ? "inhabilitar"
+                        : "habilitar"
+                        } este usuario?`}
                 />
 
                 <Modal
@@ -661,13 +660,7 @@ export default function App() {
 
                 <Toaster position="top-right" />
 
-                {/* Overlay de carga (solo se renderiza si loading es true) */}
-                {loading ||
-                    (loadingUsers && (
-                        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-20 z-50">
-                            <Spinner label={"Cargando..."} />
-                        </div>
-                    ))}
+
                 <div className="flex flex-col gap-2">
                     {/* 🔎 Fila 1: Búsqueda y Filtros Principales */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-1 w-full">
@@ -848,7 +841,7 @@ export default function App() {
                         key={column.uid}
                         align={
                             column.uid === "nombre_completo" ||
-                            column.uid === "grado"
+                                column.uid === "grado"
                                 ? "start"
                                 : "center"
                         }
@@ -862,9 +855,11 @@ export default function App() {
                 )}
             </TableHeader>
             <TableBody
-                emptyContent={"No se encontró usuarios registrados"}
+                emptyContent={"No se encontró usuarios"}
                 items={items}
                 className="space-y-1" // Reducir espacio entre filas
+                isLoading={loading || loadingUsers}
+                loadingContent={<Spinner label="Cargando..." />}
             >
                 {(item) => (
                     <TableRow
@@ -879,6 +874,6 @@ export default function App() {
                     </TableRow>
                 )}
             </TableBody>
-        </Table>
+        </Table >
     );
 }

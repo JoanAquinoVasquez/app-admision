@@ -81,7 +81,7 @@ export default function ProgramTable({ programs, showBrochure = false }) {
                         <TableColumn>FACULTAD</TableColumn>
                         <TableColumn className="min-w-[300px]">PROGRAMA ACADÉMICO</TableColumn>
                         <TableColumn className="text-center">PLAN</TableColumn>
-                        {showBrochure && <TableColumn className="text-center">PDF</TableColumn>}
+                        {showBrochure && <TableColumn className="text-center">BROCHURE</TableColumn>}
                     </TableHeader>
                     <TableBody
                         emptyContent={

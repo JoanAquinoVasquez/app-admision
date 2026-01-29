@@ -102,7 +102,7 @@ const INITIAL_VISIBLE_COLUMNS = [
     "docente",
 ];
 
-export default function App({ resumenEvaluacion, grados }) {
+export default function App({ resumenEvaluacion, grados, loading }) {
     // ✅ Aseguramos que `resumenEvaluacion` tenga datos antes de mapear
     const users = React.useMemo(() => {
         if (!resumenEvaluacion || resumenEvaluacion.length === 0) {
@@ -515,7 +515,9 @@ export default function App({ resumenEvaluacion, grados }) {
                     )}
                 </TableHeader>
                 <TableBody
-                    emptyContent={"No se encontró información"}
+                    emptyContent={loading ? " " : "No se encontró información"}
+                    isLoading={loading}
+                    loadingContent={<Spinner label="Cargando..." />}
                     items={items}
                     className="space-y-1"
                     aria-label="Cuerpo de la tabla"

@@ -1,6 +1,6 @@
 import { useMemo, useEffect } from "react";
 import useGrado from "../../data/dataGrados";
-import Spinner from "../../components/Spinner/Spinner";
+// import Spinner from "../../components/Spinner/Spinner";
 import { Toaster } from "react-hot-toast";
 import { useUser } from "../../services/UserContext";
 import {
@@ -17,6 +17,7 @@ import {
     DropdownMenu,
     DropdownItem,
     Chip,
+    Spinner,
 } from "@nextui-org/react";
 import useInscripcion from "../../data/Inscripcion/dataInscripcion";
 import useProgramas from "../../data/dataProgramas";
@@ -338,7 +339,13 @@ export default function App() {
                         </TableColumn>
                     )}
                 </TableHeader>
-                <TableBody emptyContent={"No se encontró postulantes registrados"} items={items} className="space-y-1">
+                <TableBody
+                    emptyContent={"No se encontró postulantes registrados"}
+                    items={items}
+                    className="space-y-1"
+                    isLoading={dataLoading || loading}
+                    loadingContent={<Spinner label="Cargando..." />}
+                >
                     {(item) => (
                         <TableRow key={item.id} className="p-1 text-sm leading-tight">
                             {(columnKey) => <TableCell className="p-1 text-sm">{renderCell(item, columnKey)}</TableCell>}
@@ -369,11 +376,7 @@ export default function App() {
             />
 
             <Toaster position="top-right" />
-            {(loading || dataLoading) && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-20 z-50">
-                    <Spinner label={"Cargando..."} />
-                </div>
-            )}
+
         </>
     );
 }

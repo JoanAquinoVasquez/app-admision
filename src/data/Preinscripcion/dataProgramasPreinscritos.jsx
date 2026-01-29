@@ -1,20 +1,8 @@
-import { useEffect, useState, useCallback } from "react";
-import axios from "../../axios";
+import useDashboardQuery from "../../hooks/useDashboardQuery";
 
 export default function useProgramaPreinscritos() {
-    const [programasPreinscritos, setProgramasPreinscritos] = useState([]);
+    const { data: programasPreinscritos, loading, refresh: fetchProgramasPreinscritos } =
+        useDashboardQuery("/preinscritos-totales");
 
-    const fetchProgramasPreinscritos = useCallback(async () => {
-        try {
-            const response = await axios.get("/preinscritos-totales", {});
-            setProgramasPreinscritos(response.data.data);
-        } catch (error) {
-            console.error("Error al cargar los Programas Preinscritos:", error);
-        }
-    }, []);
-    useEffect(() => {
-        fetchProgramasPreinscritos();
-    }, [fetchProgramasPreinscritos]);
-
-    return { programasPreinscritos, fetchProgramasPreinscritos };
+    return { programasPreinscritos, loading, fetchProgramasPreinscritos };
 }

@@ -466,11 +466,6 @@ export default function CargarVoucher() {
     const bottomContent = useMemo(
         () => (
             <div className="py-2 px-2 flex justify-between items-center">
-                {/* <span className="w-[30%] text-small text-default-400">
-                    {selectedKeys === "all"
-                        ? "Todos los voucher seleccionados"
-                        : `${selectedKeys.size} de ${filteredItems.length} seleccionados`}
-                </span> */}
                 <Pagination
                     isCompact
                     showControls
@@ -505,14 +500,6 @@ export default function CargarVoucher() {
         [selectedKeys, filteredItems.length, page, pages]
     );
 
-    if (loading) {
-        return (
-            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-20 z-50">
-                <Spinner label={"Cargando vouchers..."} />
-            </div>
-        );
-    }
-
     return (
         <div>
             <Toaster position="top-right" reverseOrder={false} />
@@ -524,7 +511,6 @@ export default function CargarVoucher() {
                     },
                 ]}
             />
-
             {/* Contenedor principal responsive */}
             <div className="flex flex-col md:flex-row gap-4 justify-around flex-md-col">
                 {/* Contenedor del formulario */}
@@ -558,6 +544,8 @@ export default function CargarVoucher() {
                     aria-label="Tabla vouchers"
                     layout="auto"
                     isHeaderSticky
+                    isLoading={loading}
+                    loadingContent={<Spinner label="Cargando vouchers..." />}
                     bottomContent={bottomContent}
                     bottomContentPlacement="outside"
                     topContent={topContent}

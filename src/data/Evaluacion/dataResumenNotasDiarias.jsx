@@ -1,20 +1,8 @@
-import { useEffect, useState, useCallback } from "react";
-import axios from "../../axios";
+import useDashboardQuery from "../../hooks/useDashboardQuery";
 
 export default function useResumenNotasDiarias() {
-    const [resumenNotasDiarias, setResumenNotasDiarias] = useState([]);
+    const { data: resumenNotasDiarias, loading, refresh: fetchResumenNotasDiarias } =
+        useDashboardQuery("/notas-cv-diarias");
 
-    const fetchResumenNotasDiarias = useCallback(async () => {
-        try {
-            const response = await axios.get("/notas-cv-diarias", {});
-            setResumenNotasDiarias(response.data.data);
-        } catch (error) {
-            console.error("Error al cargar los datos:", error);
-        }
-    }, []);
-    useEffect(() => {
-        fetchResumenNotasDiarias();
-    }, [fetchResumenNotasDiarias]);
-
-    return { resumenNotasDiarias, fetchResumenNotasDiarias };
+    return { resumenNotasDiarias, loading, fetchResumenNotasDiarias };
 }

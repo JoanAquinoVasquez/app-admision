@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import useGrado from "../../data/dataGrados";
-import Spinner from "../../components/Spinner/Spinner"; // Spinner
+// import Spinner from "../../components/Spinner/Spinner"; // Spinner
 import { toast, Toaster } from "react-hot-toast";
 import {
     Modal,
@@ -23,6 +23,7 @@ import {
     DropdownItem,
     Chip,
     Pagination,
+    Spinner,
     user,
 } from "@nextui-org/react";
 import useInscripcionInhabilitada from "../../data/Inscripcion/dataInscripcionesInhabilitadas";
@@ -945,11 +946,7 @@ export default function App() {
                 <Toaster position="top-right" />
 
                 {/* Overlay de carga (solo se renderiza si loading es true) */}
-                {loading && (
-                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-[9999]">
-                        <Spinner label="Cargando..." />
-                    </div>
-                )}
+
                 <div className="flex flex-col">
                     {/* Botón inhabilitar */}
 
@@ -1144,6 +1141,8 @@ export default function App() {
                 emptyContent={"No se encontró inscripciones pendientes"}
                 items={items}
                 className="space-y-1" // Reducir espacio entre filas
+                isLoading={loading}
+                loadingContent={<Spinner label="Cargando..." />}
             >
                 {(item) => (
                     <TableRow

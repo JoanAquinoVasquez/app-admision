@@ -29,7 +29,7 @@ export default function Prospecto() {
                     <div className="overflow-hidden rounded-[2.5rem] shadow-2xl border border-gray-100">
                         <HeroSection
                             title="Prospecto Digital"
-                            subtitle="Todo lo que necesitas saber para tu Admisión 2025-I"
+                            subtitle={`Todo lo que necesitas saber para tu Admisión ${config.periodo}`}
                             image={banner_epg}
                         />
                     </div>

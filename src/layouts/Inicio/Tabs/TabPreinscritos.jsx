@@ -8,10 +8,12 @@ import useProgramaPreinscritos from "../../../data/Preinscripcion/dataProgramasP
 import useGrados from "../../../data/dataGrados";
 
 export default function TabPreinscripcion() {
-    const { preInscripciones } = usePreInscripcion();
-    const { programasPreinscritos } = useProgramaPreinscritos();
-    const { tablePreInscripcion } = useResumenTablePreInscripcion();
-    const { grados } = useGrados();
+    const { preInscripciones, loading: loadingSummary } = usePreInscripcion();
+    const { programasPreinscritos, loading: loadingDetail } =
+        useProgramaPreinscritos();
+    const { tablePreInscripcion, loading: loadingTable } =
+        useResumenTablePreInscripcion();
+    const { grados, loading: loadingGrados } = useGrados();
     return (
         <>
             {/* Descripción General - Todo el ancho */}
@@ -27,6 +29,7 @@ export default function TabPreinscripcion() {
                 <div className="mt-1">
                     <GraphicDetail
                         programasPreinscritos={programasPreinscritos ?? []}
+                        loading={loadingDetail}
                     />
                 </div>
             </div>
@@ -36,12 +39,14 @@ export default function TabPreinscripcion() {
                 <div className="lg:col-span-8">
                     <TablePreInscritos
                         resumenPreInscripcion={tablePreInscripcion ?? []}
+                        loading={loadingTable}
                     />
                 </div>
                 <div className="lg:col-span-4">
                     <GraphicSummary
                         preInscripciones={preInscripciones ?? []}
                         grados={grados ?? []}
+                        loading={loadingSummary || loadingGrados}
                     />
                 </div>
             </div>

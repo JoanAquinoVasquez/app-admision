@@ -758,13 +758,6 @@ export default function App() {
                 </Modal>
                 <Toaster position="top-right" />
                 {/* Overlay de carga (solo se renderiza si loading es true) */}
-                {loading && (
-                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-                        {" "}
-                        {/* z-index más alto que el modal */}
-                        <Spinner label={"Cargando..."} />
-                    </div>
-                )}
                 <div className="flex flex-wrap gap-4 w-full">
                     {/* Input de búsqueda */}
                     <div className="w-full sm:w-[60%] md:w-[18%]">
@@ -1020,6 +1013,8 @@ export default function App() {
                 emptyContent={"No se encontró información"}
                 items={items}
                 className="space-y-1" // Reducir espacio entre filas
+                isLoading={loading}
+                loadingContent={<Spinner label="Cargando..." />}
             >
                 {(item) => (
                     <TableRow

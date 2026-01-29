@@ -14,6 +14,7 @@ import {
     DropdownMenu,
     DropdownItem,
     Pagination,
+    Spinner,
 } from "@nextui-org/react";
 
 export const columns = [
@@ -99,7 +100,7 @@ const INITIAL_VISIBLE_COLUMNS = [
     "recaudación",
 ];
 
-export default function App({ resumenPreInscripcion }) {
+export default function App({ resumenPreInscripcion, loading }) {
     // ✅ Aseguramos que `resumenPreInscripcion` tenga datos antes de mapear
     const users = React.useMemo(() => {
         if (!resumenPreInscripcion || resumenPreInscripcion.length === 0) {
@@ -439,16 +440,18 @@ export default function App({ resumenPreInscripcion }) {
                                                 ? { width: "59px" }
                                                 : { width: "50px" } // Otras columnas
                             }
-                          className="text-xs"
+                            className="text-xs"
                             aria-label={column.name}
                             scope="col"
                         >
                             {column.name}
-                       </TableColumn>
+                        </TableColumn>
                     )}
                 </TableHeader>
                 <TableBody
-                    emptyContent = { "No se encontró información"}
+                    emptyContent={loading ? " " : "No se encontró información"}
+                    isLoading={loading}
+                    loadingContent={<Spinner label="Cargando..." />}
                     items={items}
                     className="space-y-1"
                 >
@@ -457,10 +460,10 @@ export default function App({ resumenPreInscripcion }) {
                             key={item.grado_programa}
                             className="p-1 text-sm leading-tight"
                         >
-                                  {(columnKey) => (
+                            {(columnKey) => (
                                 <TableCell className="p-1 text-sm">
                                     {renderCell(item, columnKey)}
-                                           </TableCell>
+                                </TableCell>
                             )}
                         </TableRow>
                     )}

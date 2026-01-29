@@ -167,11 +167,6 @@ function DocenteEvaluador() {
         <div className="container p-4 max-w-full">
             <Toaster position="top-right" />
             {/* Overlay de carga (solo se renderiza si loading es true) */}
-            {loading && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-                    <Spinner label={"Cargando..."} />
-                </div>
-            )}
             <div>
                 <Breadcrumb
                     paths={[

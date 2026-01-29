@@ -105,6 +105,17 @@ export default function Index() {
                         "/admision-epg/",
                     isActive: true,
                 };
+            case "STANDBY":
+                return {
+                    statusLabel: "Próximamente",
+                    statusColor: "default",
+                    title: "Próximamente",
+                    description:
+                        "Nos estamos preparando para el siguiente proceso de admisión 2026-I. Pronto más novedades.",
+                    buttonText: "Más información",
+                    buttonLink: "https://www.facebook.com/epgunprg", // Opcional: link a facebook o web principal
+                    isActive: false,
+                };
             case "FINALIZADO":
             default:
                 return {
@@ -231,29 +242,27 @@ export default function Index() {
 
                             <CardFooter className="flex justify-center pt-0 pb-2 px-4">
                                 {isInternal ? (
-                                    <RouterLink to={url}>
-                                        <Button
-                                            color="primary"
-                                            variant="shadow"
-                                            size="sm"
-                                        >
-                                            Ver más
-                                        </Button>
-                                    </RouterLink>
+                                    <Button
+                                        as={RouterLink}
+                                        to={url}
+                                        color="primary"
+                                        variant="shadow"
+                                        size="sm"
+                                    >
+                                        Ver más
+                                    </Button>
                                 ) : (
-                                    <a
+                                    <Button
+                                        as="a"
                                         href={url}
                                         target="_blank"
                                         rel="noopener noreferrer"
+                                        color="primary"
+                                        variant="shadow"
+                                        size="sm"
                                     >
-                                        <Button
-                                            color="primary"
-                                            variant="shadow"
-                                            size="sm"
-                                        >
-                                            Ver más
-                                        </Button>
-                                    </a>
+                                        Ver más
+                                    </Button>
                                 )}
                             </CardFooter>
                         </Card>

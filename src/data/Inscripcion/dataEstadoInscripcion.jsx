@@ -1,20 +1,9 @@
-import { useEffect, useState, useCallback } from "react";
-import axios from "../../axios";
+import { useEffect } from "react";
+import useDashboardQuery from "../../hooks/useDashboardQuery";
 
 export default function useEstadoInscripcion() {
-    const [estadoInscripcion, setEstadoInscripcion] = useState([]);
+    const { data: estadoInscripcion, loading, refresh: fetchEstadoInscripcion } =
+        useDashboardQuery("/estado-inscripcion");
 
-    const fetchEstadoInscripcion = useCallback(async () => {
-        try {
-            const response = await axios.get("/estado-inscripcion", {});
-            setEstadoInscripcion(response.data.data);
-        } catch (error) {
-            console.error("Error al cargar los estado inscripcion:", error);
-        }
-    }, []);
-    useEffect(() => {
-        fetchEstadoInscripcion();
-    }, [fetchEstadoInscripcion]);
-
-    return { estadoInscripcion, fetchEstadoInscripcion };
+    return { estadoInscripcion, loading, fetchEstadoInscripcion };
 }

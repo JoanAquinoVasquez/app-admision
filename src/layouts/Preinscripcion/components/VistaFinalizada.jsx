@@ -18,9 +18,19 @@ export const VistaFinalizada = ({ logoSrc }) => {
                     mensaje: "Hemos cerrado el registro de preinscripción para dar inicio a la inscripción.",
                     detalle: (
                         <span>
-                           Recuerda que si no pudiste preinscribirte, puedes inscribirte con normalidad.
+                            Recuerda que si no pudiste preinscribirte, puedes inscribirte con normalidad.
                         </span>
                     )
+                };
+            case "STANDBY":
+                return {
+                    color: "text-blue-700",
+                    bg: "bg-blue-50",
+                    border: "border-blue-200",
+                    icon: <MdInfoOutline className="text-blue-600" size={32} />,
+                    titulo: "Próximamente",
+                    mensaje: "Nos estamos preparando para el siguiente proceso de admisión.",
+                    detalle: "Mantente atento a nuestras redes sociales para más novedades."
                 };
             case "EVALUACION":
             case "RESULTADOS":
@@ -51,7 +61,7 @@ export const VistaFinalizada = ({ logoSrc }) => {
 
     return (
         <div className="flex flex-col items-center justify-center w-full h-full p-4 lg:p-8 text-center overflow-y-auto bg-transparent">
-            
+
             {/* 1. LOGO: Compacto para Laptop */}
             <div className="mb-6 group">
                 <img
@@ -69,7 +79,7 @@ export const VistaFinalizada = ({ logoSrc }) => {
                     </div>
                     <span className={`absolute inset-0 rounded-2xl animate-pulse opacity-20 ${content.bg}`}></span>
                 </div>
-                
+
                 <h2 className={`text-2xl lg:text-3xl font-black ${content.color} tracking-tight leading-tight max-w-md`}>
                     {content.titulo}
                 </h2>

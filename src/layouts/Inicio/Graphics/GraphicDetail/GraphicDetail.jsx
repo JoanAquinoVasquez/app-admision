@@ -73,25 +73,13 @@ CardComponent.propTypes = {
 };
 
 // PreInscritosCard
-const PreInscritosCard = ({ programasPreinscritos }) => {
-    // Si aún no hay datos, mostrar spinner
-    if (
-        !programasPreinscritos ||
-        Object.keys(programasPreinscritos).length === 0
-    ) {
-        return (
-            <div className="flex justify-center items-center h-40 bg-white rounded-lg shadow-md ">
-                <Spinner color="primary" size="md" />
-            </div>
-        );
-    }
-
+const PreInscritosCard = ({ programasPreinscritos, loading }) => {
     const {
         MAESTRIA = 0,
         DOCTORADO = 0,
         "SEGUNDA ESPECIALIDAD": SEGUNDA_ESPECIALIDAD = 0,
         TOTAL = 0,
-    } = programasPreinscritos;
+    } = programasPreinscritos || {};
 
     const cardData = [
         {
@@ -134,11 +122,17 @@ const PreInscritosCard = ({ programasPreinscritos }) => {
 
     return (
         <div className="bg-light flex flex-wrap justify-around pt-0 pb-2">
-            <div className="cards-docentes flex flex-wrap justify-center gap-6">
-                {cardData.map((card, index) => (
-                    <CardComponent key={index} {...card} />
-                ))}
-            </div>
+            {loading ? (
+                <div className="flex justify-center items-center h-40 w-full bg-white rounded-lg shadow-md ">
+                    <Spinner color="primary" size="md" label="Cargando resumen..." />
+                </div>
+            ) : (
+                <div className="cards-docentes flex flex-wrap justify-center gap-6">
+                    {cardData.map((card, index) => (
+                        <CardComponent key={index} {...card} />
+                    ))}
+                </div>
+            )}
         </div>
     );
 };

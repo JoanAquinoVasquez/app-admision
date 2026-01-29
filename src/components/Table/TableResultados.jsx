@@ -96,7 +96,7 @@ const INITIAL_VISIBLE_COLUMNS = [
     "promedio_nota",
 ];
 
-export default function TableResultados({ ingresantesPrograma, grados }) {
+export default function TableResultados({ ingresantesPrograma, grados, loading }) {
     // ✅ Aseguramos que `ingresantesPrograma` tenga datos antes de mapear
     const users = React.useMemo(() => {
         if (!ingresantesPrograma || ingresantesPrograma.length === 0) {
@@ -489,6 +489,8 @@ export default function TableResultados({ ingresantesPrograma, grados }) {
                         emptyContent={"No se encontró información"}
                         items={items}
                         className="space-y-1"
+                        isLoading={loading}
+                        loadingContent={<Spinner label="Cargando..." />}
                     >
                         {(item) => (
                             <TableRow

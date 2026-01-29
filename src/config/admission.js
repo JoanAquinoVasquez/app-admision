@@ -3,7 +3,7 @@ export const admissionConfig = {
         examen_admision: 'domingo 19 de Abril',
         inicio_conceptos: '27 de Abril al 03 de Mayo',
         periodo: '2026-I',
-        etapa_manual: 'FINALIZADO', // Valores: 'PREINSCRIPCION', 'INSCRIPCION', 'CERRADO', o null
+        etapa_manual: 'STANDBY', // Valores: 'PREINSCRIPCION', 'INSCRIPCION', 'CERRADO', 'STANDBY' o null
         fechas_control: {
             // Preinscripción
             inicio_preinscripcion: '2025-01-19',

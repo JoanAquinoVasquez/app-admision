@@ -45,13 +45,7 @@ const ResumenAdmision = ({ resumenGeneral }) => {
 
     const resumen = calcularResumen();
 
-    if (!resumen || resumenes.length === 0) {
-        return (
-            <div className="flex items-center justify-center h-[425px]">
-                <p className="text-gray-500">No hay datos disponibles</p>
-            </div>
-        );
-    }
+
 
     const {
         inscritos,
@@ -63,7 +57,7 @@ const ResumenAdmision = ({ resumenGeneral }) => {
         ingresantes,
     } = resumen;
 
-    const total = inscritos || 1; // evitar división por 0
+    const total = inscritos || 0;
 
     const data = {
         labels: [
@@ -104,7 +98,7 @@ const ResumenAdmision = ({ resumenGeneral }) => {
                 callbacks: {
                     label: function (context) {
                         const value = context.raw;
-                        const percentage = ((value / total) * 100).toFixed(1);
+                        const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : "0.0";
                         return `Distribución: ${value} (${percentage}%)`;
                     },
                 },

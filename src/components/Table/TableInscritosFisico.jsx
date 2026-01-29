@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import useGrado from "../../data/dataGrados";
-import Spinner from "../Spinner/Spinner"; // Spinner
+// import Spinner from "../Spinner/Spinner"; // Spinner
 import { toast, Toaster } from "react-hot-toast";
 import { FormControl, Box } from "@mui/material";
 import {
@@ -26,6 +26,7 @@ import {
     Radio,
     RadioGroup,
     Pagination,
+    Spinner,
 } from "@nextui-org/react";
 import useInscripcion from "../../data/Inscripcion/dataInscripcion";
 import Typography from "@mui/material/Typography";
@@ -869,12 +870,6 @@ export default function App() {
                     onClose={() => setIsEditarOpen(false)} // 🔴 Agregar esta línea
                 >
                     <ModalContent>
-                        {loadingEditar && (
-                            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-20 z-50">
-                                {/* z-index más alto que el modal */}
-                                <Spinner label={"Cargando..."} />
-                            </div>
-                        )}
                         <ModalHeader className="flex flex-col gap-1">
                             Editar Inscripción
                         </ModalHeader>
@@ -1476,11 +1471,7 @@ export default function App() {
                 <Toaster position="top-right" />
 
                 {/* Overlay de carga (solo se renderiza si loading es true) */}
-                {loading && (
-                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-20 z-50">
-                        <Spinner label={"Cargando..."} />
-                    </div>
-                )}
+
                 <div className="flex flex-col gap-4">
                     {/* Fila de filtros y búsqueda */}
                     <div className="grid grid-cols-1 md:grid-cols-6 gap-4 w-full">
@@ -1740,6 +1731,8 @@ export default function App() {
                 emptyContent={"No se encontró postulantes"}
                 items={items}
                 className="space-y-1" // Reducir espacio entre filas
+                isLoading={dataLoading || loading}
+                loadingContent={<Spinner label="Cargando..." />}
             >
                 {(item) => (
                     <TableRow

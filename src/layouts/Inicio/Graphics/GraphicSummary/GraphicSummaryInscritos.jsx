@@ -25,7 +25,7 @@ import DashboardCard from "../../../../components/Cards/DashboardCard";
 export function capitalize(s) {
     return s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : "";
 }
-export default function GraphicSummaryInscritos({ inscripciones }) {
+export default function GraphicSummaryInscritos({ inscripciones, loading }) {
     const [selectedGrados, setSelectedGrados] = useState(new Set()); // Cambiado a Set
     const [showAccumulated, setShowAccumulated] = useState(false); // Estado para mostrar acumulados
 
@@ -246,7 +246,11 @@ export default function GraphicSummaryInscritos({ inscripciones }) {
                     </div>
 
                     <div className="flex items-center justify-between w-auto h-auto ml-[-40px]">
-                        {inscripciones.length === 0 ? (
+                        {loading ? (
+                            <div className="flex items-center justify-center ml-[60px] w-full h-[400px]">
+                                <Spinner color="primary" label="Cargando gráfico..." />
+                            </div>
+                        ) : inscripciones.length === 0 ? (
                             <div className="flex items-center justify-center ml-[60px] w-full h-[400px]">
                                 <p className="text-gray-500">No hay datos disponibles</p>
                             </div>
