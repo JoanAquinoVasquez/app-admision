@@ -72,6 +72,22 @@ function InscripcionForm({ datosPago }) {
         if (!programa_id || !grado_id) return "Selecciona un grado y programa.";
         if (!formData.tipo_doc || !formData.sexo)
             return "Completa todos los datos personales.";
+
+        if (formData.fecha_nacimiento) {
+            const birth = new Date(formData.fecha_nacimiento);
+            const today = new Date();
+            let age = today.getFullYear() - birth.getFullYear();
+            const m = today.getMonth() - birth.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+                age--;
+            }
+            if (age < 15 || age > 99) {
+                return "La edad debe estar entre 15 y 99 años.";
+            }
+        } else {
+            return "Ingresa tu fecha de nacimiento.";
+        }
+
         if (!direccion) return "Debes ingresar una dirección.";
         if (!Object.values(files).every(Boolean))
             return "Sube todos los archivos requeridos.";

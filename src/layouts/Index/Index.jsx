@@ -77,7 +77,7 @@ export default function Index() {
                     statusColor: "success",
                     title: "Inscripciones Abiertas",
                     description:
-                        "El proceso de inscripción está activo. Completa tu registro y realiza el pago correspondiente.",
+                        `No dejes pasar esta oportunidad, disponible hasta el ${config.fecha_fin_inscricion}`,
                     buttonText: "Inscribirse Ahora",
                     buttonLink: "/admision-epg/inscripcion", // Ruta interna o link externo
                     isActive: true,

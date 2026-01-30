@@ -72,7 +72,7 @@ function Login() {
                                     ¡Bienvenido!
                                 </h3>
                                 <p className="text-gray-500 text-[11px] sm:text-xs leading-tight">
-                                    Inicia sesión con tu cuenta institucional <br className="hidden sm:block" /> para continuar con tu proceso.
+                                    Inicia sesión con tu cuenta institucional.
                                 </p>
                             </div>
 

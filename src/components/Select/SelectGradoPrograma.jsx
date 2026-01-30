@@ -17,7 +17,7 @@ const SelectGradoPrograma = ({
     useEffect(() => {
         if (gradoId && Array.isArray(programas)) {
             setFilteredProgramas(
-                programas.filter((p) => p.grado_id == gradoId && p.estado === 1)
+                programas.filter((p) => p.grado_id == gradoId)
             );
         } else {
             setFilteredProgramas([]);

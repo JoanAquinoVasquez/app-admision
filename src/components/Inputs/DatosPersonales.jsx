@@ -187,7 +187,6 @@ const FormularioUsuario = ({ defaultValues = {}, onChange }) => {
                     name="fecha_nacimiento"
                     value={fecha_nacimiento ? fecha_nacimiento : ""}
                     type="date"
-                    isAgeField={true}
                     isRequired={true}
                     onChange={(e) => {
                         setFecha_nacimiento(e.target.value);

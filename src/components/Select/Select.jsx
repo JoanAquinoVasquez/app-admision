@@ -115,7 +115,11 @@ const Select = ({
     };
 
     // Selecciona una opción del desplegable
-    const handleSelectOption = (option) => {
+    const handleSelectOption = (option, event) => {
+        if (event) {
+            event.stopPropagation();
+            event.preventDefault();
+        }
         setSearchValue(option.textValue);
         setIsDropdownOpen(false);
         setIsItemSelected(true); // Marcar como seleccionado solo al hacer clic
@@ -230,7 +234,7 @@ const Select = ({
                         {filteredOptions.map((item) => (
                             <li
                                 key={item.key}
-                                onClick={() => handleSelectOption(item)}
+                                onClick={(e) => handleSelectOption(item, e)}
                                 className="p-2 mx-2 my-1 hover:bg-gray-100 cursor-pointer text-sm rounded-lg transition-colors"
                             >
                                 {item.textValue}
