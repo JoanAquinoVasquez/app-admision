@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import useGrado from "../../data/dataGrados";
 // import Spinner from "../../components/Spinner/Spinner"; // Spinner
-import { toast, Toaster } from "react-hot-toast";
+import { toast } from "react-hot-toast";
 import {
     Modal,
     ModalContent,
@@ -155,7 +155,7 @@ const INITIAL_VISIBLE_COLUMNS = [
 export default function App() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [message, setMessage] = useState("");
-    const { inscripcionesInhabilitadas, fetchInscripcionesInhabilitadas } =
+    const { inscripcionesInhabilitadas, fetchInscripcionesInhabilitadas, loading: dataLoading } =
         useInscripcionInhabilitada();
     const [isValidarOpen, setIsValidarOpen] = useState(false);
     const [validarId, setValidarId] = useState(null);
@@ -168,7 +168,7 @@ export default function App() {
     } = useProgramasHabilitados();
 
     const { grados, fetchGrados } = useGrado();
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(false); // local loading for actions
     const { gradosPosibles, programasPosibles, fetchProgramasPosibles } =
         useProgramasPosibles(validarId || null);
     const [selectedGrado, setSelectedGrado] = useState(null);
@@ -735,218 +735,6 @@ export default function App() {
     const topContent = useMemo(() => {
         return (
             <>
-                <ModalConfirm
-                    isOpen={isValidarOpen || isDevolucionOpen}
-                    onClose={() => {
-                        setIsValidarOpen(false);
-                        setIsDevolucionOpen(false);
-                    }}
-                    onConfirm={() => {
-                        if (message.includes("Confirma la reserva")) {
-                            handleValidarReserva(validarId);
-                        } else if (message.includes("Confirma la devolución")) {
-                            handleValidarDevolucion(validarId);
-                        } else if (message.includes("cancelar la reserva")) {
-                            handleCancelarReserva(validarId);
-                        } else if (message.includes("cancelar la devolución")) {
-                            handleCancelarDevolucion(validarId);
-                        }
-                    }}
-                    message={message}
-                ></ModalConfirm>
-
-                <Modal
-                    size="3xl"
-                    isOpen={isCambioOpen}
-                    onOpenChange={setIsCambioOpen}
-                >
-                    <ModalContent style={{ height: "40vh" }}>
-                        <ModalHeader>Cambiar Programa</ModalHeader>
-                        <ModalBody>
-                            {/* Contenedor con display flex para organizar verticalmente */}
-                            <SelectGradoPrograma
-                                grados={gradosPosibles ?? []}
-                                programas={programasPosibles ?? []}
-                                onChangeGrado={setSelectedGrado}
-                                onChangePrograma={setSelectedPrograma}
-                            />
-                        </ModalBody>
-                        <ModalFooter>
-                            <Button
-                                color="primary"
-                                onPress={() => handleObservarCambio(validarId)}
-                            >
-                                Cambiar
-                            </Button>
-                            <Button
-                                color="default"
-                                onPress={() => setIsCambioOpen(false)}
-                            >
-                                Cancelar
-                            </Button>
-                        </ModalFooter>
-                    </ModalContent>
-                </Modal>
-
-                <Modal
-                    size="2xl"
-                    isOpen={isModalOpen}
-                    onOpenChange={setIsModalOpen}
-                >
-                    <ModalContent>
-                        {(onClose) => (
-                            <>
-                                <ModalHeader>Inhabilitar Programa</ModalHeader>
-                                <ModalBody>
-                                    {/* Select Grado Académico */}
-                                    <Select
-                                        label="Grado Académico"
-                                        variant="flat"
-                                        className="w-full h-12 text-sm"
-                                        defaultItems={grados.map((item) => ({
-                                            key: item.id, // mantiene key como número si tu componente lo acepta así
-                                            textValue: item.nombre,
-                                            ...item,
-                                        }))}
-                                        selectedKey={
-                                            gradoFilter !== "all"
-                                                ? gradoFilter
-                                                : null
-                                        }
-                                        onSelectionChange={(grado_id) => {
-                                            if (grado_id === null) {
-                                                setGradoFilter("all");
-                                                setProgramaFilter("all");
-                                            } else {
-                                                setGradoFilter(grado_id); // grado_id ya es el key exacto
-                                                setProgramaFilter("all");
-                                            }
-                                        }}
-                                    />
-
-                                    <div className="flex flex-col gap-2">
-                                        <p className="font-bold">
-                                            Programas Disponibles:
-                                        </p>
-
-                                        {gradoFilter === "all" ? (
-                                            // Si no se ha seleccionado un grado, mostrar este mensaje
-                                            <p className="text-gray-500">
-                                                Seleccione un grado para
-                                                continuar.
-                                            </p>
-                                        ) : currentProgramas.length > 0 ? (
-                                            // Si hay programas disponibles, mostrarlos
-                                            <>
-                                                <ul className="pl-5 space-y-2">
-                                                    {currentProgramas.map(
-                                                        (item) => (
-                                                            <li
-                                                                key={item.id}
-                                                                className="text-sm text-gray-700"
-                                                            >
-                                                                <Checkbox
-                                                                    id={`programa-${item.id}`}
-                                                                    name={`programa-${item.id}`}
-                                                                    isSelected={selectedProgramas.includes(
-                                                                        item.id
-                                                                    )}
-                                                                    onChange={() =>
-                                                                        handleProgramSelection(
-                                                                            item.id
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    {item.nombre +
-                                                                        " (" +
-                                                                        item.inscripciones_count +
-                                                                        " inscritos)"}
-                                                                </Checkbox>
-                                                            </li>
-                                                        )
-                                                    )}
-                                                </ul>
-
-                                                {/* Paginación (solo si hay más de una página) */}
-                                                {totalPages > 1 && (
-                                                    <div className="flex items-center justify-center mt-2 space-x-2">
-                                                        <Button
-                                                            isDisabled={
-                                                                currentPage ===
-                                                                1
-                                                            }
-                                                            onPress={() =>
-                                                                setCurrentPage(
-                                                                    (prev) =>
-                                                                        prev - 1
-                                                                )
-                                                            }
-                                                            className="px-3 py-1 text-sm"
-                                                        >
-                                                            Anterior
-                                                        </Button>
-
-                                                        <span className="text-sm font-medium">
-                                                            Página {currentPage}{" "}
-                                                            de {totalPages}
-                                                        </span>
-
-                                                        <Button
-                                                            isDisabled={
-                                                                currentPage >=
-                                                                totalPages
-                                                            }
-                                                            onPress={() =>
-                                                                setCurrentPage(
-                                                                    (prev) =>
-                                                                        prev + 1
-                                                                )
-                                                            }
-                                                            className="px-3 py-1 text-sm"
-                                                        >
-                                                            Siguiente
-                                                        </Button>
-                                                    </div>
-                                                )}
-                                            </>
-                                        ) : (
-                                            // Si no hay programas disponibles, mostrar este mensaje
-                                            <p className="text-gray-500">
-                                                No quedan programas disponibles.
-                                            </p>
-                                        )}
-                                    </div>
-                                </ModalBody>
-                                <ModalFooter>
-                                    <Button
-                                        color="danger"
-                                        name="inhabilitar"
-                                        disabled={!selectedProgramas.length}
-                                        onPress={() =>
-                                            inhabilitarProgramas(
-                                                selectedProgramas
-                                            )
-                                        }
-                                    >
-                                        Inhabilitar
-                                    </Button>
-                                    <Button
-                                        color="default"
-                                        onPress={onClose}
-                                        aria-label="Cancelar"
-                                    >
-                                        Cancelar
-                                    </Button>
-                                </ModalFooter>
-                            </>
-                        )}
-                    </ModalContent>
-                </Modal>
-
-                <Toaster position="top-right" />
-
-                {/* Overlay de carga (solo se renderiza si loading es true) */}
-
                 <div className="flex flex-col">
                     {/* Botón inhabilitar */}
 
@@ -1071,15 +859,21 @@ export default function App() {
             </>
         );
     }, [
-        [
-            filterValue,
-            onSearchChange,
-            statusFilter,
-            visibleColumns,
-            onRowsPerPageChange,
-            onClear,
-            users.length,
-        ],
+        filterValue,
+        onSearchChange,
+        statusFilter,
+        visibleColumns,
+        onRowsPerPageChange,
+        onClear,
+        users.length,
+        grado_id,
+        programa_id,
+        grados,
+        programasInhabilitados,
+        gradoFilter,
+        currentProgramas,
+        currentPage,
+        totalPages,
     ]);
 
     const bottomContent = useMemo(
@@ -1102,61 +896,268 @@ export default function App() {
     );
 
     return (
-        <Table
-            aria-label="Tabla de postulantes con inscripciones pendientes"
-            layout="auto"
-            isHeaderSticky
-            bottomContent={bottomContent}
-            bottomContentPlacement="outside"
-            classNames={{
-                wrapper: "max-h-auto overflow-auto w-full p-4", // Ajustar tamaño y eliminar márgenes
-            }}
-            selectedKeys={selectedKeys}
-            sortDescriptor={sortDescriptor}
-            topContent={topContent}
-            topContentPlacement="outside"
-            onSelectionChange={setSelectedKeys}
-            onSortChange={setSortDescriptor}
-        >
-            <TableHeader columns={headerColumns}>
-                {(column) => (
-                    <TableColumn
-                        key={column.uid}
-                        align={
-                            column.uid === "nombre_completo" ||
-                                column.uid === "grado"
-                                ? "start"
-                                : "center"
-                        }
-                        allowsSorting={column.sortable}
-                        className="p-1 text-sm" // Reducir padding y tamaño de fuente
-                        aria-label={column.name}
-                        scope="col"
-                    >
-                        {column.name}
-                    </TableColumn>
-                )}
-            </TableHeader>
-            <TableBody
-                emptyContent={"No se encontró inscripciones pendientes"}
-                items={items}
-                className="space-y-1" // Reducir espacio entre filas
-                isLoading={loading}
-                loadingContent={<Spinner label="Cargando..." />}
+        <>
+            <ModalConfirm
+                isOpen={isValidarOpen || isDevolucionOpen}
+                onClose={() => {
+                    setIsValidarOpen(false);
+                    setIsDevolucionOpen(false);
+                }}
+                isDismissable={false}
+                onConfirm={() => {
+                    if (message.includes("Confirma la reserva")) {
+                        handleValidarReserva(validarId);
+                    } else if (message.includes("Confirma la devolución")) {
+                        handleValidarDevolucion(validarId);
+                    } else if (message.includes("cancelar la reserva")) {
+                        handleCancelarReserva(validarId);
+                    } else if (message.includes("cancelar la devolución")) {
+                        handleCancelarDevolucion(validarId);
+                    }
+                }}
+                message={message}
+            ></ModalConfirm>
+
+            <Modal
+                size="3xl"
+                isOpen={isCambioOpen}
+                onOpenChange={setIsCambioOpen}
+                isDismissable={false}
             >
-                {(item) => (
-                    <TableRow
-                        key={`${item.id}`}
-                        className="p-1 text-sm leading-tight"
-                    >
-                        {(columnKey) => (
-                            <TableCell className="p-1 text-sm">
-                                {renderCell(item, columnKey)}
-                            </TableCell>
-                        )}
-                    </TableRow>
-                )}
-            </TableBody>
-        </Table>
+                <ModalContent style={{ height: "40vh" }}>
+                    <ModalHeader>Cambiar Programa</ModalHeader>
+                    <ModalBody>
+                        <SelectGradoPrograma
+                            grados={gradosPosibles ?? []}
+                            programas={programasPosibles ?? []}
+                            onChangeGrado={setSelectedGrado}
+                            onChangePrograma={setSelectedPrograma}
+                        />
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button
+                            color="primary"
+                            onPress={() => handleObservarCambio(validarId)}
+                        >
+                            Cambiar
+                        </Button>
+                        <Button
+                            color="default"
+                            onPress={() => setIsCambioOpen(false)}
+                        >
+                            Cancelar
+                        </Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
+
+            <Modal
+                size="2xl"
+                isOpen={isModalOpen}
+                onOpenChange={setIsModalOpen}
+                isDismissable={false}
+            >
+                <ModalContent>
+                    {(onClose) => (
+                        <>
+                            <ModalHeader>Inhabilitar Programa</ModalHeader>
+                            <ModalBody>
+                                <Select
+                                    label="Grado Académico"
+                                    variant="flat"
+                                    className="w-full h-12 text-sm"
+                                    defaultItems={grados.map((item) => ({
+                                        key: item.id,
+                                        textValue: item.nombre,
+                                        ...item,
+                                    }))}
+                                    selectedKey={
+                                        gradoFilter !== "all"
+                                            ? gradoFilter
+                                            : null
+                                    }
+                                    onSelectionChange={(grado_id) => {
+                                        if (grado_id === null) {
+                                            setGradoFilter("all");
+                                            setProgramaFilter("all");
+                                        } else {
+                                            setGradoFilter(grado_id);
+                                            setProgramaFilter("all");
+                                        }
+                                    }}
+                                />
+
+                                <div className="flex flex-col gap-2">
+                                    <p className="font-bold">
+                                        Programas Disponibles:
+                                    </p>
+
+                                    {gradoFilter === "all" ? (
+                                        <p className="text-gray-500">
+                                            Seleccione un grado para
+                                            continuar.
+                                        </p>
+                                    ) : currentProgramas.length > 0 ? (
+                                        <>
+                                            <ul className="pl-5 space-y-2">
+                                                {currentProgramas.map(
+                                                    (item) => (
+                                                        <li
+                                                            key={item.id}
+                                                            className="text-sm text-gray-700"
+                                                        >
+                                                            <Checkbox
+                                                                id={`programa-${item.id}`}
+                                                                name={`programa-${item.id}`}
+                                                                isSelected={selectedProgramas.includes(
+                                                                    item.id
+                                                                )}
+                                                                onChange={() =>
+                                                                    handleProgramSelection(
+                                                                        item.id
+                                                                    )
+                                                                }
+                                                            >
+                                                                {item.nombre +
+                                                                    " (" +
+                                                                    item.inscripciones_count +
+                                                                    " inscritos)"}
+                                                            </Checkbox>
+                                                        </li>
+                                                    )
+                                                )}
+                                            </ul>
+
+                                            {totalPages > 1 && (
+                                                <div className="flex items-center justify-center mt-2 space-x-2">
+                                                    <Button
+                                                        isDisabled={
+                                                            currentPage ===
+                                                            1
+                                                        }
+                                                        onPress={() =>
+                                                            setCurrentPage(
+                                                                (prev) =>
+                                                                    prev - 1
+                                                            )
+                                                        }
+                                                        className="px-3 py-1 text-sm"
+                                                    >
+                                                        Anterior
+                                                    </Button>
+
+                                                    <span className="text-sm font-medium">
+                                                        Página {currentPage}{" "}
+                                                        de {totalPages}
+                                                    </span>
+
+                                                    <Button
+                                                        isDisabled={
+                                                            currentPage >=
+                                                            totalPages
+                                                        }
+                                                        onPress={() =>
+                                                            setCurrentPage(
+                                                                (prev) =>
+                                                                    prev + 1
+                                                            )
+                                                        }
+                                                        className="px-3 py-1 text-sm"
+                                                    >
+                                                        Siguiente
+                                                    </Button>
+                                                </div>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <p className="text-gray-500">
+                                            No quedan programas disponibles.
+                                        </p>
+                                    )}
+                                </div>
+                            </ModalBody>
+                            <ModalFooter>
+                                <Button
+                                    color="danger"
+                                    name="inhabilitar"
+                                    disabled={!selectedProgramas.length}
+                                    onPress={() =>
+                                        inhabilitarProgramas(
+                                            selectedProgramas
+                                        )
+                                    }
+                                >
+                                    Inhabilitar
+                                </Button>
+                                <Button
+                                    color="default"
+                                    onPress={onClose}
+                                    aria-label="Cancelar"
+                                >
+                                    Cancelar
+                                </Button>
+                            </ModalFooter>
+                        </>
+                    )}
+                </ModalContent>
+            </Modal>
+
+            <Table
+                aria-label="Tabla de postulantes con inscripciones pendientes"
+                layout="auto"
+                isHeaderSticky
+                bottomContent={bottomContent}
+                bottomContentPlacement="outside"
+                classNames={{
+                    wrapper: "max-h-auto overflow-auto w-full p-4", // Ajustar tamaño y eliminar márgenes
+                }}
+                selectedKeys={selectedKeys}
+                sortDescriptor={sortDescriptor}
+                topContent={topContent}
+                topContentPlacement="outside"
+                onSelectionChange={setSelectedKeys}
+                onSortChange={setSortDescriptor}
+            >
+                <TableHeader columns={headerColumns}>
+                    {(column) => (
+                        <TableColumn
+                            key={column.uid}
+                            align={
+                                column.uid === "nombre_completo" ||
+                                    column.uid === "grado"
+                                    ? "start"
+                                    : "center"
+                            }
+                            allowsSorting={column.sortable}
+                            className="p-1 text-sm" // Reducir padding y tamaño de fuente
+                            aria-label={column.name}
+                            scope="col"
+                        >
+                            {column.name}
+                        </TableColumn>
+                    )}
+                </TableHeader>
+                <TableBody
+                    emptyContent={(dataLoading || loading) ? <Spinner label="Cargando..." /> : "No se encontró inscripciones pendientes"}
+                    items={items}
+                    className="space-y-1" // Reducir espacio entre filas
+                    isLoading={dataLoading || loading}
+                    loadingContent={<Spinner label="Cargando..." />}
+                >
+                    {(item) => (
+                        <TableRow
+                            key={`${item.id}`}
+                            className="p-1 text-sm leading-tight"
+                        >
+                            {(columnKey) => (
+                                <TableCell className="p-1 text-sm">
+                                    {renderCell(item, columnKey)}
+                                </TableCell>
+                            )}
+                        </TableRow>
+                    )}
+                </TableBody>
+            </Table>
+        </>
     );
 }

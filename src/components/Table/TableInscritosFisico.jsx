@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import useGrado from "../../data/dataGrados";
 // import Spinner from "../Spinner/Spinner"; // Spinner
-import { toast, Toaster } from "react-hot-toast";
+import { toast } from "react-hot-toast";
 import { FormControl, Box } from "@mui/material";
 import {
     Modal,
@@ -854,624 +854,6 @@ export default function App() {
     const topContent = useMemo(() => {
         return (
             <>
-                <ModalConfirm
-                    isOpen={isValidarOpen}
-                    onClose={() => setIsValidarOpen(false)}
-                    onConfirm={() => handleValidar(validarId)}
-                    message="¿Confirma la validación física? Esta acción es irreversible y se asumirá que se entregó carnet al postulante."
-                />
-
-                <Modal
-                    backdrop="opaque"
-                    isOpen={isEditarOpen}
-                    placement="center"
-                    size="5xl"
-                    scrollBehavior="inside"
-                    onClose={() => setIsEditarOpen(false)} // 🔴 Agregar esta línea
-                >
-                    <ModalContent>
-                        <ModalHeader className="flex flex-col gap-1">
-                            Editar Inscripción
-                        </ModalHeader>
-
-                        <ModalBody>
-                            <form
-                            // onSubmit={handleSubmitEditar}
-                            >
-                                <h3 className="font-bold">
-                                    Seleccionar Grado y Programa a postular
-                                </h3>
-                                <Box
-                                    sx={{
-                                        display: "grid",
-                                        gap: 2,
-                                        gridTemplateColumns: {
-                                            xs: "1fr",
-                                            md: "1fr 3fr",
-                                        },
-                                        mb: 2,
-                                    }}
-                                >
-                                    {/* Grado y Programa */}
-                                    <FormControl>
-                                        <Select
-                                            label="Grado Académico"
-                                            variant="flat"
-                                            className="w-30"
-                                            isRequired={true}
-                                            value={grado_id ? grado_id : ""} // Usar string en value
-                                            defaultItems={gradosPosibles.map(
-                                                (item) => ({
-                                                    key: item.id.toString(),
-                                                    textValue: item.nombre,
-                                                    ...item,
-                                                })
-                                            )}
-                                            selectedKey={
-                                                grado_id
-                                                    ? grado_id.toString()
-                                                    : null
-                                            } // Usar string en selectedKey
-                                            onSelectionChange={(grado_id) => {
-                                                setGrado_id(grado_id); // Actualiza el estado
-                                                setPrograma_id(null); // Limpiar programa seleccionado
-                                                handleChange(
-                                                    "grado_id",
-                                                    grado_id
-                                                ); // Verifica si cambió
-                                            }}
-                                        />
-                                    </FormControl>
-
-                                    <FormControl fullWidth>
-                                        <Select
-                                            label="Programa"
-                                            className="w-full"
-                                            defaultItems={programasFiltrados.map(
-                                                (item) => ({
-                                                    key: item.id.toString(),
-                                                    textValue: item.nombre,
-                                                    ...item,
-                                                })
-                                            )}
-                                            value={
-                                                programa_id ? programa_id : ""
-                                            } // Esto asegura que se pase un valor vacío si programa_id es null
-                                            selectedKey={
-                                                programa_id
-                                                    ? programa_id.toString()
-                                                    : null
-                                            } // Esto asegura que el programa seleccionado sea el actual
-                                            onSelectionChange={(programaId) => {
-                                                setPrograma_id(programaId); // Actualiza el estado
-                                                handleChange(
-                                                    "programa_id",
-                                                    programaId
-                                                ); // Verifica si cambió
-                                            }}
-                                            isRequired={true}
-                                            disabled={!grado_id} // Deshabilitar select de programa si no hay grado seleccionado
-                                        />
-                                    </FormControl>
-                                </Box>
-                                <h3 className="font-bold mb-2">
-                                    Datos personales
-                                </h3>
-                                <Box
-                                    sx={{
-                                        display: "grid",
-                                        gap: 2,
-                                        gridTemplateColumns: {
-                                            xs: "1fr",
-                                            md: "2fr 2fr 2fr 2fr 2fr",
-                                        },
-                                        mb: 2,
-                                    }}
-                                >
-                                    <Select
-                                        label="Tipo de Documento"
-                                        variant="flat"
-                                        className="w-30"
-                                        disabled={true}
-                                        value={
-                                            tipo_documento
-                                                ? tipo_documento.toString
-                                                : null
-                                        }
-                                        isRequired={true}
-                                        defaultItems={tipo_doc.map((item) => ({
-                                            key: item.nombre.toString(),
-                                            textValue: item.nombre,
-                                            ...item,
-                                        }))}
-                                        selectedKey={
-                                            tipo_documento
-                                                ? tipo_documento.toString()
-                                                : null
-                                        }
-                                    />
-
-                                    <Input
-                                        label={`Número de ${tipo_doc.find(
-                                            (item) =>
-                                                item.nombre ==
-                                                tipo_documento
-                                        )?.nombre ||
-                                            "Documento de Identidad"
-                                            }`}
-                                        name="num_iden"
-                                        optiondisable={true}
-                                        value={num_iden ? num_iden : ""}
-                                        disabled={true}
-                                        isRequired={true}
-                                        maxLength={
-                                            tipo_documento == "DNI" ? 8 : 20
-                                        } // Máximo de caracteres según el tipo de documento
-                                        onlyNumbers={true}
-                                    />
-
-                                    <Input
-                                        label="Nombres"
-                                        name="nombres"
-                                        value={nombres ? nombres : ""}
-                                        isRequired={true}
-                                        maxLength={50} // Máximo de caracteres según el tipo de documento
-                                        onlyLetters={true}
-                                        onChange={(e) => {
-                                            setNombres(e.target.value);
-                                            handleChange(
-                                                "nombres",
-                                                e.target.value
-                                            );
-                                        }}
-                                    />
-
-                                    <Input
-                                        label="Apellido Paterno"
-                                        name="ap_paterno"
-                                        value={ap_paterno ? ap_paterno : ""}
-                                        isRequired={true}
-                                        maxLength={50} // Máximo de caracteres según el tipo de documento
-                                        onlyLetters={true}
-                                        onChange={(e) => {
-                                            setAp_paterno(e.target.value);
-                                            handleChange(
-                                                "ap_paterno",
-                                                e.target.value
-                                            );
-                                        }}
-                                    />
-
-                                    <Input
-                                        label="Apellido Materno"
-                                        name="ap_materno"
-                                        value={ap_materno ? ap_materno : ""}
-                                        isRequired={true}
-                                        maxLength={50} // Máximo de caracteres según el tipo de documento
-                                        onlyLetters={true}
-                                        onChange={(e) => {
-                                            setAp_materno(e.target.value);
-                                            handleChange(
-                                                "ap_materno",
-                                                e.target.value
-                                            );
-                                        }}
-                                    />
-                                </Box>
-                                <Box
-                                    sx={{
-                                        display: "grid",
-                                        gap: 2,
-                                        gridTemplateColumns: {
-                                            xs: "1fr",
-                                            md: "4fr 2fr 2fr 1fr",
-                                        },
-                                        mb: 2,
-                                    }}
-                                >
-                                    <Input
-                                        label="Correo Electrónico"
-                                        name="email"
-                                        value={email ? email : ""}
-                                        isRequired={true}
-                                        maxLength={50} // Máximo de caracteres según el tipo de documento
-                                        onChange={(e) => {
-                                            setEmail(e.target.value);
-                                            handleChange(
-                                                "email",
-                                                e.target.value
-                                            );
-                                        }}
-                                        type={"email"}
-                                    />
-                                    <Input
-                                        label="Celular"
-                                        name="celular"
-                                        value={celular ? celular : ""}
-                                        isRequired={true}
-                                        maxLength={9} // Máximo de caracteres según el tipo de documento
-                                        onlyNumbers={true}
-                                        onChange={(e) => {
-                                            setCelular(e.target.value);
-                                            handleChange(
-                                                "celular",
-                                                e.target.value
-                                            );
-                                        }}
-                                    />
-
-                                    <Input
-                                        label="Fecha de Nacimiento"
-                                        value={
-                                            fecha_nacimiento
-                                                ? fecha_nacimiento
-                                                : ""
-                                        }
-                                        type="date"
-                                        isAgeField={true}
-                                        isRequired={true}
-                                        onChange={(e) => {
-                                            setFecha_nacimiento(e.target.value);
-                                            handleChange(
-                                                "fecha_nacimiento",
-                                                e.target.value
-                                            );
-                                        }}
-                                    />
-
-                                    <RadioGroup
-                                        isRequired
-                                        value={sexo ? sexo : null} // Manejo explícito de null
-                                        onChange={(e) => {
-                                            setSexo(e.target.value);
-                                            handleChange(
-                                                "sexo",
-                                                e.target.value
-                                            );
-                                        }}
-                                        orientation="horizontal"
-                                        classNames={{
-                                            wrapper: "gap-1",
-                                        }}
-                                    >
-                                        <Radio value="M">Masculino</Radio>
-                                        <Radio value="F">Femenino</Radio>
-                                    </RadioGroup>
-                                </Box>
-                                <h3 className="font-bold mb-2">
-                                    Lugar de Residencia
-                                </h3>
-                                <Box
-                                    sx={{
-                                        display: "grid",
-                                        gap: 2,
-                                        gridTemplateColumns: {
-                                            xs: "1fr",
-                                            md: "1fr 1fr 1fr",
-                                        },
-                                        mb: 2,
-                                    }}
-                                >
-                                    <Select
-                                        label="Departamento"
-                                        isRequired={true}
-                                        className="flex-1 min-w-200"
-                                        selectedKey={
-                                            departamento_id
-                                                ? departamento_id.toString()
-                                                : ""
-                                        }
-                                        value={
-                                            departamento_id
-                                                ? departamento_id
-                                                : ""
-                                        }
-                                        defaultItems={departamentos.map(
-                                            (item) => ({
-                                                key: item.id.toString(),
-                                                textValue: item.nombre,
-                                                ...item,
-                                            })
-                                        )}
-                                        onSelectionChange={(departamentoId) => {
-                                            setDepartamento_id(departamentoId);
-                                            handleChange(
-                                                "departamento_id",
-                                                departamentoId
-                                            );
-                                            setProvincia_id(null); // Resetear provincia al cambiar departamento
-                                            setDistrito_id(null); // Resetear distrito al cambiar departamento
-                                        }}
-                                    />
-
-                                    <Select
-                                        label="Provincia"
-                                        isRequired={true}
-                                        selectedKey={
-                                            provincia_id
-                                                ? provincia_id.toString()
-                                                : ""
-                                        }
-                                        className="flex-1 min-w-200"
-                                        disabled={!departamento_id} // Deshabilitar si no hay departamento
-                                        value={provincia_id ? provincia_id : ""}
-                                        defaultItems={provincias.map(
-                                            (item) => ({
-                                                key: item.id.toString(),
-                                                textValue: item.nombre,
-                                                ...item,
-                                            })
-                                        )}
-                                        onSelectionChange={(provinciaId) => {
-                                            setProvincia_id(provinciaId);
-                                            handleChange(
-                                                "provincia_id",
-                                                provinciaId
-                                            );
-                                            setDistrito_id(null); // Resetear distrito al cambiar provincia
-                                        }}
-                                    />
-
-                                    <Select
-                                        key={`distrito-${departamento_id}`} // Cambiar el key para forzar re-render
-                                        label="Distrito"
-                                        disabled={!provincia_id} // Deshabilitar si no hay provincia seleccionada
-                                        selectedKey={
-                                            distrito_id
-                                                ? distrito_id.toString()
-                                                : ""
-                                        }
-                                        isRequired={true}
-                                        value={distrito_id ? distrito_id : ""}
-                                        className="flex-1 min-w-200"
-                                        defaultItems={distritos.map((item) => ({
-                                            key: item.id.toString(),
-                                            textValue: item.nombre,
-                                            ...item,
-                                        }))}
-                                        onSelectionChange={(distritoId) => {
-                                            setDistrito_id(distritoId);
-                                            handleChange(
-                                                "distrito_id",
-                                                distritoId
-                                            );
-                                        }}
-                                    />
-                                </Box>
-                                <Box
-                                    sx={{
-                                        display: "grid",
-                                        gap: 2,
-                                        gridTemplateColumns: {
-                                            xs: "1fr",
-                                            sm: "1fr 1fr",
-                                            md: "repeat(2, 1fr)",
-                                        },
-                                        mb: 2,
-                                    }}
-                                >
-                                    {/* Dirección */}
-                                    <Input
-                                        label="Dirección"
-                                        value={direccion ? direccion : ""}
-                                        isRequired={true}
-                                        onChange={(e) => {
-                                            setDireccion(e.target.value);
-                                            handleChange(
-                                                "direccion",
-                                                e.target.value
-                                            );
-                                        }}
-                                    />
-
-                                    <div className="flex flex-wrap md:flex-nowrap gap-4 mt-4 items-center">
-                                        <Button
-                                            aria-label="Editar Archivos"
-                                            variant="flat"
-                                            color="primary"
-                                            onPress={toggleEditMode}
-                                            className="flex-1 min-w-200"
-                                            sx={{ mb: 2 }}
-                                        >
-                                            {editMode
-                                                ? "Cancelar Edición"
-                                                : "Editar Archivos"}
-                                        </Button>
-                                    </div>
-                                </Box>
-
-                                {!editMode ? (
-                                    // **Modo de solo visualización**
-                                    <Box
-                                        sx={{
-                                            display: "grid",
-                                            gridTemplateColumns:
-                                                "repeat(2, 1fr)",
-                                            gap: 2,
-                                        }}
-                                    >
-                                        {rutaVoucher && (
-                                            <Typography variant="body2">
-                                                <strong>Voucher:</strong>{" "}
-                                                <a
-                                                    href={rutaVoucher}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-blue-800 hover:text-blue-400"
-                                                >
-                                                    Ver Comprobante de Pago
-                                                </a>
-                                            </Typography>
-                                        )}
-                                        {rutaDocIden && (
-                                            <Typography variant="body2">
-                                                <strong>DNI:</strong>{" "}
-                                                <a
-                                                    href={rutaDocIden}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-blue-800 hover:text-blue-400"
-                                                >
-                                                    Ver Copia DNI
-                                                </a>
-                                            </Typography>
-                                        )}
-                                        {rutaCV && (
-                                            <Typography variant="body2">
-                                                <strong>Currículum:</strong>{" "}
-                                                <a
-                                                    href={rutaCV}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-blue-800 hover:text-blue-400"
-                                                >
-                                                    Ver CV
-                                                </a>
-                                            </Typography>
-                                        )}
-                                        {rutaFoto && (
-                                            <Typography variant="body2">
-                                                <strong>Foto Carnet:</strong>{" "}
-                                                <a
-                                                    href={rutaFoto}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-blue-800 hover:text-blue-400"
-                                                >
-                                                    Ver Foto Carnet
-                                                </a>
-                                            </Typography>
-                                        )}
-                                    </Box>
-                                ) : (
-                                    // **Modo de edición**
-                                    <Box
-                                        sx={{
-                                            display: "grid",
-                                            gridTemplateColumns:
-                                                "repeat(2, 1fr)",
-                                            gap: 2,
-                                        }}
-                                    >
-                                        <div>
-                                            <RenderFileUpload
-                                                uploadType="Subir Voucher (PDF)"
-                                                allowedFileTypes={[
-                                                    "application/pdf",
-                                                ]}
-                                                inputId="rutaVoucher"
-                                                tamicono={24}
-                                                tamletra={14}
-                                                required={true}
-                                                onFileUpload={handleFileUpload}
-                                            />
-                                            <Typography
-                                                variant="body2"
-                                                color="textSecondary"
-                                                sx={{ fontSize: "0.7rem" }}
-                                            >
-                                                * Suba el comprobante de pago de
-                                                inscripción en formato PDF.
-                                            </Typography>
-                                        </div>
-
-                                        <div>
-                                            <RenderFileUpload
-                                                uploadType="Subir Copia DNI (PDF)"
-                                                allowedFileTypes={[
-                                                    "application/pdf",
-                                                ]}
-                                                inputId="rutaDocIden"
-                                                tamicono={24}
-                                                tamletra={14}
-                                                onFileUpload={handleFileUpload}
-                                            />
-                                            <Typography
-                                                variant="body2"
-                                                color="textSecondary"
-                                                sx={{ fontSize: "0.7rem" }}
-                                            >
-                                                * Suba una copia legible de su
-                                                DNI (ambas caras) en formato
-                                                PDF.
-                                            </Typography>
-                                        </div>
-
-                                        <div>
-                                            <RenderFileUpload
-                                                uploadType="Subir Curriculum Vitae (PDF)"
-                                                allowedFileTypes={[
-                                                    "application/pdf",
-                                                ]}
-                                                inputId="rutaCV"
-                                                tamicono={24}
-                                                tamletra={14}
-                                                onFileUpload={handleFileUpload}
-                                            />
-                                            <Typography
-                                                variant="body2"
-                                                color="textSecondary"
-                                                sx={{ fontSize: "0.7rem" }}
-                                            >
-                                                * Suba su Curriculum Vitae en
-                                                formato PDF. Tamaño máximo:
-                                                10MB.
-                                            </Typography>
-                                        </div>
-
-                                        <div>
-                                            <RenderFileUpload
-                                                uploadType="Subir Foto Carnet (IMG)"
-                                                value={rutaFoto}
-                                                allowedFileTypes={[
-                                                    "image/jpeg",
-                                                    "image/png",
-                                                    "image/jpg",
-                                                ]}
-                                                inputId="rutaFoto"
-                                                tamicono={24}
-                                                tamletra={14}
-                                                onFileUpload={handleFileUpload}
-                                            />
-                                            <Typography
-                                                variant="body2"
-                                                color="textSecondary"
-                                                sx={{ fontSize: "0.7rem" }}
-                                            >
-                                                * Suba una foto tipo carnet en
-                                                formato JPG o PNG. Debe ser a
-                                                color, con fondo blanco, sin
-                                                lentes. No escaneado.
-                                            </Typography>
-                                        </div>
-                                    </Box>
-                                )}
-                            </form>
-                        </ModalBody>
-                        <ModalFooter>
-                            <Button
-                                aria-label="Cancelar"
-                                color="default"
-                                variant="flat"
-                                onPress={() => setIsEditarOpen(false)}
-                            >
-                                Cancelar
-                            </Button>
-                            <Button
-                                aria-label="Guardar Cambios"
-                                color="primary"
-                                onPress={() => handleSubmitEditar(validarId)}
-                            >
-                                Guardar Cambios
-                            </Button>
-                        </ModalFooter>
-                    </ModalContent>
-                </Modal>
-
-                <Toaster position="top-right" />
-
-                {/* Overlay de carga (solo se renderiza si loading es true) */}
-
                 <div className="flex flex-col gap-4">
                     {/* Fila de filtros y búsqueda */}
                     <div className="grid grid-cols-1 md:grid-cols-6 gap-4 w-full">
@@ -1638,15 +1020,16 @@ export default function App() {
             </>
         );
     }, [
-        [
-            filterValue,
-            onSearchChange,
-            statusFilter,
-            visibleColumns,
-            onRowsPerPageChange,
-            onClear,
-            users.length,
-        ],
+        filterValue,
+        onSearchChange,
+        statusFilter,
+        visibleColumns,
+        onRowsPerPageChange,
+        onClear,
+        users.length,
+        gradoFilter,
+        filteredProgramas,
+        grados
     ]);
 
     const bottomContent = useMemo(
@@ -1692,61 +1075,652 @@ export default function App() {
     );
 
     return (
-        <Table
-            isHeaderSticky
-            aria-label="Tabla de Postulantes con validación digital"
-            bottomContent={bottomContent}
-            bottomContentPlacement="outside"
-            classNames={{
-                wrapper: "max-h-auto overflow-auto w-full p-4", // Ajustar tamaño y eliminar márgenes
-            }}
-            selectedKeys={selectedKeys}
-            selectionMode="multiple"
-            sortDescriptor={sortDescriptor}
-            topContent={topContent}
-            topContentPlacement="outside"
-            onSelectionChange={setSelectedKeys}
-            onSortChange={setSortDescriptor}
-        >
-            <TableHeader columns={headerColumns}>
-                {(column) => (
-                    <TableColumn
-                        key={column.uid}
-                        align={
-                            column.uid === "nombre_completo" ||
-                                column.uid === "grado"
-                                ? "start"
-                                : "center"
-                        }
-                        allowsSorting={column.sortable}
-                        className="p-1 text-sm" // Reducir padding y tamaño de fuente
-                        aria-label={column.name}
-                        scope="col"
-                    >
-                        {column.name}
-                    </TableColumn>
-                )}
-            </TableHeader>
-            <TableBody
-                emptyContent={"No se encontró postulantes"}
-                items={items}
-                className="space-y-1" // Reducir espacio entre filas
-                isLoading={dataLoading || loading}
-                loadingContent={<Spinner label="Cargando..." />}
+        <>
+            <ModalConfirm
+                isOpen={isValidarOpen}
+                onClose={() => setIsValidarOpen(false)}
+                onConfirm={() => handleValidar(validarId)}
+                isDismissable={false}
+                message="¿Confirma la validación física? Esta acción es irreversible y se asumirá que se entregó carnet al postulante."
+            />
+
+            <Modal
+                backdrop="opaque"
+                isOpen={isEditarOpen}
+                placement="center"
+                size="5xl"
+                scrollBehavior="inside"
+                onClose={() => setIsEditarOpen(false)}
+                isDismissable={false}
             >
-                {(item) => (
-                    <TableRow
-                        key={`${item.id}`}
-                        className="p-1 text-sm leading-tight"
-                    >
-                        {(columnKey) => (
-                            <TableCell className="p-1 text-sm">
-                                {renderCell(item, columnKey)}
-                            </TableCell>
-                        )}
-                    </TableRow>
-                )}
-            </TableBody>
-        </Table>
+                <ModalContent>
+                    <ModalHeader className="flex flex-col gap-1">
+                        Editar Inscripción
+                    </ModalHeader>
+
+                    <ModalBody>
+                        <form>
+                            <h3 className="font-bold">
+                                Seleccionar Grado y Programa a postular
+                            </h3>
+                            <Box
+                                sx={{
+                                    display: "grid",
+                                    gap: 2,
+                                    gridTemplateColumns: {
+                                        xs: "1fr",
+                                        md: "1fr 3fr",
+                                    },
+                                    mb: 2,
+                                }}
+                            >
+                                <FormControl>
+                                    <Select
+                                        label="Grado Académico"
+                                        variant="flat"
+                                        className="w-30"
+                                        isRequired={true}
+                                        value={grado_id ? grado_id : ""}
+                                        defaultItems={gradosPosibles.map(
+                                            (item) => ({
+                                                key: item.id.toString(),
+                                                textValue: item.nombre,
+                                                ...item,
+                                            })
+                                        )}
+                                        selectedKey={
+                                            grado_id
+                                                ? grado_id.toString()
+                                                : null
+                                        }
+                                        onSelectionChange={(grado_id) => {
+                                            setGrado_id(grado_id);
+                                            setPrograma_id(null);
+                                            handleChange(
+                                                "grado_id",
+                                                grado_id
+                                            );
+                                        }}
+                                    />
+                                </FormControl>
+
+                                <FormControl fullWidth>
+                                    <Select
+                                        label="Programa"
+                                        className="w-full"
+                                        defaultItems={programasFiltrados.map(
+                                            (item) => ({
+                                                key: item.id.toString(),
+                                                textValue: item.nombre,
+                                                ...item,
+                                            })
+                                        )}
+                                        value={
+                                            programa_id ? programa_id : ""
+                                        }
+                                        selectedKey={
+                                            programa_id
+                                                ? programa_id.toString()
+                                                : null
+                                        }
+                                        onSelectionChange={(programaId) => {
+                                            setPrograma_id(programaId);
+                                            handleChange(
+                                                "programa_id",
+                                                programaId
+                                            );
+                                        }}
+                                        isRequired={true}
+                                        disabled={!grado_id}
+                                    />
+                                </FormControl>
+                            </Box>
+                            <h3 className="font-bold mb-2">
+                                Datos personales
+                            </h3>
+                            <Box
+                                sx={{
+                                    display: "grid",
+                                    gap: 2,
+                                    gridTemplateColumns: {
+                                        xs: "1fr",
+                                        md: "2fr 2fr 2fr 2fr 2fr",
+                                    },
+                                    mb: 2,
+                                }}
+                            >
+                                <Select
+                                    label="Tipo de Documento"
+                                    variant="flat"
+                                    className="w-30"
+                                    disabled={true}
+                                    value={
+                                        tipo_documento
+                                            ? tipo_documento.toString
+                                            : null
+                                    }
+                                    isRequired={true}
+                                    defaultItems={tipo_doc.map((item) => ({
+                                        key: item.nombre.toString(),
+                                        textValue: item.nombre,
+                                        ...item,
+                                    }))}
+                                    selectedKey={
+                                        tipo_documento
+                                            ? tipo_documento.toString()
+                                            : null
+                                    }
+                                />
+
+                                <Input
+                                    label={`Número de ${tipo_doc.find(
+                                        (item) =>
+                                            item.nombre ==
+                                            tipo_documento
+                                    )?.nombre ||
+                                        "Documento de Identidad"
+                                        }`}
+                                    value={num_iden ? num_iden : ""}
+                                    isRequired={true}
+                                    disabled={true}
+                                    onChange={(e) => {
+                                        setNum_iden(e.target.value);
+                                        handleChange(
+                                            "num_iden",
+                                            e.target.value
+                                        );
+                                    }}
+                                />
+
+                                <Input
+                                    label="Nombres"
+                                    value={nombres ? nombres : ""}
+                                    isRequired={true}
+                                    onChange={(e) => {
+                                        setNombres(e.target.value);
+                                        handleChange(
+                                            "nombres",
+                                            e.target.value
+                                        );
+                                    }}
+                                />
+
+                                <Input
+                                    label="Apellido Paterno"
+                                    value={ap_paterno ? ap_paterno : ""}
+                                    isRequired={true}
+                                    onChange={(e) => {
+                                        setAp_paterno(e.target.value);
+                                        handleChange(
+                                            "ap_paterno",
+                                            e.target.value
+                                        );
+                                    }}
+                                />
+
+                                <Input
+                                    label="Apellido Materno"
+                                    value={ap_materno ? ap_materno : ""}
+                                    isRequired={true}
+                                    onChange={(e) => {
+                                        setAp_materno(e.target.value);
+                                        handleChange(
+                                            "ap_materno",
+                                            e.target.value
+                                        );
+                                    }}
+                                />
+                            </Box>
+
+                            <Box
+                                sx={{
+                                    display: "grid",
+                                    gap: 2,
+                                    gridTemplateColumns: {
+                                        xs: "1fr",
+                                        md: "2fr 2fr 4fr 2fr",
+                                    },
+                                    mb: 2,
+                                }}
+                            >
+                                <Input
+                                    label="Celular"
+                                    value={celular ? celular : ""}
+                                    isRequired={true}
+                                    onChange={(e) => {
+                                        setCelular(e.target.value);
+                                        handleChange(
+                                            "celular",
+                                            e.target.value
+                                        );
+                                    }}
+                                />
+
+                                <Input
+                                    className="h-10"
+                                    label="Correo Electrónico"
+                                    value={email ? email : ""}
+                                    isRequired={true}
+                                    onChange={(e) => {
+                                        setEmail(e.target.value);
+                                        handleChange(
+                                            "email",
+                                            e.target.value
+                                        );
+                                    }}
+                                />
+                                <Input
+                                    label="Dirección"
+                                    value={direccion ? direccion : ""}
+                                    isRequired={true}
+                                    onChange={(e) => {
+                                        setDireccion(e.target.value);
+                                        handleChange(
+                                            "direccion",
+                                            e.target.value
+                                        );
+                                    }}
+                                />
+                                <Input
+                                    label="Fecha de Nacimiento"
+                                    type="date"
+                                    value={
+                                        fecha_nacimiento
+                                            ? fecha_nacimiento
+                                            : ""
+                                    }
+                                    isRequired={true}
+                                    onChange={(e) => {
+                                        setFecha_nacimiento(e.target.value);
+                                        handleChange(
+                                            "fecha_nacimiento",
+                                            e.target.value
+                                        );
+                                    }}
+                                />
+                            </Box>
+
+                            <Box
+                                sx={{
+                                    display: "grid",
+                                    gap: 2,
+                                    gridTemplateColumns: {
+                                        xs: "1fr",
+                                        sm: "1fr 1fr",
+                                        md: "1fr 1fr 1fr",
+                                    },
+                                    mb: 2,
+                                }}
+                            >
+                                <Select
+                                    label="Departamento"
+                                    isRequired={true}
+                                    className="flex-1 min-w-200"
+                                    selectedKey={
+                                        departamento_id
+                                            ? departamento_id.toString()
+                                            : ""
+                                    }
+                                    value={
+                                        departamento_id
+                                            ? departamento_id
+                                            : ""
+                                    }
+                                    defaultItems={departamentos.map(
+                                        (item) => ({
+                                            key: item.id.toString(),
+                                            textValue: item.nombre,
+                                            ...item,
+                                        })
+                                    )}
+                                    onSelectionChange={(departamentoId) => {
+                                        setDepartamento_id(departamentoId);
+                                        handleChange(
+                                            "departamento_id",
+                                            departamentoId
+                                        );
+                                        setProvincia_id(null);
+                                        setDistrito_id(null);
+                                    }}
+                                />
+
+                                <Select
+                                    label="Provincia"
+                                    isRequired={true}
+                                    selectedKey={
+                                        provincia_id
+                                            ? provincia_id.toString()
+                                            : ""
+                                    }
+                                    className="flex-1 min-w-200"
+                                    disabled={!departamento_id}
+                                    value={provincia_id ? provincia_id : ""}
+                                    defaultItems={provincias.map(
+                                        (item) => ({
+                                            key: item.id.toString(),
+                                            textValue: item.nombre,
+                                            ...item,
+                                        })
+                                    )}
+                                    onSelectionChange={(provinciaId) => {
+                                        setProvincia_id(provinciaId);
+                                        handleChange(
+                                            "provincia_id",
+                                            provinciaId
+                                        );
+                                        setDistrito_id(null);
+                                    }}
+                                />
+
+                                <Select
+                                    key={`distrito-${departamento_id}`}
+                                    label="Distrito"
+                                    disabled={!provincia_id}
+                                    selectedKey={
+                                        distrito_id
+                                            ? distrito_id.toString()
+                                            : ""
+                                    }
+                                    isRequired={true}
+                                    value={distrito_id ? distrito_id : ""}
+                                    className="flex-1 min-w-200"
+                                    defaultItems={distritos.map((item) => ({
+                                        key: item.id.toString(),
+                                        textValue: item.nombre,
+                                        ...item,
+                                    }))}
+                                    onSelectionChange={(distritoId) => {
+                                        setDistrito_id(distritoId);
+                                        handleChange(
+                                            "distrito_id",
+                                            distritoId
+                                        );
+                                    }}
+                                />
+                            </Box>
+                            <Box
+                                sx={{
+                                    display: "grid",
+                                    gap: 2,
+                                    gridTemplateColumns: {
+                                        xs: "1fr",
+                                        sm: "1fr 1fr",
+                                        md: "repeat(2, 1fr)",
+                                    },
+                                    mb: 2,
+                                }}
+                            >
+                                <Input
+                                    label="Dirección"
+                                    value={direccion ? direccion : ""}
+                                    isRequired={true}
+                                    onChange={(e) => {
+                                        setDireccion(e.target.value);
+                                        handleChange(
+                                            "direccion",
+                                            e.target.value
+                                        );
+                                    }}
+                                />
+
+                                <div className="flex flex-wrap md:flex-nowrap gap-4 mt-4 items-center">
+                                    <Button
+                                        aria-label="Editar Archivos"
+                                        variant="flat"
+                                        color="primary"
+                                        onPress={toggleEditMode}
+                                        className="flex-1 min-w-200"
+                                        sx={{ mb: 2 }}
+                                    >
+                                        {editMode
+                                            ? "Cancelar Edición"
+                                            : "Editar Archivos"}
+                                    </Button>
+                                </div>
+                            </Box>
+
+                            {!editMode ? (
+                                <Box
+                                    sx={{
+                                        display: "grid",
+                                        gridTemplateColumns:
+                                            "repeat(2, 1fr)",
+                                        gap: 2,
+                                    }}
+                                >
+                                    {rutaVoucher && (
+                                        <Typography variant="body2">
+                                            <strong>Voucher:</strong>{" "}
+                                            <a
+                                                href={rutaVoucher}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-800 hover:text-blue-400"
+                                            >
+                                                Ver Comprobante de Pago
+                                            </a>
+                                        </Typography>
+                                    )}
+                                    {rutaDocIden && (
+                                        <Typography variant="body2">
+                                            <strong>DNI:</strong>{" "}
+                                            <a
+                                                href={rutaDocIden}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-800 hover:text-blue-400"
+                                            >
+                                                Ver Copia DNI
+                                            </a>
+                                        </Typography>
+                                    )}
+                                    {rutaCV && (
+                                        <Typography variant="body2">
+                                            <strong>Currículum:</strong>{" "}
+                                            <a
+                                                href={rutaCV}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-800 hover:text-blue-400"
+                                            >
+                                                Ver CV
+                                            </a>
+                                        </Typography>
+                                    )}
+                                    {rutaFoto && (
+                                        <Typography variant="body2">
+                                            <strong>Foto Carnet:</strong>{" "}
+                                            <a
+                                                href={rutaFoto}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-800 hover:text-blue-400"
+                                            >
+                                                Ver Foto Carnet
+                                            </a>
+                                        </Typography>
+                                    )}
+                                </Box>
+                            ) : (
+                                <Box
+                                    sx={{
+                                        display: "grid",
+                                        gridTemplateColumns:
+                                            "repeat(2, 1fr)",
+                                        gap: 2,
+                                    }}
+                                >
+                                    <div>
+                                        <RenderFileUpload
+                                            uploadType="Subir Voucher (PDF)"
+                                            allowedFileTypes={[
+                                                "application/pdf",
+                                            ]}
+                                            inputId="rutaVoucher"
+                                            tamicono={24}
+                                            tamletra={14}
+                                            required={true}
+                                            onFileUpload={handleFileUpload}
+                                        />
+                                        <Typography
+                                            variant="body2"
+                                            color="textSecondary"
+                                            sx={{ fontSize: "0.7rem" }}
+                                        >
+                                            * Suba el comprobante de pago de
+                                            inscripción en formato PDF.
+                                        </Typography>
+                                    </div>
+
+                                    <div>
+                                        <RenderFileUpload
+                                            uploadType="Subir Copia DNI (PDF)"
+                                            allowedFileTypes={[
+                                                "application/pdf",
+                                            ]}
+                                            inputId="rutaDocIden"
+                                            tamicono={24}
+                                            tamletra={14}
+                                            onFileUpload={handleFileUpload}
+                                        />
+                                        <Typography
+                                            variant="body2"
+                                            color="textSecondary"
+                                            sx={{ fontSize: "0.7rem" }}
+                                        >
+                                            * Suba una copia legible de su
+                                            DNI (ambas caras) en formato
+                                            PDF.
+                                        </Typography>
+                                    </div>
+
+                                    <div>
+                                        <RenderFileUpload
+                                            uploadType="Subir Curriculum Vitae (PDF)"
+                                            allowedFileTypes={[
+                                                "application/pdf",
+                                            ]}
+                                            inputId="rutaCV"
+                                            tamicono={24}
+                                            tamletra={14}
+                                            onFileUpload={handleFileUpload}
+                                        />
+                                        <Typography
+                                            variant="body2"
+                                            color="textSecondary"
+                                            sx={{ fontSize: "0.7rem" }}
+                                        >
+                                            * Suba su Curriculum Vitae en
+                                            formato PDF. Tamaño máximo:
+                                            10MB.
+                                        </Typography>
+                                    </div>
+
+                                    <div>
+                                        <RenderFileUpload
+                                            uploadType="Subir Foto Carnet (IMG)"
+                                            value={rutaFoto}
+                                            allowedFileTypes={[
+                                                "image/jpeg",
+                                                "image/png",
+                                                "image/jpg",
+                                            ]}
+                                            inputId="rutaFoto"
+                                            tamicono={24}
+                                            tamletra={14}
+                                            onFileUpload={handleFileUpload}
+                                        />
+                                        <Typography
+                                            variant="body2"
+                                            color="textSecondary"
+                                            sx={{ fontSize: "0.7rem" }}
+                                        >
+                                            * Suba una foto tipo carnet en
+                                            formato JPG o PNG. Debe ser a
+                                            color, con fondo blanco, sin
+                                            lentes. No escaneado.
+                                        </Typography>
+                                    </div>
+                                </Box>
+                            )}
+                        </form>
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button
+                            aria-label="Cancelar"
+                            color="default"
+                            variant="flat"
+                            onPress={() => setIsEditarOpen(false)}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            aria-label="Guardar Cambios"
+                            color="primary"
+                            onPress={() => handleSubmitEditar(validarId)}
+                        >
+                            Guardar Cambios
+                        </Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
+
+            <Table
+                isHeaderSticky
+                aria-label="Tabla de Postulantes con validación digital"
+                bottomContent={bottomContent}
+                bottomContentPlacement="outside"
+                classNames={{
+                    wrapper: "max-h-auto overflow-auto w-full p-4", // Ajustar tamaño y eliminar márgenes
+                }}
+                selectedKeys={selectedKeys}
+                selectionMode="multiple"
+                sortDescriptor={sortDescriptor}
+                topContent={topContent}
+                topContentPlacement="outside"
+                onSelectionChange={setSelectedKeys}
+                onSortChange={setSortDescriptor}
+            >
+                <TableHeader columns={headerColumns}>
+                    {(column) => (
+                        <TableColumn
+                            key={column.uid}
+                            align={
+                                column.uid === "nombre_completo" ||
+                                    column.uid === "grado"
+                                    ? "start"
+                                    : "center"
+                            }
+                            allowsSorting={column.sortable}
+                            className="p-1 text-sm" // Reducir padding y tamaño de fuente
+                            aria-label={column.name}
+                            scope="col"
+                        >
+                            {column.name}
+                        </TableColumn>
+                    )}
+                </TableHeader>
+                <TableBody
+                    emptyContent={(dataLoading || loading) ? <Spinner label="Cargando..." /> : "No se encontró postulantes"}
+                    items={items}
+                    className="space-y-1" // Reducir espacio entre filas
+                    isLoading={dataLoading || loading}
+                    loadingContent={<Spinner label="Cargando..." />}
+                >
+                    {(item) => (
+                        <TableRow
+                            key={`${item.id}`}
+                            className="p-1 text-sm leading-tight"
+                        >
+                            {(columnKey) => (
+                                <TableCell className="p-1 text-sm">
+                                    {renderCell(item, columnKey)}
+                                </TableCell>
+                            )}
+                        </TableRow>
+                    )}
+                </TableBody>
+            </Table>
+        </>
     );
 }

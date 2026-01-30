@@ -9,10 +9,12 @@ import ResumenAdmision from "../../Resultados/ResumenAdmision";
 import HistogramaNotas from "../../Resultados/HistogramaNotas";
 
 export default function TabResultados({ }) {
-    const { ingresantesPrograma } = useIngresantesPrograma();
-    const { resumenGeneral } = useResumenGeneral();
-    const { resumenEdad } = useResumenEdad();
-    const { histogramaNotas } = useHistogramaNotas();
+    const { ingresantesPrograma, loading: loadingIngresantes } = useIngresantesPrograma();
+    const { resumenGeneral, loading: loadingResumen } = useResumenGeneral();
+    const { resumenEdad, loading: loadingEdad } = useResumenEdad();
+    const { histogramaNotas, loading: loadingNotas } = useHistogramaNotas();
+
+    const isLoading = loadingIngresantes || loadingResumen || loadingEdad || loadingNotas;
 
     return (
         <div className="space-y-2">
@@ -20,14 +22,14 @@ export default function TabResultados({ }) {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-2">
                 <div className="lg:col-span-4">
                     <div className="bg-white shadow-md rounded-lg">
-                        <ResumenAdmision resumenGeneral={resumenGeneral} />
+                        <ResumenAdmision resumenGeneral={resumenGeneral} loading={isLoading} />
                     </div>
                 </div>
                 <div className="lg:col-span-8">
                     <div className="bg-white shadow-md rounded-lg p-3">
                         <TableResultados
                             ingresantesPrograma={ingresantesPrograma}
-                            loading={loading}
+                            loading={isLoading}
                         />
                     </div>
                 </div>
@@ -40,11 +42,11 @@ export default function TabResultados({ }) {
                 </div> */}
 
                 <div className="bg-white shadow-md rounded-lg p-3">
-                    <GraficoEstadoPorEdad resumenEdad={resumenEdad} />
+                    <GraficoEstadoPorEdad resumenEdad={resumenEdad} loading={isLoading} />
                 </div>
 
                 <div className="bg-white shadow-md rounded-lg p-3">
-                    <HistogramaNotas histogramaNotas={histogramaNotas} />
+                    <HistogramaNotas histogramaNotas={histogramaNotas} loading={isLoading} />
                 </div>
             </div>
         </div>

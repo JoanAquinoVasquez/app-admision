@@ -6,10 +6,10 @@ import ChatBot from "../../layouts/ChatBot/ChatBot";
 import Carrusel from "../../components/Carrusel/Carrusel";
 
 // Assets
-import logoWithTextImage from "../../assets/Isotipos/isotipo_color_epg.webp";
-import cronograma from "../../assets/Img/mas-informacion.webp";
-import fechaPagos from "../../assets/Img/4.webp";
-import cronogramaAdmision from "../../assets/Img/3.webp";
+import cronograma from "../../assets/Img/cronograma.webp";
+import pasos from "../../assets/Img/pasos.webp";
+import fecha_examen from "../../assets/Img/fecha_examen.webp";
+import conceptos_inscripcion from "../../assets/Img/conceptos_inscripcion.webp";
 
 import InscripcionForm from "./IndexValidacion";
 import { StepIndicator } from "../Preinscripcion/components/StepIndicator";
@@ -26,18 +26,23 @@ const SLIDES_DATA = [
     {
         title: "Pasos del Proceso Admisión",
         text: "Consulta aquí el paso a paso del proceso de admisión.",
+        image: pasos,
+    },
+    {
+        title: "Prepárate para el examen de admisión",
+        text: "Revisa las fechas del examen de admisión.",
+        image: fecha_examen,
+    },
+    {
+        title: `Cronograma de Admisión ${admissionConfig.cronograma.periodo}`,
+        text: `Conoce el cronograma de admisión ${admissionConfig.cronograma.periodo}.`,
         image: cronograma,
     },
     {
-        title: "Cronograma Matrícula",
-        text: "Revisa las fechas del proceso de matrícula.",
-        image: cronogramaAdmision,
-    },
-    {
-        title: "Conceptos de Pago",
-        text: `Conoce los conceptos disponibles desde el ${admissionConfig.cronograma.inicio_conceptos}.`,
-        image: fechaPagos,
-    },
+        title: "Conceptos de Pago Inscripción",
+        text: "Revisa los conceptos de pago para el proceso de inscripción.",
+        image: conceptos_inscripcion,
+    }
 ];
 
 export default function FormularioInscripcion() {

@@ -515,7 +515,7 @@ export default function App({ resumenEvaluacion, grados, loading }) {
                     )}
                 </TableHeader>
                 <TableBody
-                    emptyContent={loading ? " " : "No se encontró información"}
+                    emptyContent={loading ? <Spinner label="Cargando..." /> : "No se encontró información"}
                     isLoading={loading}
                     loadingContent={<Spinner label="Cargando..." />}
                     items={items}

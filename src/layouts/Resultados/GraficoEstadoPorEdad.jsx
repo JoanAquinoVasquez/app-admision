@@ -43,7 +43,15 @@ const CustomTooltip = ({ active, payload, label }) => {
     return null;
 };
 
-const GraficoEstadoPorEdad = ({ resumenEdad }) => {
+const GraficoEstadoPorEdad = ({ resumenEdad, loading }) => {
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center justify-center h-64">
+                <Spinner label="Cargando..." />
+            </div>
+        );
+    }
+
     if (!resumenEdad || resumenEdad.length === 0) {
         return (
             <div className="flex items-center justify-center h-64">

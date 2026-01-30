@@ -1,8 +1,6 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
-import Spinner from "../../../components/Spinner/Spinner"; // Spinner
 import { toast } from "react-hot-toast";
 import Breadcrumb from "../../../components/Breadcrumb/Breadcrumb";
-import PreinscripcionesTable from "../../../components/Skeleton/PreinscripcionesTable";
 import {
     Table,
     TableHeader,
@@ -18,6 +16,7 @@ import {
     DropdownItem,
     Chip,
     Pagination,
+    Spinner as NextUISpinner,
 } from "@nextui-org/react";
 import Select from "../../../components/Select/Select";
 import useGrado from "../../../data/dataGrados";
@@ -122,12 +121,12 @@ const INITIAL_VISIBLE_COLUMNS = [
 ];
 
 export default function App() {
-    const { preInscripciones } = usePreInscripcion();
+    const { preInscripciones, loading: dataLoading } = usePreInscripcion();
 
     const { grados } = useGrado();
     const { filteredProgramas, filterByGrado } = useProgramas();
 
-    const [loading, setLoading] = useState(false); // comienza en true
+
 
     // ✅ Aseguramos que `preInscripciones` tenga datos antes de mapear
     const users = useMemo(() => {
@@ -315,16 +314,19 @@ export default function App() {
             }
 
             const disposition = response.headers["content-disposition"];
-            const filename =
-                disposition &&
-                disposition.split("filename=")[1]?.replace(/"/g, "");
+            let fileName = `reporte_preinscripcion_${new Date().toLocaleDateString('es-PE').replace(/\//g, '-')}.xlsx`;
+
+            if (disposition) {
+                const match = disposition.match(/filename="?([^"]+)"?/);
+                if (match?.[1]) fileName = match[1];
+            }
 
             const fileURL = window.URL.createObjectURL(
                 new Blob([response.data])
             );
             const link = document.createElement("a");
             link.href = fileURL;
-            link.setAttribute("download", filename || defaultFilename);
+            link.setAttribute("download", fileName);
             document.body.appendChild(link);
             link.click();
             link.remove();
@@ -450,12 +452,6 @@ export default function App() {
                         ]}
                     />
                 </div>
-                {/* Overlay de carga (solo se renderiza si loading es true) */}
-                {loading && (
-                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-20 z-50">
-                        <Spinner label={"Cargando..."} />
-                    </div>
-                )}
                 <div className="flex flex-col gap-4">
                     {/* Fila 1: Buscador, Grado Académico, Programa */}
                     <div className="grid grid-cols-1 md:grid-cols-6 gap-4 w-full">
@@ -774,9 +770,11 @@ export default function App() {
                 )}
             </TableHeader>
             <TableBody
-                emptyContent={"No se encontró postulantes registrados"}
+                emptyContent={dataLoading ? <NextUISpinner label="Cargando..." /> : "No se encontró postulantes registrados"}
                 items={items}
                 className="space-y-1" // Reducir espacio entre filas
+                isLoading={dataLoading}
+                loadingContent={<NextUISpinner label="Cargando..." />}
             >
                 {(item) => (
                     <TableRow

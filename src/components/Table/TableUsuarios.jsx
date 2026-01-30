@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 // import Spinner from "../../components/Spinner/Spinner"; // Spinner
-import { toast, Toaster } from "react-hot-toast";
+import { toast } from "react-hot-toast";
 import { FormControl, Box } from "@mui/material";
 import {
     Modal,
@@ -658,7 +658,6 @@ export default function App() {
                     </ModalContent>
                 </Modal>
 
-                <Toaster position="top-right" />
 
 
                 <div className="flex flex-col gap-2">
@@ -769,15 +768,13 @@ export default function App() {
             </>
         );
     }, [
-        [
-            filterValue,
-            onSearchChange,
-            statusFilter,
-            visibleColumns,
-            onRowsPerPageChange,
-            onClear,
-            users.length,
-        ],
+        filterValue,
+        onSearchChange,
+        statusFilter,
+        visibleColumns,
+        onRowsPerPageChange,
+        onClear,
+        users.length,
     ]);
 
     const bottomContent = useMemo(
@@ -855,7 +852,7 @@ export default function App() {
                 )}
             </TableHeader>
             <TableBody
-                emptyContent={"No se encontró usuarios"}
+                emptyContent={(loading || loadingUsers) ? <Spinner label="Cargando..." /> : "No se encontró usuarios"}
                 items={items}
                 className="space-y-1" // Reducir espacio entre filas
                 isLoading={loading || loadingUsers}

@@ -486,7 +486,7 @@ export default function TableResultados({ ingresantesPrograma, grados, loading }
                         )}
                     </TableHeader>
                     <TableBody
-                        emptyContent={"No se encontró información"}
+                        emptyContent={loading ? <Spinner label="Cargando..." /> : "No se encontró información"}
                         items={items}
                         className="space-y-1"
                         isLoading={loading}

@@ -15,13 +15,14 @@ import {
     DropdownItem,
     Pagination,
     User,
-    DateRangePicker,
+    Spinner as NextUISpinner,
 } from "@nextui-org/react";
 import useBitacora from "../../data/dataBitacora";
 import Spinner from "../../components/Spinner/Spinner";
 import DashboardCard from "../../components/Cards/DashboardCard";
 import { FileDown } from "lucide-react";
-import { Toaster, toast } from "react-hot-toast";
+import { toast } from "react-hot-toast";
+import axios from "../../axios";
 
 export const columns = [
     { name: "ID", uid: "id", sortable: true },
@@ -186,17 +187,17 @@ const INITIAL_VISIBLE_COLUMNS = [
 ];
 
 export default function App() {
-    const { bitacora } = useBitacora();
-    const [loading, setLoading] = useState(false);
+    const { bitacora, loading: dataLoading } = useBitacora();
+    const [exportLoading, setExportLoading] = useState(false);
     const [date, setDate] = React.useState(null);
+
+    const loading = dataLoading || exportLoading;
 
     // ✅ Transformar datos de bitácora con formato de fecha/hora
     const users = React.useMemo(() => {
         if (!bitacora || bitacora.length === 0) {
-            setLoading(true);
             return [];
         }
-        setLoading(false);
 
         // Función para formatear la fecha y hora
         const formatoFechaHora = (fechaHora) => {
@@ -502,7 +503,7 @@ export default function App() {
     }, []);
 
     const exportBitacora = async () => {
-        setLoading(true);
+        setExportLoading(true);
         try {
             const response = await axios.get(`/bitacora-export`, {
                 responseType: "blob", // importante
@@ -515,9 +516,10 @@ export default function App() {
 
             // Nombre del archivo desde backend o por defecto
             const contentDisposition = response.headers["content-disposition"];
-            let fileName = "bitacora.xlsx";
+            let fileName = `bitacora_admision_${new Date().toLocaleDateString('es-PE').replace(/\//g, '-')}.xlsx`;
+
             if (contentDisposition) {
-                const match = contentDisposition.match(/filename="?(.+)"?/);
+                const match = contentDisposition.match(/filename="?([^"]+)"?/);
                 if (match?.[1]) fileName = match[1];
             }
 
@@ -532,7 +534,7 @@ export default function App() {
                 "Error al exportar";
             toast.error(errorMessage);
         } finally {
-            setLoading(false);
+            setExportLoading(false);
         }
     };
 
@@ -700,13 +702,10 @@ export default function App() {
             icon={<ChevronDownIcon className="text-green-500" />}
             className="p-2 m-0" // Reducir padding y márgenes del DashboardCard
         >
-            {/* Overlay de carga (solo se renderiza si loading es true) */}
-            {loading && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-20 z-50">
-                    <Spinner label={"Cargando..."} />
-                </div>
+            {/* Overlay de carga para exportación (opcional, si lo quieres mantener solo para exportar) */}
+            {exportLoading && (
+                <Spinner label={"Exportando..."} />
             )}
-            <Toaster position="top-right" />
             <Table
                 aria-label="Tabla de bitácora"
                 layout="auto"
@@ -742,9 +741,11 @@ export default function App() {
                     ))}
                 </TableHeader>
                 <TableBody
-                    emptyContent={"No se encontró información"}
+                    emptyContent={dataLoading ? <NextUISpinner label="Cargando..." /> : "No se encontró información"}
                     items={items}
                     className="space-y-1 sm:space-y-2 lg:space-y-3" // Reducir espacio entre filas en pantallas pequeñas
+                    isLoading={dataLoading}
+                    loadingContent={<NextUISpinner label="Cargando..." />}
                 >
                     {(item) => (
                         <TableRow

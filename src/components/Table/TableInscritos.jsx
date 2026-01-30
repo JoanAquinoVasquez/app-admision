@@ -1,7 +1,6 @@
 import { useMemo, useEffect } from "react";
 import useGrado from "../../data/dataGrados";
 // import Spinner from "../../components/Spinner/Spinner";
-import { Toaster } from "react-hot-toast";
 import { useUser } from "../../services/UserContext";
 import {
     Table,
@@ -340,7 +339,7 @@ export default function App() {
                     )}
                 </TableHeader>
                 <TableBody
-                    emptyContent={"No se encontró postulantes registrados"}
+                    emptyContent={(dataLoading || loading) ? <Spinner label="Cargando..." /> : "No se encontró postulantes registrados"}
                     items={items}
                     className="space-y-1"
                     isLoading={dataLoading || loading}
@@ -375,7 +374,6 @@ export default function App() {
                 fetchDistritos={fetchDistritos}
             />
 
-            <Toaster position="top-right" />
 
         </>
     );

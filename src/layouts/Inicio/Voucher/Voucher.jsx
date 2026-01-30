@@ -28,7 +28,7 @@ const TotalVouchers = ({ resumenVouchers, loading }) => {
             icon={<MdReceiptLong className="text-purple-500 text-lg" />}
         >
             {loading ? (
-                <div className="flex justify-center items-center h-40">
+                <div className="flex justify-center items-center h-48">
                     <Spinner color="primary" size="md" label="Cargando..." />
                 </div>
             ) : (

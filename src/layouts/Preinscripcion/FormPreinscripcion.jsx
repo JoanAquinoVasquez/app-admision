@@ -15,32 +15,32 @@ import useGrados from "../../data/dataGrados";
 import useProgramas from "../../data/dataProgramas";
 
 // Assets
-import cronograma from "../../assets/Img/mas-informacion.webp";
-import fechaPagos from "../../assets/Img/4.webp";
-import cronogramaAdmision from "../../assets/Img/3.webp";
+import cronograma from "../../assets/Img/cronograma.webp";
+import pasos from "../../assets/Img/pasos.webp";
+import fecha_examen from "../../assets/Img/fecha_examen.webp";
 import logoWithTextImage from "../../assets/Isotipos/isotipo_color_epg.webp";
 import { useMemo } from "react";
 import { admissionConfig, getAdmissionStage } from "../../config/admission";
 
 // DATOS ESTÁTICOS (Slides del Carrusel)
+
 const SLIDES_DATA = [
     {
         title: "Pasos del Proceso Admisión",
         text: "Consulta aquí el paso a paso del proceso de admisión.",
+        image: pasos,
+    },
+    {
+        title: "Prepárate para el examen de admisión",
+        text: "Revisa las fechas del examen de admisión.",
+        image: fecha_examen,
+    },
+    {
+        title: `Cronograma de Admisión ${admissionConfig.cronograma.periodo}`,
+        text: `Conoce el cronograma de admisión ${admissionConfig.cronograma.periodo}.`,
         image: cronograma,
     },
-    {
-        title: "Cronograma Matrícula",
-        text: "Revisa las fechas necesarias para el proceso de matrícula.",
-        image: cronogramaAdmision,
-    },
-    {
-        title: "Conceptos de Pago",
-        text: `Conoce los conceptos de pago para el proceso de inscripcion, recuerda que los pagos están disponibles desde el ${admissionConfig.cronograma.inicio_conceptos || "17 de Febrero"}.`,
-        image: fechaPagos,
-    },
 ];
-
 // DATOS INICIALES DEL FORMULARIO
 const INITIAL_FORM_DATA = {
     grado_id: "",

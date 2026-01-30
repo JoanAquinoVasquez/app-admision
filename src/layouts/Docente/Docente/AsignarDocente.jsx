@@ -4,7 +4,7 @@ import useProgramas from "../../../data/dataProgramas"; // Mantener esta importa
 import { useState, useEffect } from "react";
 import useGrados from "../../../data/dataGrados";
 import axios from "../../../axios";
-import { toast, Toaster } from "react-hot-toast";
+import { toast } from "react-hot-toast";
 import { Spinner, Select, SelectItem } from "@nextui-org/react";
 import useDocentes from "../../../data/Evaluacion/dataDocentes";
 import ModalDocente from "./M_NewDocente"; // Importa el modal
@@ -165,7 +165,6 @@ function DocenteEvaluador() {
 
     return (
         <div className="container p-4 max-w-full">
-            <Toaster position="top-right" />
             {/* Overlay de carga (solo se renderiza si loading es true) */}
             <div>
                 <Breadcrumb

@@ -15,12 +15,13 @@ import {
     DropdownItem,
     Chip,
     Pagination,
+    Spinner as NextUISpinner,
 } from "@nextui-org/react";
 
 import { capitalize } from "../../../services/utils.js";
 import Spinner from "../../../components/Spinner/Spinner.jsx";
 import axios from "../../../axios.js";
-import { toast, Toaster } from "react-hot-toast";
+import { toast } from "react-hot-toast";
 import RenderManyFilesUpload from "../../../components/Inputs/RenderManyFilesUpload.jsx";
 import useVouchers from "../../../data/Inscripcion/dataVouchers.jsx";
 
@@ -112,7 +113,8 @@ const INITIAL_VISIBLE_COLUMNS = [
 
 export default function CargarVoucher() {
     const { vouchers, fetchVouchers } = useVouchers();
-    const [loading, setLoading] = useState(false);
+    const [isFetching, setIsFetching] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
     const [filterValue, setFilterValue] = useState("");
     const [selectedKeys, setSelectedKeys] = useState(new Set([]));
     const [visibleColumns, setVisibleColumns] = useState(
@@ -172,13 +174,13 @@ export default function CargarVoucher() {
 
     useEffect(() => {
         const loadData = async () => {
-            setLoading(true); // Inicia la carga
+            setIsFetching(true); // Inicia la carga de la tabla
             await fetchVouchers(); // Espera a que termine de obtener los datos
-            setLoading(false); // Finaliza la carga
+            setIsFetching(false); // Finaliza la carga de la tabla
         };
 
         loadData();
-    }, []);
+    }, [fetchVouchers]);
 
     useEffect(() => {
         setPage(1); // Reiniciar a la primera página cuando se aplica un filtro
@@ -205,25 +207,25 @@ export default function CargarVoucher() {
         });
 
         try {
-            setLoading(true);
+            setIsSaving(true);
             const response = await axios.post("/vouchers", formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
             });
-            setLoading(false);
+            setIsSaving(false);
             fetchVouchers();
+            setVoucher([]); // Limpiar el estado después de la carga exitosa
             toast.success(
                 response.data.message || "Vouchers cargados exitosamente."
             );
         } catch (error) {
-            setLoading(false);
+            setIsSaving(false);
             toast.error(
                 "Error al subir los archivos: " +
-                    (error.response?.data?.message || error.message)
+                (error.response?.data?.message || error.message)
             );
         }
-        setVoucher([]); // Limpiar el estado después de la carga
     };
 
     const handleFileUpload = (inputId, files) => {
@@ -238,27 +240,30 @@ export default function CargarVoucher() {
 
     const handleExportVouchers = async () => {
         try {
-            setLoading(true);
+            setIsSaving(true);
             const response = await axios.get("/voucher/exportar", {
                 responseType: "blob",
             });
             // Obtener el nombre del archivo desde los encabezados de la respuesta
             const disposition = response.headers["content-disposition"];
-            const filename =
-                disposition &&
-                disposition.split("filename=")[1].replace(/"/g, "");
+            let fileName = `reporte_vouchers_${new Date().toLocaleDateString('es-PE').replace(/\//g, '-')}.xlsx`;
+
+            if (disposition) {
+                const match = disposition.match(/filename="?([^"]+)"?/);
+                if (match?.[1]) fileName = match[1];
+            }
 
             // Crear un enlace para descargar el archivo
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement("a");
             link.href = url;
-            link.setAttribute("download", filename || "reporte_diario.xlsx"); // Nombre del archivo dinámico
+            link.setAttribute("download", fileName); // Nombre del archivo dinámico
             document.body.appendChild(link);
             link.click(); // Simula el click para descargar el archivo
-            setLoading(false);
+            setIsSaving(false);
             link.remove(); // Eliminar el enlace del DOM
         } catch (error) {
-            setLoading(false);
+            setIsSaving(false);
             toast.error("Error al exportar vouchers:", error);
         }
     };
@@ -502,7 +507,6 @@ export default function CargarVoucher() {
 
     return (
         <div>
-            <Toaster position="top-right" reverseOrder={false} />
             <Breadcrumb
                 paths={[
                     {
@@ -529,10 +533,11 @@ export default function CargarVoucher() {
                             onFileUpload={handleFileUpload}
                         />
                         <Button
+                            isLoading={isSaving}
                             className="bg-blue-600 text-white hover:bg-blue-700"
                             onPress={handleSave}
                         >
-                            Confirmar
+                            Subir Vouchers
                         </Button>
                     </div>
                 </div>
@@ -544,8 +549,8 @@ export default function CargarVoucher() {
                     aria-label="Tabla vouchers"
                     layout="auto"
                     isHeaderSticky
-                    isLoading={loading}
-                    loadingContent={<Spinner label="Cargando vouchers..." />}
+                    isLoading={isFetching}
+                    loadingContent={<NextUISpinner label="Cargando vouchers..." />}
                     bottomContent={bottomContent}
                     bottomContentPlacement="outside"
                     topContent={topContent}
@@ -578,7 +583,7 @@ export default function CargarVoucher() {
                     <TableBody
                         items={items}
                         className="space-y-1" // Reducir espacio entre filas
-                        emptyContent="No se encontró información sobre vouchers."
+                        emptyContent={isFetching ? <NextUISpinner label="Cargando vouchers..." /> : "No se encontró información sobre vouchers."}
                     >
                         {(item) => (
                             <TableRow

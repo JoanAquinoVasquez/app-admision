@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import useGrado from "../../data/dataGrados";
 import Spinner from "../../components/Spinner/Spinner"; // Spinner
-import { toast, Toaster } from "react-hot-toast";
+import { toast } from "react-hot-toast";
 import MultiSelect from "../../components/Select/SelectMultiple";
 import {
     Table,
@@ -140,13 +140,13 @@ const INITIAL_VISIBLE_COLUMNS = [
 ];
 
 export default function App() {
-    const { ingresantes, refetch } = useDataIngresantes();
+    const { ingresantes, refetch, loading: dataLoading } = useDataIngresantes();
 
     const { grados } = useGrado();
     const { filteredProgramasHabilitados, filterByGrado } =
         useProgramasHabilitados();
 
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(false); // local loading for actions
     const [selectedKeysPrograma, setSelectedKeysPrograma] = useState([]);
 
     // ✅ Aseguramos que `ingresantes` tenga datos antes de mapear
@@ -282,15 +282,11 @@ export default function App() {
 
             // Obtener el nombre de archivo desde los headers si existe
             const disposition = response.headers["content-disposition"];
-            let fileName = type.replace(/\s+/g, "_").toLowerCase();
+            let fileName = `${type.replace(/\s+/g, "_").toLowerCase()}_${new Date().toLocaleDateString('es-PE').replace(/\//g, '-')}.${fileExt}`;
 
-            if (disposition && disposition.includes("filename=")) {
+            if (disposition) {
                 const match = disposition.match(/filename="?([^"]+)"?/);
-                if (match && match[1]) {
-                    fileName = match[1];
-                }
-            } else {
-                fileName += `.${fileExt}`;
+                if (match?.[1]) fileName = match[1];
             }
 
             const urlBlob = window.URL.createObjectURL(
@@ -446,7 +442,6 @@ export default function App() {
     const topContent = useMemo(() => {
         return (
             <>
-                <Toaster position="top-right" />
                 {/* Overlay de carga (solo se renderiza si loading es true) */}
                 <div className="flex flex-wrap gap-4 w-full">
                     {/* Input de búsqueda */}
@@ -646,15 +641,13 @@ export default function App() {
             </>
         );
     }, [
-        [
-            filterValue,
-            onSearchChange,
-            statusFilter,
-            visibleColumns,
-            onRowsPerPageChange,
-            onClear,
-            users.length,
-        ],
+        filterValue,
+        onSearchChange,
+        statusFilter,
+        visibleColumns,
+        onRowsPerPageChange,
+        onClear,
+        users.length,
     ]);
     const bottomContent = useMemo(
         () => (
@@ -710,10 +703,10 @@ export default function App() {
                 )}
             </TableHeader>
             <TableBody
-                emptyContent={"No se encontró información"}
+                emptyContent={(dataLoading || loading) ? <Spinner label="Cargando..." /> : "No se encontró información"}
                 items={items}
                 className="space-y-1" // Reducir espacio entre filas
-                isLoading={loading}
+                isLoading={dataLoading || loading}
                 loadingContent={<Spinner label="Cargando..." />}
             >
                 {(item) => (

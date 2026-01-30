@@ -3,8 +3,10 @@ import axios from "../../axios";
 
 const useDataIngresantes = () => {
     const [ingresantes, setIngresantes] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     const fetchIngresantes = useCallback(async () => {
+        setLoading(true);
         try {
             const response = await axios.get("/resultados-ingresantes");
             // Aseguramos que siempre sea un array
@@ -12,6 +14,8 @@ const useDataIngresantes = () => {
         } catch (err) {
             console.error("Error al cargar los datos de ingresantes:", err);
             setIngresantes([]); // En caso de error, mantener array vacío
+        } finally {
+            setLoading(false);
         }
     }, []);
 
@@ -21,7 +25,8 @@ const useDataIngresantes = () => {
 
     return {
         ingresantes,
-        refetch: fetchIngresantes, // puedes llamarlo desde cualquier componente
+        refetch: fetchIngresantes,
+        loading,
     };
 };
 

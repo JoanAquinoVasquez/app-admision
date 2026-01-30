@@ -2,7 +2,7 @@ import React from "react";
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import useGrado from "../../data/dataGrados";
 import Spinner from "../../components/Spinner/Spinner"; // Spinner
-import { toast, Toaster } from "react-hot-toast";
+import { toast } from "react-hot-toast";
 import MultiSelect from "../../components/Select/SelectMultiple";
 import {
     Modal,
@@ -176,7 +176,7 @@ const INITIAL_VISIBLE_COLUMNS = [
 ];
 
 export default function App() {
-    const { inscripcioNota, fetchInscripcionNota } = useInscripcioNota();
+    const { inscripcioNota, fetchInscripcionNota, loading: dataLoading } = useInscripcioNota();
     const [validarId, setValidarId] = useState(null);
     const [isObservarOpen, setIsObservarOpen] = useState(false);
 
@@ -193,7 +193,7 @@ export default function App() {
 
     const [editMode, setEditMode] = useState(false);
     const toggleEditMode = () => setEditMode(!editMode);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(false); // local loading for actions
     const [selectedKeysPrograma, setSelectedKeysPrograma] = useState([]);
 
     // ✅ Aseguramos que `inscripcioNota` tenga datos antes de mapear
@@ -756,7 +756,6 @@ export default function App() {
                         </ModalFooter>
                     </ModalContent>
                 </Modal>
-                <Toaster position="top-right" />
                 {/* Overlay de carga (solo se renderiza si loading es true) */}
                 <div className="flex flex-wrap gap-4 w-full">
                     {/* Input de búsqueda */}
@@ -925,15 +924,13 @@ export default function App() {
             </>
         );
     }, [
-        [
-            filterValue,
-            onSearchChange,
-            statusFilter,
-            visibleColumns,
-            onRowsPerPageChange,
-            onClear,
-            users.length,
-        ],
+        filterValue,
+        onSearchChange,
+        statusFilter,
+        visibleColumns,
+        onRowsPerPageChange,
+        onClear,
+        users.length,
     ]);
 
     const bottomContent = useMemo(
@@ -1010,10 +1007,10 @@ export default function App() {
                 )}
             </TableHeader>
             <TableBody
-                emptyContent={"No se encontró información"}
+                emptyContent={(dataLoading || loading) ? <Spinner label="Cargando..." /> : "No se encontró información"}
                 items={items}
                 className="space-y-1" // Reducir espacio entre filas
-                isLoading={loading}
+                isLoading={dataLoading || loading}
                 loadingContent={<Spinner label="Cargando..." />}
             >
                 {(item) => (

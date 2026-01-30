@@ -9,7 +9,15 @@ import {
 } from "recharts";
 import { Spinner } from "@nextui-org/react";
 
-const HistogramaNotas = ({ histogramaNotas }) => {
+const HistogramaNotas = ({ histogramaNotas, loading }) => {
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center justify-center h-64">
+                <Spinner label="Cargando..." />
+            </div>
+        );
+    }
+
     if (!histogramaNotas || !histogramaNotas.histograma || histogramaNotas.histograma.length === 0) {
         return (
             <div className="flex items-center justify-center h-64">
