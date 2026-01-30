@@ -30,10 +30,10 @@ export default function SegundasEspecialidades() {
 
                 {/* 1. Header y Hero Section (Ancho Completo) */}
                 <div className="space-y-6 mb-8">
-                    <PageHeader currentPage="Segundas Especialidades" />
+                    <PageHeader currentPage="Segundas Especialidades Profesionales" />
                     <div className="overflow-hidden rounded-[2.5rem] shadow-2xl border border-gray-100">
                         <HeroSection
-                            title="SEGUNDAS ESPECIALIDADES"
+                            title="SEGUNDAS ESPECIALIDADES PROFESIONALES"
                             subtitle="Especialízate y destaca en tu campo profesional con programas de alto nivel."
                             image={segundasEspecialidadesImg}
                         />

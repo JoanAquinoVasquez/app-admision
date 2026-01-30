@@ -1,38 +1,31 @@
 import React from "react";
-import { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import useGrado from "../../data/dataGrados";
 import Spinner from "../../components/Spinner/Spinner"; // Spinner
-import { toast } from "react-hot-toast";
+
 import MultiSelect from "../../components/Select/SelectMultiple";
+import UploadNotesModal from "./modals/UploadNotesModal";
+import GradeModal from "./modals/GradeModal";
+import usePostulanteExports from "../../hooks/usePostulanteExports";
 import {
-    Modal,
-    ModalContent,
-    ModalHeader,
-    ModalBody,
-    ModalFooter,
-    Textarea,
+
     Table,
     TableHeader,
     TableColumn,
     TableBody,
     TableRow,
     TableCell,
-    Input,
+
     Button,
     DropdownTrigger,
     Dropdown,
     DropdownMenu,
     DropdownItem,
-    Chip,
-    Radio,
-    RadioGroup,
     Pagination,
 } from "@nextui-org/react";
 import useInscripcioNota from "../../data/Inscripcion/dataInscripcionNota";
-import Typography from "@mui/material/Typography";
-import RenderFileUpload from "../../components/Inputs/RenderFileUpload";
 import Select from "../../components/Select/Select";
-import axios from "../../axios";
+
 import useProgramas from "../../data/dataProgramas";
 
 export const columns = [
@@ -186,14 +179,15 @@ export default function App() {
     const [programasPosibles, setProgramasPosibles] = useState([]);
     const [programasFiltrados, setProgramasFiltrados] = useState([]);
     const [isNotaEntrevista, setIsNotaEntrevista] = useState(false);
-    const [nota, setNota] = useState("");
 
+    const [selectedNota, setSelectedNota] = useState("");
     const [grado_id, setGrado_id] = useState("");
     const [gradoSelected, setGradoSelected] = useState("");
-
     const [editMode, setEditMode] = useState(false);
     const toggleEditMode = () => setEditMode(!editMode);
-    const [loading, setLoading] = useState(false); // local loading for actions
+    // loading state removed as it was only for export/internal actions now handled by hook or modals
+    // But dataLoading is from useInscripcioNota
+    const { loading: exportLoading, handleExport } = usePostulanteExports();
     const [selectedKeysPrograma, setSelectedKeysPrograma] = useState([]);
 
     // ✅ Aseguramos que `inscripcioNota` tenga datos antes de mapear
@@ -243,6 +237,8 @@ export default function App() {
         direction: "ascending",
     });
     const [page, setPage] = useState(1);
+
+
 
     const headerColumns = useMemo(() => {
         return visibleColumns === "all"
@@ -311,159 +307,13 @@ export default function App() {
         return { conNota, sinNota };
     }, [filteredItems]);
 
-    const handleExportMultiple = async (type) => {
-        setLoading(true);
-
-        const downloadBlob = (blob, fileName = "archivo.pdf") => {
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = fileName;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            URL.revokeObjectURL(url);
-        };
-
-        try {
-            const selectedPrograms = selectedKeysPrograma;
-            let response;
-            let fileName = "archivo";
-
-            switch (type) {
-                case "CV":
-                    if (!selectedPrograms?.length) {
-                        toast.error(
-                            "Por favor, selecciona al menos un programa."
-                        );
-                        return;
-                    }
-                    response = await axios.post(
-                        "postulantes-notasCV-multiple-admin",
-                        { ids: selectedPrograms },
-                        { responseType: "blob" }
-                    );
-                    fileName = "notas_cv.pdf";
-                    break;
-
-                case "Plantilla Notas Entrevista":
-                    response = await axios.get("/postulantes-aptos-multiple", {
-                        responseType: "blob",
-                    });
-                    fileName = "plantilla_entrevista.pdf";
-                    break;
-
-                case "Reporte Final":
-                    response = await axios.get("/reporte-final-notas", {
-                        responseType: "blob",
-                    });
-                    fileName = "reporte_final.pdf";
-                    break;
-
-                case "Reporte Aulas PDF":
-                    response = await axios.get(
-                        "/reporte-inscripcion-final/aulas/pdf",
-                        { responseType: "blob" }
-                    );
-                    fileName = "reporte_aulas.pdf";
-                    break;
-
-                case "Reporte Aptos Asistencia PDF":
-                    response = await axios.get(
-                        "/reporte-inscripcion-final/firmas/pdf",
-                        { responseType: "blob" }
-                    );
-                    fileName = "reporte_aptos_firmas.pdf";
-                    break;
-
-                case "Reporte Aptos Excel":
-                    response = await axios.get(
-                        "/reporte-inscripcion-final/excel",
-                        { responseType: "blob" }
-                    );
-                    fileName = "reporte_aptos.xlsx";
-                    break;
-
-                case "Reporte Ingresantes Excel":
-                    response = await axios.get("/reporte-notas-final-excel", {
-                        responseType: "blob",
-                    });
-                    fileName = "reporte_ingresantes.xlsx";
-                    break;
-
-                case "Excel":
-                    {
-                        const params = {};
-                        if (gradoFilter !== "all" && gradoFilter)
-                            params.grado = gradoFilter;
-                        if (programaFilter !== "all" && programaFilter)
-                            params.programa = programaFilter;
-
-                        response = await axios.get("/reporte-inscripcion", {
-                            params,
-                            responseType: "blob",
-                        });
-                        fileName = "reporte_inscripcion.xlsx";
-                    }
-                    break;
-
-                case "Reporte Diario":
-                    response = await axios.get("/reporte-inscripcion-diario", {
-                        responseType: "blob",
-                    });
-                    fileName = "reporte_diario.pdf";
-                    break;
-
-                case "Facultad Excel":
-                    response = await axios.get(
-                        "/reporte-inscripcion-facultad",
-                        {
-                            responseType: "blob",
-                        }
-                    );
-                    fileName = "reporte_facultad.xlsx";
-                    break;
-
-                case "Facultad PDF":
-                    response = await axios.get(
-                        "/reporte-inscripcion-facultad-pdf",
-                        {
-                            responseType: "blob",
-                        }
-                    );
-                    fileName = "reporte_facultad.pdf";
-                    break;
-
-                case "Top Programas":
-                    response = await axios.get("/reporte-programas-top", {
-                        responseType: "blob",
-                    });
-                    fileName = "reporte_top_programas.pdf";
-                    break;
-
-                default:
-                    toast.error("Tipo de exportación no válido.");
-                    return;
-            }
-
-            // Extraer filename desde headers si está disponible
-            const disposition = response.headers["content-disposition"];
-            const extracted = disposition
-                ?.split("filename=")[1]
-                ?.replace(/["']/g, "");
-            if (extracted) fileName = decodeURIComponent(extracted);
-
-            downloadBlob(response.data, fileName);
-        } catch (error) {
-            const msg =
-                error?.response?.data?.message ||
-                error?.message ||
-                "Error inesperado";
-            toast.error("Error al exportar: " + msg);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const onExport = (type) => {
+        handleExport(type, {
+            selectedPrograms: selectedKeysPrograma,
+            gradoFilter: gradoFilter,
+            programaFilter: programaFilter,
+        });
+    }
 
     const renderCell = useCallback((user, columnKey) => {
         const cellValue = user[columnKey];
@@ -555,7 +405,7 @@ export default function App() {
                                         textValue="Registrar/Editar Nota Entrevista"
                                         onPress={() => {
                                             setIsNotaEntrevista(true);
-                                            setNota(user.nota_entrevista || "");
+                                            setSelectedNota(user.nota_entrevista || "");
                                             setValidarId(user.id);
                                             setGradoSelected(user.grado_id);
                                         }}
@@ -609,153 +459,22 @@ export default function App() {
         setPage(1);
     }, []);
 
-    const formDataRef = useRef(new FormData());
-    const handleFileUpload = (inputId, file) => {
-        formDataRef.current.set(inputId, file);
-    };
-
-    const handleObservar = async () => {
-        setIsObservarOpen(false);
-        setLoading(true);
-        // Verificar si el FormData tiene un archivo
-        if (!formDataRef.current.has("notas_examen")) {
-            toast.error("Debe seleccionar un archivo.");
-            return;
-        }
-
-        try {
-            const response = await axios.post(
-                "/extraer-notas-examen",
-                formDataRef.current, // Pasar el FormData almacenado
-                {
-                    headers: {
-                        "Content-Type": "multipart/form-data", // Asegurarse de que el tipo de contenido sea correcto
-                    },
-                }
-            );
-            setIsObservarOpen(false);
-            fetchInscripcionNota();
-            toast.success(response.data.message);
-        } catch (error) {
-            toast.error(
-                error.response?.data?.message ||
-                "Hubo un problema al subir el archivo."
-            );
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleGuardarNota = async () => {
-        // Validar que la nota esté dentro del rango permitido
-        if (gradoSelected && gradoSelected == 3) {
-            if (nota < 0 || nota > 30 || isNaN(nota)) {
-                toast.error("La nota debe estar entre 0 y 30.");
-                return;
-            }
-        }
-
-        if (nota < 0 || nota > 40 || isNaN(nota)) {
-            toast.error("La nota debe estar entre 0 y 40.");
-            return;
-        }
-        try {
-            const response = await axios.post("/guardar-nota-entrevista", {
-                inscripcion_id: validarId,
-                nota_entrevista: nota,
-            });
-            setIsNotaEntrevista(false);
-            fetchInscripcionNota();
-            toast.success("Nota guardada correctamente.");
-        } catch (error) {
-            toast.error(
-                error.response?.data?.message ||
-                "Hubo un problema al guardar la nota."
-            );
-        }
-    };
-
     const topContent = useMemo(() => {
         return (
             <>
-                <Modal
+                <UploadNotesModal
                     isOpen={isObservarOpen}
                     onClose={() => setIsObservarOpen(false)}
-                >
-                    <ModalContent>
-                        <ModalHeader>Subir Notas Examen Admisión</ModalHeader>
-                        <ModalBody>
-                            <RenderFileUpload
-                                uploadType="Subir Notas (Excel)"
-                                allowedFileTypes={[
-                                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                                    "application/vnd.ms-excel",
-                                ]}
-                                inputId="notas_examen"
-                                tamicono={24}
-                                tamletra={14}
-                                onFileUpload={handleFileUpload}
-                            />
-
-                            <Typography
-                                variant="body2"
-                                color="textSecondary"
-                                sx={{ fontSize: "0.7rem" }}
-                            >
-                                * Suba las notas en formato Excel (.xls, .xlsx).
-                                Tamaño máximo: 10MB.
-                            </Typography>
-                        </ModalBody>
-                        <ModalFooter>
-                            <Button
-                                color="default"
-                                variant="flat"
-                                onPress={() => setIsObservarOpen(false)}
-                            >
-                                Cancelar
-                            </Button>
-                            <Button color="success" onPress={handleObservar}>
-                                Registrar Notas
-                            </Button>
-                        </ModalFooter>
-                    </ModalContent>
-                </Modal>
-                <Modal
+                    onSuccess={fetchInscripcionNota}
+                />
+                <GradeModal
                     isOpen={isNotaEntrevista}
                     onClose={() => setIsNotaEntrevista(false)}
-                >
-                    <ModalContent>
-                        <ModalHeader>Registrar Nota</ModalHeader>
-                        <ModalBody>
-                            <Input
-                                type="number"
-                                label="Nota"
-                                placeholder="Ingrese la nota"
-                                min={0}
-                                max={
-                                    gradoSelected && gradoSelected == 3
-                                        ? 30
-                                        : 40
-                                }
-                                step="0.01"
-                                value={isNaN(Number(nota)) ? "" : nota}
-                                onChange={(e) => setNota(e.target.value)}
-                            />
-                        </ModalBody>
-                        <ModalFooter>
-                            <Button
-                                color="default"
-                                variant="flat"
-                                onPress={() => setIsNotaEntrevista(false)}
-                            >
-                                Cancelar
-                            </Button>
-                            <Button color="success" onPress={handleGuardarNota}>
-                                Guardar
-                            </Button>
-                        </ModalFooter>
-                    </ModalContent>
-                </Modal>
+                    validarId={validarId}
+                    initialNota={selectedNota}
+                    gradoSelected={gradoSelected}
+                    onSuccess={fetchInscripcionNota}
+                />
                 {/* Overlay de carga (solo se renderiza si loading es true) */}
                 <div className="flex flex-wrap gap-4 w-full">
                     {/* Input de búsqueda */}
@@ -847,14 +566,14 @@ export default function App() {
                             <DropdownMenu>
                                 <DropdownItem
                                     textValue="Reporte Notas CV PDF"
-                                    onPress={() => handleExportMultiple("CV")}
+                                    onPress={() => onExport("CV")}
                                 >
                                     Reporte Notas CV PDF
                                 </DropdownItem>
                                 <DropdownItem
                                     textValue="Plantilla Notas Entrevista"
                                     onPress={() =>
-                                        handleExportMultiple(
+                                        onExport(
                                             "Plantilla Notas Entrevista"
                                         )
                                     }
@@ -864,7 +583,7 @@ export default function App() {
                                 <DropdownItem
                                     textValue="Reporte Aptos Asistencia PDF"
                                     onPress={() =>
-                                        handleExportMultiple(
+                                        onExport(
                                             "Reporte Aptos Asistencia PDF"
                                         )
                                     }
@@ -874,7 +593,7 @@ export default function App() {
                                 <DropdownItem
                                     textValue="Reporte Aulas PDF"
                                     onPress={() =>
-                                        handleExportMultiple(
+                                        onExport(
                                             "Reporte Aulas PDF"
                                         )
                                     }
@@ -884,7 +603,7 @@ export default function App() {
                                 <DropdownItem
                                     textValue="Reporte Aptos Excel"
                                     onPress={() =>
-                                        handleExportMultiple(
+                                        onExport(
                                             "Reporte Aptos Excel"
                                         )
                                     }
@@ -1007,10 +726,10 @@ export default function App() {
                 )}
             </TableHeader>
             <TableBody
-                emptyContent={(dataLoading || loading) ? <Spinner label="Cargando..." /> : "No se encontró información"}
+                emptyContent={(dataLoading || exportLoading) ? <Spinner label="Cargando..." /> : "No se encontró información"}
                 items={items}
                 className="space-y-1" // Reducir espacio entre filas
-                isLoading={dataLoading || loading}
+                isLoading={dataLoading || exportLoading}
                 loadingContent={<Spinner label="Cargando..." />}
             >
                 {(item) => (

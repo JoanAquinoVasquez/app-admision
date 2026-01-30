@@ -7,8 +7,8 @@ import { admissionConfig } from "../../../config/admission";
 const TotalVouchers = ({ resumenVouchers, loading }) => {
     // Valores con fallback
     const totalVouchers = resumenVouchers?.totalVouchers || 0;
+    const totalRecaudado2026 = resumenVouchers?.totalRecaudado2026 || 0;
     const totalRecaudado2025 = resumenVouchers?.totalRecaudado2025 || 0;
-    const totalRecaudado2024 = resumenVouchers?.totalRecaudado2024 || 0;
     const inscritos = resumenVouchers?.inscritos || 0;
     const noInscritos = resumenVouchers?.noInscritos || 0;
     const bancoNacionCount = resumenVouchers?.bancoNacionCount || 0;
@@ -60,7 +60,7 @@ const TotalVouchers = ({ resumenVouchers, loading }) => {
                                 <p className="text-base font-semibold text-lg">
                                     S/{" "}
                                     <CountUp
-                                        end={totalRecaudado2025}
+                                        end={totalRecaudado2026}
                                         duration={1.5}
                                         separator="."
                                         decimal=","
@@ -71,14 +71,14 @@ const TotalVouchers = ({ resumenVouchers, loading }) => {
                             <div className="text-center">
                                 <p className="text-sm text-gray-500">
                                     <span className="hidden md:inline">
-                                        Total Rec. 2024
+                                        T. Rec. Proc. Ant.
                                     </span>
-                                    <span className="inline md:hidden">Rec. 2024</span>
+                                    <span className="inline md:hidden">T. Rec. Proc. Ant.</span>
                                 </p>
                                 <p className="text-base font-semibold text-lg">
                                     S/{" "}
                                     <CountUp
-                                        end={totalRecaudado2024}
+                                        end={totalRecaudado2025}
                                         duration={1.5}
                                         separator="."
                                     />

@@ -37,7 +37,7 @@ const PROGRAMAS = [
     },
     {
         img: seg,
-        title: "Segundas Especialidades",
+        title: "Segundas Especialidades Profesionales",
         desc: "Especialízate en un nuevo enfoque y diversifica tus habilidades.",
         url: "/segundas-especialidades",
         isInternal: true,
@@ -111,7 +111,7 @@ export default function Index() {
                     statusColor: "default",
                     title: "Próximamente",
                     description:
-                        "Nos estamos preparando para el siguiente proceso de admisión 2026-I. Pronto más novedades.",
+                        `Nos estamos preparando para el siguiente proceso de admisión ${config.periodo}. Pronto más novedades.`,
                     buttonText: "Más información",
                     buttonLink: "https://www.facebook.com/epgunprg", // Opcional: link a facebook o web principal
                     isActive: false,
