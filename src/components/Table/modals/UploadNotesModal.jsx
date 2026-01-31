@@ -6,7 +6,7 @@ import {
     ModalBody,
     ModalFooter,
     Button,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import Typography from "@mui/material/Typography";
 import RenderFileUpload from "../../Inputs/RenderFileUpload";
 import { toast } from "react-hot-toast";

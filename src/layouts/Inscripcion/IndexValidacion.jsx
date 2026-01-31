@@ -4,7 +4,7 @@ import TopLoadingBar from "react-top-loading-bar";
 import { toast } from "react-hot-toast";
 import LoadingOverlay from "../../components/Loading/LoadingOverlay";
 import { Box } from "@mui/material";
-import { Button } from "@nextui-org/react";
+import { Button } from "@heroui/react";
 
 // Componentes personalizados
 import Carrusel from "../../components/Carrusel/Carrusel";

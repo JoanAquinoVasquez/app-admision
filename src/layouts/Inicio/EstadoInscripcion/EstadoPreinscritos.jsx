@@ -1,5 +1,5 @@
 import { MdPeople } from "react-icons/md";
-import { Divider, Spinner, Tooltip } from "@nextui-org/react";
+import { Divider, Spinner, Tooltip } from "@heroui/react";
 import DashboardCard from "../../../components/Cards/DashboardCard";
 import CountUp from "react-countup";
 

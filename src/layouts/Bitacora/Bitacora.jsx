@@ -16,7 +16,7 @@ import {
     Pagination,
     User,
     Spinner as NextUISpinner,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import useBitacora from "../../data/dataBitacora";
 import Spinner from "../../components/Spinner/Spinner";
 import DashboardCard from "../../components/Cards/DashboardCard";

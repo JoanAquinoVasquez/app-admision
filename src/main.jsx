@@ -1,7 +1,7 @@
 import ReactDOM from "react-dom/client";
 import { StrictMode, lazy, Suspense, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { NextUIProvider } from "@nextui-org/react";
+import { HeroUIProvider } from "@heroui/react";
 import "./index.css";
 import "./bootstrap";
 import Spinner from "./components/Spinner/Spinner.jsx";
@@ -36,7 +36,7 @@ const App = () => {
     return (
         <StrictMode>
             <Toaster position="top-center" containerStyle={{ zIndex: 99999 }} />
-            <NextUIProvider>
+            <HeroUIProvider>
                 <BrowserRouter basename="/admision-epg">
                     <UserProvider>
                         <div
@@ -110,7 +110,7 @@ const App = () => {
                         </div>
                     </UserProvider>
                 </BrowserRouter>
-            </NextUIProvider>
+            </HeroUIProvider>
         </StrictMode>
     );
 };

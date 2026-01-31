@@ -25,7 +25,7 @@ import {
     Pagination,
     Spinner,
     user,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import useInscripcionInhabilitada from "../../data/Inscripcion/dataInscripcionesInhabilitadas";
 import Select from "../../components/Select/Select";
 import axios from "../../axios";
@@ -33,6 +33,7 @@ import ModalConfirm from "../Modal/Confirmation/ModalConfirm";
 import useProgramasHabilitados from "../../data/Inscripcion/dataProgramasHabilitados";
 import useProgramasInhabilitados from "../../data/Inscripcion/dataProgramasInhabilitados";
 import SelectGradoPrograma from "../Select/SelectGradoPrograma";
+import CambiarProgramaModal from "../Modals/CambiarProgramaModal";
 import useProgramasPosibles from "../../data/Inscripcion/dataProgramasPosibles";
 
 export function capitalize(s) {
@@ -173,6 +174,13 @@ export default function App() {
         useProgramasPosibles(validarId || null);
     const [selectedGrado, setSelectedGrado] = useState(null);
     const [selectedPrograma, setSelectedPrograma] = useState(null);
+
+    // Fetch programas posibles when modal opens
+    useEffect(() => {
+        if (isCambioOpen && validarId) {
+            fetchProgramasPosibles();
+        }
+    }, [isCambioOpen, validarId, fetchProgramasPosibles]);
 
     // ✅ Aseguramos que `inscripcionesInhabilitadas` tenga datos antes de mapear
     const users = useMemo(() => {
@@ -649,17 +657,20 @@ export default function App() {
         }
     };
 
-    const handleObservarCambio = async (id) => {
+    const handleObservarCambio = async (id, programaId) => {
         setLoading(true);
 
         try {
+            const payload = { programa_id: parseInt(programaId) };
+            
             const response = await axios.post(
                 `/programa-cambio/${id}`,
-                { programa_id: selectedPrograma }, // Envía el id del programa
+                payload,
                 {
                     headers: { "Content-Type": "application/json" },
                 }
             );
+            
             if (response.status === 200) {
                 toast.success(response.data.message);
                 setIsCambioOpen(false);
@@ -668,6 +679,8 @@ export default function App() {
                 toast.error("Error al observar el cambio de programa.");
             }
         } catch (error) {
+            console.error("❌ Error completo:", error);
+            console.error("❌ Error response:", error.response?.data);
             const errorMessage =
                 error.response?.data?.message ||
                 error.message ||
@@ -918,38 +931,20 @@ export default function App() {
                 message={message}
             ></ModalConfirm>
 
-            <Modal
-                size="3xl"
+
+            <CambiarProgramaModal
                 isOpen={isCambioOpen}
-                onOpenChange={setIsCambioOpen}
-                isDismissable={false}
-            >
-                <ModalContent style={{ height: "40vh" }}>
-                    <ModalHeader>Cambiar Programa</ModalHeader>
-                    <ModalBody>
-                        <SelectGradoPrograma
-                            grados={gradosPosibles ?? []}
-                            programas={programasPosibles ?? []}
-                            onChangeGrado={setSelectedGrado}
-                            onChangePrograma={setSelectedPrograma}
-                        />
-                    </ModalBody>
-                    <ModalFooter>
-                        <Button
-                            color="primary"
-                            onPress={() => handleObservarCambio(validarId)}
-                        >
-                            Cambiar
-                        </Button>
-                        <Button
-                            color="default"
-                            onPress={() => setIsCambioOpen(false)}
-                        >
-                            Cancelar
-                        </Button>
-                    </ModalFooter>
-                </ModalContent>
-            </Modal>
+                onClose={() => setIsCambioOpen(false)}
+                onConfirm={(id, gradoId, programaId) => {
+                    setSelectedGrado(gradoId);
+                    setSelectedPrograma(programaId);
+                    handleObservarCambio(id, programaId);
+                }}
+                grados={grados ?? []}
+                programas={programasPosibles ?? []}
+                inscripcionId={validarId}
+                isLoading={loading}
+            />
 
             <Modal
                 size="2xl"
@@ -960,7 +955,17 @@ export default function App() {
                 <ModalContent>
                     {(onClose) => (
                         <>
-                            <ModalHeader>Inhabilitar Programa</ModalHeader>
+                            <ModalHeader className="flex flex-col gap-1">
+                                <div className="flex items-center gap-2">
+                                    <svg className="w-6 h-6 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                    <span className="text-lg font-semibold">Inhabilitar Programas</span>
+                                </div>
+                                <p className="text-sm text-default-500 font-normal">
+                                    Seleccione los programas que desea inhabilitar. <span className="font-semibold text-warning">Esta acción es irreversible.</span>
+                                </p>
+                            </ModalHeader>
                             <ModalBody>
                                 <Select
                                     label="Grado Académico"
@@ -987,46 +992,62 @@ export default function App() {
                                     }}
                                 />
 
-                                <div className="flex flex-col gap-2">
-                                    <p className="font-bold">
-                                        Programas Disponibles:
-                                    </p>
+                                <div className="flex flex-col gap-3 mt-2">
+                                    <div className="flex items-center justify-between">
+                                        <p className="font-semibold text-default-700">
+                                            Programas Disponibles
+                                        </p>
+                                        {selectedProgramas.length > 0 && (
+                                            <Chip size="sm" color="warning" variant="flat">
+                                                {selectedProgramas.length} seleccionado{selectedProgramas.length !== 1 ? 's' : ''}
+                                            </Chip>
+                                        )}
+                                    </div>
 
                                     {gradoFilter === "all" ? (
-                                        <p className="text-gray-500">
-                                            Seleccione un grado para
-                                            continuar.
-                                        </p>
+                                        <div className="flex flex-col items-center justify-center py-8 text-center">
+                                            <svg className="w-16 h-16 text-default-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                            </svg>
+                                            <p className="text-default-400 font-medium">
+                                                Seleccione un grado académico para ver los programas disponibles
+                                            </p>
+                                        </div>
                                     ) : currentProgramas.length > 0 ? (
                                         <>
-                                            <ul className="pl-5 space-y-2">
+                                            <div className="space-y-2">
                                                 {currentProgramas.map(
                                                     (item) => (
-                                                        <li
+                                                        <div
                                                             key={item.id}
-                                                            className="text-sm text-gray-700"
+                                                            className={`p-3 rounded-lg border-2 transition-all cursor-pointer hover:shadow-md ${
+                                                                selectedProgramas.includes(item.id)
+                                                                    ? 'border-warning bg-warning-50 shadow-sm'
+                                                                    : 'border-default-200 hover:border-default-300'
+                                                            }`}
+                                                            onClick={() => handleProgramSelection(item.id)}
                                                         >
-                                                            <Checkbox
-                                                                id={`programa-${item.id}`}
-                                                                name={`programa-${item.id}`}
-                                                                isSelected={selectedProgramas.includes(
-                                                                    item.id
-                                                                )}
-                                                                onChange={() =>
-                                                                    handleProgramSelection(
-                                                                        item.id
-                                                                    )
-                                                                }
-                                                            >
-                                                                {item.nombre +
-                                                                    " (" +
-                                                                    item.inscripciones_count +
-                                                                    " inscritos)"}
-                                                            </Checkbox>
-                                                        </li>
+                                                            <div className="flex items-start gap-3">
+                                                                <Checkbox
+                                                                    id={`programa-${item.id}`}
+                                                                    name={`programa-${item.id}`}
+                                                                    isSelected={selectedProgramas.includes(item.id)}
+                                                                    onChange={() => handleProgramSelection(item.id)}
+                                                                    color="warning"
+                                                                />
+                                                                <div className="flex-1">
+                                                                    <p className="font-medium text-default-700">
+                                                                        {item.nombre}
+                                                                    </p>
+                                                                    <p className="text-xs text-default-500 mt-1">
+                                                                        {item.inscripciones_count} {item.inscripciones_count === 1 ? 'inscrito' : 'inscritos'}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     )
                                                 )}
-                                            </ul>
+                                            </div>
 
                                             {totalPages > 1 && (
                                                 <div className="flex items-center justify-center mt-2 space-x-2">
@@ -1070,31 +1091,46 @@ export default function App() {
                                             )}
                                         </>
                                     ) : (
-                                        <p className="text-gray-500">
-                                            No quedan programas disponibles.
-                                        </p>
+                                        <div className="flex flex-col items-center justify-center py-8 text-center">
+                                            <svg className="w-16 h-16 text-default-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                            <p className="text-default-400 font-medium">
+                                                No hay programas disponibles para este grado
+                                            </p>
+                                        </div>
                                     )}
                                 </div>
                             </ModalBody>
-                            <ModalFooter>
+                            <ModalFooter className="gap-2">
                                 <Button
-                                    color="danger"
+                                    color="default"
+                                    variant="light"
+                                    onPress={onClose}
+                                    startContent={
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    }
+                                >
+                                    Cancelar
+                                </Button>
+                                <Button
+                                    color="warning"
                                     name="inhabilitar"
-                                    disabled={!selectedProgramas.length}
+                                    isDisabled={!selectedProgramas.length}
                                     onPress={() =>
                                         inhabilitarProgramas(
                                             selectedProgramas
                                         )
                                     }
+                                    startContent={
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                        </svg>
+                                    }
                                 >
-                                    Inhabilitar
-                                </Button>
-                                <Button
-                                    color="default"
-                                    onPress={onClose}
-                                    aria-label="Cancelar"
-                                >
-                                    Cancelar
+                                    Inhabilitar {selectedProgramas.length > 0 && `(${selectedProgramas.length})`}
                                 </Button>
                             </ModalFooter>
                         </>
@@ -1142,7 +1178,7 @@ export default function App() {
                     items={items}
                     className="space-y-1" // Reducir espacio entre filas
                     isLoading={dataLoading || loading}
-                    loadingContent={<Spinner label="Cargando..." />}
+                    loadingContent={<div className="w-full h-full flex justify-center items-center z-50 bg-content1/50 backdrop-blur-sm top-0 left-0 absolute"><Spinner label="Cargando..." /></div>}
                 >
                     {(item) => (
                         <TableRow

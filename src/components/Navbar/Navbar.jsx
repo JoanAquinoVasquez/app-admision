@@ -6,7 +6,7 @@ import {
     DropdownItem,
     User,
     Skeleton,
-} from "@nextui-org/react";
+} from "@heroui/react";
 
 function Navbar() {
     const { userData, logout, loading } = useUser();

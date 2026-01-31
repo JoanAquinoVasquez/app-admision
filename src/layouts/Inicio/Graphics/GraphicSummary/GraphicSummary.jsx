@@ -17,7 +17,7 @@ import {
     Button,
     Checkbox,
     Spinner,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { FaFilter } from "react-icons/fa";
 
 export function capitalize(s) {

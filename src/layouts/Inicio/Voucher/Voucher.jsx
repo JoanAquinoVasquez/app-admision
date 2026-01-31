@@ -1,7 +1,7 @@
 import { MdReceiptLong } from "react-icons/md";
 import DashboardCard from "../../../components/Cards/DashboardCard";
 import CountUp from "react-countup";
-import { Spinner } from "@nextui-org/react";
+import { Spinner } from "@heroui/react";
 import { admissionConfig } from "../../../config/admission";
 
 const TotalVouchers = ({ resumenVouchers, loading }) => {

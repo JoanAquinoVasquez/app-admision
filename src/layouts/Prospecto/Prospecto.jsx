@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Button, Card, CardBody } from "@nextui-org/react";
+import { Button, Card, CardBody } from "@heroui/react";
 import { Download, FileText, Calendar, CheckCircle, CreditCard } from "lucide-react"; // Importa iconos
 import Fondo from "../Fondo/Fondo";
 import HeroSection from "../../components/HeroSection/HeroSection";

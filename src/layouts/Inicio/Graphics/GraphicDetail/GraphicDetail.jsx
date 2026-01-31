@@ -5,7 +5,7 @@ import {
     CardBody,
     Tooltip,
     Spinner,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import PropTypes from "prop-types";
 import CountUp from "react-countup";
 

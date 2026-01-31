@@ -1,7 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { useUser } from "../services/UserContext";
 import NotAuthorizated from "../pages/NotAuthorizated/NotAuthorizated";
-import { Spinner } from "@nextui-org/react";
+import { Spinner } from "@heroui/react";
 
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     const { userData, logout, loading } = useUser();

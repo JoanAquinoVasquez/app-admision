@@ -1,4 +1,4 @@
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Link, Input } from "@nextui-org/react";
+import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Link, Input } from "@heroui/react";
 import { motion } from "framer-motion";
 import PropTypes from "prop-types";
 import { useState, useMemo } from "react";

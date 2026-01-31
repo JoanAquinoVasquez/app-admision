@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import ChatBotIcon from "../../assets/Isotipos/chatbot.png";
-import { Button, Input, Card, CardBody, CardHeader, ScrollShadow, Divider } from "@nextui-org/react";
+import { Button, Input, Card, CardBody, CardHeader, ScrollShadow, Divider } from "@heroui/react";
 import axios from "../../axios";
 
 const Chatbot = () => {

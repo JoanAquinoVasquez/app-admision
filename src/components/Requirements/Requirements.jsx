@@ -1,4 +1,4 @@
-import { Card, CardBody, Link, Button } from "@nextui-org/react";
+import { Card, CardBody, Link, Button } from "@heroui/react";
 import { motion } from "framer-motion";
 import PropTypes from "prop-types";
 

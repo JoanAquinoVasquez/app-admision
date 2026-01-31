@@ -94,7 +94,7 @@ export default function FormularioInscripcion() {
                     <div className="flex-1 overflow-hidden h-full">
                         {isInscriptionOpen ? (
                             datosPago ? (
-                                <div className="h-full overflow-y-auto flex flex-col justify-center">
+                                <div className="h-full overflow-y-auto flex flex-col md:justify-center">
                                     <InscripcionForm datosPago={datosPago} />
                                 </div>
                             ) : (

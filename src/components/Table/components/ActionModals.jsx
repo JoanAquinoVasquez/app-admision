@@ -22,6 +22,7 @@ export default function ActionModals({
     distritos,
     fetchProvincias,
     fetchDistritos,
+    loading,
 }) {
     return (
         <>
@@ -37,6 +38,7 @@ export default function ActionModals({
                 onClose={() => setIsObservarOpen(false)}
                 onConfirm={(text) => handleObservar(validarId, text)}
                 initialObservation={observacion}
+                isLoading={loading}
             />
 
             <EditInscripcionModal

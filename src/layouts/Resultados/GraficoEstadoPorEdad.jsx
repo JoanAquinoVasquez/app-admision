@@ -9,7 +9,7 @@ import {
     ResponsiveContainer,
     CartesianGrid,
 } from "recharts";
-import { Spinner } from "@nextui-org/react";
+import { Spinner } from "@heroui/react";
 
 // Componente personalizado de Tooltip
 const CustomTooltip = ({ active, payload, label }) => {

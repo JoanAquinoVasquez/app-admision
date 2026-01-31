@@ -6,7 +6,7 @@ import {
     ModalBody,
     ModalFooter,
     Button,
-} from "@nextui-org/react";
+} from "@heroui/react";
 
 export default function ModalConfirm({
     isOpen,

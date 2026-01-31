@@ -1,4 +1,4 @@
-import { Spinner } from "@nextui-org/react"; // Cambia el nombre aquí
+import { Spinner } from "@heroui/react"; // Cambia el nombre aquí
 import PropTypes from "prop-types";
 
 const ComponentSpinner = ({ label }) => {

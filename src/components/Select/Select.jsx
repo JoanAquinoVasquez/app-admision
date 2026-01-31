@@ -11,6 +11,7 @@ const Select = ({
     onSelectionChange,
     isRequired = false,
     disabled = false, // Prop disabled para habilitar/deshabilitar el componente
+    idPrefix = "", // Prefijo único para evitar conflictos de ID
 }) => {
     const [searchValue, setSearchValue] = useState(""); // Inicializa con vacío
     const [filteredOptions, setFilteredOptions] = useState(defaultItems);
@@ -157,14 +158,14 @@ const Select = ({
                     type="text"
                     id={
                         label
-                            ? label.replace(/\s+/g, "-").toLowerCase()
-                            : "select-input"
-                    } // Añadido id
+                            ? `${idPrefix}${label.replace(/\s+/g, "-").toLowerCase()}`
+                            : `${idPrefix}select-input`
+                    } // Añadido id con prefijo
                     name={
                         label
-                            ? label.replace(/\s+/g, "-").toLowerCase()
-                            : "select"
-                    } // Añadido name
+                            ? `${idPrefix}${label.replace(/\s+/g, "-").toLowerCase()}`
+                            : `${idPrefix}select`
+                    } // Añadido name con prefijo
                     value={searchValue}
                     onChange={handleInputChange}
                     required={isRequired}

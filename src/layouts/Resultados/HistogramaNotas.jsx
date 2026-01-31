@@ -7,7 +7,7 @@ import {
     CartesianGrid,
     ResponsiveContainer,
 } from "recharts";
-import { Spinner } from "@nextui-org/react";
+import { Spinner } from "@heroui/react";
 
 const HistogramaNotas = ({ histogramaNotas, loading }) => {
     if (loading) {

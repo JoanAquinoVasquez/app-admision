@@ -7,7 +7,7 @@ import {
     ModalFooter,
     Input,
     Button,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { toast } from "react-hot-toast";
 import axios from "../../../axios";
 

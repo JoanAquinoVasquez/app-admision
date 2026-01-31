@@ -8,7 +8,7 @@ import {
     ModalFooter,
     Button,
     Input,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai"; // Importa los íconos de ojo
 
 const M_NewDocente = ({ isOpen, onClose, onSave }) => {

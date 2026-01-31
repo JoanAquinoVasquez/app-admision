@@ -1,6 +1,6 @@
 import { Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
-import { Spinner, Select, SelectItem } from "@nextui-org/react";
+import { Spinner, Select, SelectItem } from "@heroui/react";
 import { useState, useEffect } from "react";
 
 ChartJS.register(ArcElement, Tooltip, Legend);

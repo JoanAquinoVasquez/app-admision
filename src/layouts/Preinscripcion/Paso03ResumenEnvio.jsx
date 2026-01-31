@@ -7,7 +7,7 @@ import {
     ModalBody,
     ModalFooter,
     form,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import logoWithTextImage from "../../assets/Isotipos/isotipo_color_epg.webp";
 import { FormHeader } from "./components";
 import { toast } from "react-hot-toast";

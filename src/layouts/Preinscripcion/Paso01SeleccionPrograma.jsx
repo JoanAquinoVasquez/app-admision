@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import Select from "../../components/Select/Select";
-import { Button } from "@nextui-org/react";
+import { Button } from "@heroui/react";
 import { toast } from "react-hot-toast";
 
 import logoWithTextImage from "../../assets/Isotipos/isotipo_color_epg.webp";

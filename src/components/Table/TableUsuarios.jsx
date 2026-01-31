@@ -28,7 +28,7 @@ import {
     Select,
     Spinner,
     user,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import Typography from "@mui/material/Typography";
 import RenderFileUpload from "../../components/Inputs/RenderFileUpload";
 import axios from "../../axios";
@@ -856,7 +856,7 @@ export default function App() {
                 items={items}
                 className="space-y-1" // Reducir espacio entre filas
                 isLoading={loading || loadingUsers}
-                loadingContent={<Spinner label="Cargando..." />}
+                loadingContent={<div className="w-full h-full flex justify-center items-center z-50 bg-content1/50 backdrop-blur-sm top-0 left-0 absolute"><Spinner label="Cargando..." /></div>}
             >
                 {(item) => (
                     <TableRow

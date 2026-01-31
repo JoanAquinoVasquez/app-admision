@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Button, Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
+import { Button, Breadcrumbs, BreadcrumbItem } from "@heroui/react";
 import { motion } from "framer-motion";
 import PropTypes from "prop-types";
 

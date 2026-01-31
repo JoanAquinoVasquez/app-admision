@@ -1,4 +1,4 @@
-import { Button } from "@nextui-org/react";
+import { Button } from "@heroui/react";
 import { UploadIcon } from "../../Icons/UploadIcon";
 import axios from "./../../../axios";
 

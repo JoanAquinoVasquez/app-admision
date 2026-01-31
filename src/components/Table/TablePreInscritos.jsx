@@ -15,7 +15,7 @@ import {
     DropdownItem,
     Pagination,
     Spinner,
-} from "@nextui-org/react";
+} from "@heroui/react";
 
 export const columns = [
     { name: "Grado y Programa", uid: "grado_programa", sortable: true },
@@ -451,7 +451,7 @@ export default function App({ resumenPreInscripcion, loading }) {
                 <TableBody
                     emptyContent={loading ? <Spinner label="Cargando..." /> : "No se encontró información"}
                     isLoading={loading}
-                    loadingContent={<Spinner label="Cargando..." />}
+                    loadingContent={<div className="w-full h-full flex justify-center items-center z-50 bg-content1/50 backdrop-blur-sm top-0 left-0 absolute"><Spinner label="Cargando..." /></div>}
                     items={items}
                     className="space-y-1"
                 >

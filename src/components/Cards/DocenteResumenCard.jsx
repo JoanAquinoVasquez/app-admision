@@ -1,4 +1,4 @@
-import { Card, CardBody, CircularProgress, Chip } from "@nextui-org/react";
+import { Card, CardBody, CircularProgress, Chip } from "@heroui/react";
 import { MdEmail } from "react-icons/md";
 
 const DocenteResumenGeneralCard = ({ docente }) => {

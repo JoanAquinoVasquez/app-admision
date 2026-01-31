@@ -1,11 +1,14 @@
 import { useState } from "react";
-import { Tabs, Tab, Spinner } from "@nextui-org/react";
+import { Tabs, Tab, Spinner } from "@heroui/react";
 
 // Tabs
-import TabEvaluacion from "./Tabs/TabEvaluacion";
-import TabInscripcion from "./Tabs/TabInscripcion";
-import TabResultados from "./Tabs/TabResultados";
-import TabPreinscritos from "./Tabs/TabPreinscritos";
+import React, { Suspense } from "react";
+
+// Tabs
+const TabEvaluacion = React.lazy(() => import("./Tabs/TabEvaluacion"));
+const TabInscripcion = React.lazy(() => import("./Tabs/TabInscripcion"));
+const TabResultados = React.lazy(() => import("./Tabs/TabResultados"));
+const TabPreinscritos = React.lazy(() => import("./Tabs/TabPreinscritos"));
 import { getAdmissionStage } from "../../config/admission";
 
 function Inicio() {
@@ -83,7 +86,15 @@ function Inicio() {
                     title="Preinscripción"
                     isDisabled={isTabDisabled("preinscritos")}
                 >
-                    {visitedTabs.has("preinscritos") && <TabPreinscritos />}
+                    {visitedTabs.has("preinscritos") && (
+                        <Suspense fallback={
+                            <div className="flex w-full h-[50vh] items-center justify-center">
+                                <Spinner size="lg" label="Cargando..." />
+                            </div>
+                        }>
+                            <TabPreinscritos />
+                        </Suspense>
+                    )}
                 </Tab>
 
                 <Tab
@@ -91,7 +102,15 @@ function Inicio() {
                     title="Inscripción"
                     isDisabled={isTabDisabled("inscritos")}
                 >
-                    {visitedTabs.has("inscritos") && <TabInscripcion />}
+                    {visitedTabs.has("inscritos") && (
+                        <Suspense fallback={
+                            <div className="flex w-full h-[50vh] items-center justify-center">
+                                <Spinner size="lg" label="Cargando..." />
+                            </div>
+                        }>
+                            <TabInscripcion />
+                        </Suspense>
+                    )}
                 </Tab>
 
                 <Tab
@@ -99,7 +118,15 @@ function Inicio() {
                     title="Evaluación"
                     isDisabled={isTabDisabled("evaluacion")}
                 >
-                    {visitedTabs.has("evaluacion") && <TabEvaluacion />}
+                    {visitedTabs.has("evaluacion") && (
+                        <Suspense fallback={
+                            <div className="flex w-full h-[50vh] items-center justify-center">
+                                <Spinner size="lg" label="Cargando..." />
+                            </div>
+                        }>
+                            <TabEvaluacion />
+                        </Suspense>
+                    )}
                 </Tab>
 
                 <Tab
@@ -107,7 +134,15 @@ function Inicio() {
                     title="Resultados"
                     isDisabled={isTabDisabled("resultados")}
                 >
-                    {visitedTabs.has("resultados") && <TabResultados />}
+                    {visitedTabs.has("resultados") && (
+                        <Suspense fallback={
+                            <div className="flex w-full h-[50vh] items-center justify-center">
+                                <Spinner size="lg" label="Cargando..." />
+                            </div>
+                        }>
+                            <TabResultados />
+                        </Suspense>
+                    )}
                 </Tab>
             </Tabs>
         </>

@@ -6,7 +6,7 @@ import {
     DropdownTrigger,
     DropdownMenu,
     DropdownItem,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import Select from "../../Select/Select";
 import { SearchIcon, ChevronDownIcon } from "./Icons";
 import { capitalize, statusOptions } from "../utils";

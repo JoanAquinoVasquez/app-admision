@@ -5,9 +5,9 @@ import { useNavigate } from "react-router-dom";
 // Components
 import { FormHeader } from "./components";
 import Select from "../../components/Select/Select";
-import { RadioGroup, Radio } from "@nextui-org/react";
+import { RadioGroup, Radio } from "@heroui/react";
 import Input from "../../components/Inputs/InputField";
-import { Button } from "@nextui-org/react";
+import { Button } from "@heroui/react";
 
 // Hooks
 import {

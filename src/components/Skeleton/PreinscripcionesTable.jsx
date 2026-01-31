@@ -1,5 +1,5 @@
 // components/Skeleton/PreinscripcionesTable.jsx
-import { Skeleton } from "@nextui-org/react";
+import { Skeleton } from "@heroui/react";
 
 export default function PreinscripcionesTable({ rows = 10 }) {
     const columns = 8; // o usa columnas dinámicas si prefieres

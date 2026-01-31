@@ -1,5 +1,5 @@
 import { MdPeople } from "react-icons/md";
-import { Spinner } from "@nextui-org/react";
+import { Spinner } from "@heroui/react";
 import DocenteResumenGeneralCard from "../../../components/Cards/DocenteResumenCard";
 
 const EstadoEvaluacion = ({ estadoEvaluacion, loading }) => {

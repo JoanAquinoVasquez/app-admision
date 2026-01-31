@@ -6,12 +6,18 @@ export default function useProgramasPosibles(id) {
     const [programasPosibles, setProgramasPosibles] = useState([]);
 
     const fetchProgramasPosibles = useCallback(async () => {
-        if (!id) return; // Si no hay un id, no hacemos la llamada
+        if (!id) {
+            return;
+        }
 
         try {
             const response = await axios.get(`/programas-posibles/${id}`);
-            setGradosPosibles(response.data.grados_posibles);
-            setProgramasPosibles(response.data.programas_posibles);
+           
+            // API returns data in response.data.data structure
+            const apiData = response.data.data || response.data;
+            setGradosPosibles(apiData.grados_posibles || []);
+            setProgramasPosibles(apiData.programas_posibles || []);
+           
         } catch (error) {
             console.error("Error al cargar los datos:", error);
         }

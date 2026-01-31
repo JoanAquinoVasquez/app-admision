@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { Accordion, AccordionItem } from "@nextui-org/react";
+import { useLocation, Link } from "react-router-dom";
+import { Accordion, AccordionItem } from "@heroui/react";
 import { motion } from "framer-motion";
 import { FaBars, FaChevronDown, FaChevronRight } from "react-icons/fa";
 import imgcollapsed from "../../assets/Isotipos/isotipo_color_epg.webp";
@@ -14,7 +14,6 @@ const SidebarMenu = () => {
     const [isExpanded, setIsExpanded] = useState(false);
     const { userData } = useUser();
     const [isLgScreen, setIsLgScreen] = useState(false);
-    const navigate = useNavigate();
     const { pathname } = useLocation();
 
     const {
@@ -88,17 +87,21 @@ const SidebarMenu = () => {
                         <li
                             role="menuitem"
                             key={`menu-item-${index}-${to}`}
-                            className={`li-sidebar w-full block px-6 py-2 rounded cursor-pointer transition-colors ${
-                                isActive
-                                    ? "bg-blue-100 text-blue-700 font-semibold hover:bg-blue-200 hover:text-blue-700"
-                                    : "text-gray-600 hover:bg-gray-100 bg-white hover:text-gray-700"
-                            }`}
-                            onClick={() => navigate(to)}
+                            className="w-full"
                         >
-                            <div className="flex items-center w-full">
-                                {icon}
-                                <span className="ml-3 truncate">{text}</span>
-                            </div>
+                            <Link
+                                to={to}
+                                className={`li-sidebar w-full block px-6 py-2 rounded transition-colors ${
+                                    isActive
+                                        ? "bg-blue-100 text-blue-700 font-semibold hover:bg-blue-200 hover:text-blue-700"
+                                        : "text-gray-600 hover:bg-gray-100 bg-white hover:text-gray-700"
+                                }`}
+                            >
+                                <div className="flex items-center w-full">
+                                    {icon}
+                                    <span className="ml-3 truncate">{text}</span>
+                                </div>
+                            </Link>
                         </li>
                     ) : (
                         <li className="w-full list-none">
@@ -138,20 +141,22 @@ const SidebarMenu = () => {
                                             >
                                                 <li
                                                     role="menuitem"
-                                                    className={`li-sidebar w-full block px-2 py-1 rounded cursor-pointer ${
-                                                        pathname.includes(
-                                                            `/${subLink.to}`
-                                                        )
-                                                            ? "bg-blue-100 text-blue-600 font-semibold"
-                                                            : "text-gray-600 hover:bg-gray-100"
-                                                    }`}
-                                                    onClick={() =>
-                                                        navigate(subLink.to)
-                                                    }
+                                                    className="w-full"
                                                 >
-                                                    <span className="truncate">
-                                                        {subLink.text}
-                                                    </span>
+                                                    <Link
+                                                        to={subLink.to}
+                                                        className={`li-sidebar w-full block px-2 py-1 rounded transition-colors ${
+                                                            pathname.includes(
+                                                                `/${subLink.to}`
+                                                            )
+                                                                ? "bg-blue-100 text-blue-600 font-semibold"
+                                                                : "text-gray-600 hover:bg-gray-100"
+                                                        }`}
+                                                    >
+                                                        <span className="truncate">
+                                                            {subLink.text}
+                                                        </span>
+                                                    </Link>
                                                 </li>
                                             </RoleGuard>
                                         ))}

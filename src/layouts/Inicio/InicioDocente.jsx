@@ -19,7 +19,7 @@ import {
     Progress,
     User,
     Tooltip
-} from "@nextui-org/react";
+} from "@heroui/react";
 import useProgramaDocente from "../../data/Evaluacion/dataProgramaDocente";
 
 function InicioDocente() {

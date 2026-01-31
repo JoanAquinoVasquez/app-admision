@@ -27,7 +27,7 @@ import {
     RadioGroup,
     Pagination,
     Spinner,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import useInscripcion from "../../data/Inscripcion/dataInscripcion";
 import Typography from "@mui/material/Typography";
 import RenderFileUpload from "../Inputs/RenderFileUpload";
@@ -38,6 +38,7 @@ import useProgramas from "../../data/dataProgramas";
 import useProvincias from "../../data/dataProvincias";
 import useDistritos from "../../data/dataDistritos";
 import useDepartamentos from "../../data/dataDepartamentos";
+import ActionModals from "./components/ActionModals";
 
 export const columns = [
     { name: "ID", uid: "id", sortable: true },
@@ -193,42 +194,14 @@ export default function App() {
     const { departamentos } = useDepartamentos();
     const { provincias, setProvincias, fetchProvincias } = useProvincias();
     const { distritos, setDistritos, fetchDistritos } = useDistritos();
+    const [loading, setLoading] = useState(false);
 
-    const [num_iden, setNum_iden] = useState("");
-    const [grado_id, setGrado_id] = useState("");
-    const [programa_id, setPrograma_id] = useState("");
-    const [nombres, setNombres] = useState("");
-    const [ap_paterno, setAp_paterno] = useState("");
-    const [ap_materno, setAp_materno] = useState("");
-    const [celular, setCelular] = useState("");
-    const [direccion, setDireccion] = useState("");
-    const [email, setEmail] = useState("");
-    const [fecha_nacimiento, setFecha_nacimiento] = useState("");
+    // State variables needed by useEffect hooks (even though inline modal is disabled)
     const [departamento_id, setDepartamento_id] = useState("");
     const [provincia_id, setProvincia_id] = useState("");
     const [distrito_id, setDistrito_id] = useState("");
-    const [tipo_documento, setTipo_documento] = useState("");
-    const [sexo, setSexo] = useState("");
-    const [num_voucher, setNum_voucher] = useState("");
-    const [rutaVoucher, setRutaVoucher] = useState("");
-    const [rutaDocIden, setRutaDocIden] = useState("");
-    const [rutaFoto, setRutaFoto] = useState("");
-    const [rutaCV, setRutaCV] = useState("");
-    const [loading, setLoading] = useState(false);
+    const [grado_id, setGrado_id] = useState("");
     const [loadingEditar, setLoadingEditar] = useState(false);
-
-    const [editMode, setEditMode] = useState(false);
-    const toggleEditMode = () => setEditMode(!editMode);
-
-    const tipo_doc = [
-        { id: 1, nombre: "DNI", label: "Número de DNI" },
-        { id: 2, nombre: "CE", label: "Número de Carnet de Extranjería" },
-        { id: 3, nombre: "PASAPORTE", label: "Número de Pasaporte" },
-    ];
-
-    const formData = new FormData();
-    const formDataRef = useRef(new FormData());
-    const [originalData, setOriginalData] = useState({}); // Guardamos los valores originales
 
     // ✅ Aseguramos que `inscripciones` tenga datos antes de mapear
     const users = useMemo(() => {
@@ -1076,15 +1049,39 @@ export default function App() {
 
     return (
         <>
-            <ModalConfirm
+            <ActionModals
+                isValidarOpen={isValidarOpen}
+                setIsValidarOpen={setIsValidarOpen}
+                handleValidar={handleValidar}
+                validarId={validarId}
+                isObservarOpen={false}
+                setIsObservarOpen={() => {}}
+                handleObservar={() => {}}
+                observacion=""
+                isEditarOpen={isEditarOpen}
+                setIsEditarOpen={setIsEditarOpen}
+                fetchInscripciones={fetchInscripciones}
+                grados={grados}
+                filteredProgramas={filteredProgramas}
+                departamentos={departamentos}
+                provincias={provincias}
+                distritos={distritos}
+                fetchProvincias={fetchProvincias}
+                fetchDistritos={fetchDistritos}
+                loading={loading}
+            />
+
+            {/* DEPRECATED: Modal inline - ahora se usa ActionModals arriba */}
+            {false && <ModalConfirm
                 isOpen={isValidarOpen}
                 onClose={() => setIsValidarOpen(false)}
                 onConfirm={() => handleValidar(validarId)}
                 isDismissable={false}
                 message="¿Confirma la validación física? Esta acción es irreversible y se asumirá que se entregó carnet al postulante."
-            />
+            />}
 
-            <Modal
+            {/* DEPRECATED: Inline edit modal - now using ActionModals component */}
+            {false && <Modal
                 backdrop="opaque"
                 isOpen={isEditarOpen}
                 placement="center"
@@ -1099,7 +1096,12 @@ export default function App() {
                     </ModalHeader>
 
                     <ModalBody>
-                        <form>
+                        {loadingEditar ? (
+                            <div className="flex justify-center items-center py-12">
+                                <Spinner label="Cargando datos..." />
+                            </div>
+                        ) : (
+                            <form>
                             <h3 className="font-bold">
                                 Seleccionar Grado y Programa a postular
                             </h3>
@@ -1278,7 +1280,7 @@ export default function App() {
                                     gap: 2,
                                     gridTemplateColumns: {
                                         xs: "1fr",
-                                        md: "2fr 2fr 4fr 2fr",
+                                        md: "2fr 2fr 4fr 2fr 1fr",
                                     },
                                     mb: 2,
                                 }}
@@ -1297,7 +1299,6 @@ export default function App() {
                                 />
 
                                 <Input
-                                    className="h-10"
                                     label="Correo Electrónico"
                                     value={email ? email : ""}
                                     isRequired={true}
@@ -1338,6 +1339,19 @@ export default function App() {
                                         );
                                     }}
                                 />
+                                <RadioGroup
+                                    label="Sexo"
+                                    isRequired
+                                    value={sexo}
+                                    orientation="horizontal"
+                                    onChange={(e) => {
+                                        setSexo(e.target.value);
+                                        handleChange("sexo", e.target.value);
+                                    }}
+                                >
+                                    <Radio value="M">M</Radio>
+                                    <Radio value="F">F</Radio>
+                                </RadioGroup>
                             </Box>
 
                             <Box
@@ -1644,6 +1658,7 @@ export default function App() {
                                 </Box>
                             )}
                         </form>
+                        )}
                     </ModalBody>
                     <ModalFooter>
                         <Button
@@ -1651,6 +1666,7 @@ export default function App() {
                             color="default"
                             variant="flat"
                             onPress={() => setIsEditarOpen(false)}
+                            isDisabled={loading || loadingEditar}
                         >
                             Cancelar
                         </Button>
@@ -1658,12 +1674,14 @@ export default function App() {
                             aria-label="Guardar Cambios"
                             color="primary"
                             onPress={() => handleSubmitEditar(validarId)}
+                            isLoading={loading}
+                            isDisabled={loadingEditar}
                         >
                             Guardar Cambios
                         </Button>
                     </ModalFooter>
                 </ModalContent>
-            </Modal>
+            </Modal>}
 
             <Table
                 isHeaderSticky
@@ -1705,7 +1723,7 @@ export default function App() {
                     items={items}
                     className="space-y-1" // Reducir espacio entre filas
                     isLoading={dataLoading || loading}
-                    loadingContent={<Spinner label="Cargando..." />}
+                    loadingContent={<div className="w-full h-full flex justify-center items-center z-50 bg-content1/50 backdrop-blur-sm top-0 left-0 absolute"><Spinner label="Cargando..." /></div>}
                 >
                     {(item) => (
                         <TableRow

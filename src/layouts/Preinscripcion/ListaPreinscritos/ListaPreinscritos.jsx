@@ -17,7 +17,7 @@ import {
     Chip,
     Pagination,
     Spinner as NextUISpinner,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import Select from "../../../components/Select/Select";
 import useGrado from "../../../data/dataGrados";
 import useProgramas from "../../../data/dataProgramas";

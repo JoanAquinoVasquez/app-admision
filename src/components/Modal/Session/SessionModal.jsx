@@ -1,4 +1,4 @@
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button } from "@nextui-org/react";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button } from "@heroui/react";
 import PropTypes from "prop-types";
 
 export default function ModalSessionExpiration({ isOpen, onClose, onKeepSession, onLogout, type }) {

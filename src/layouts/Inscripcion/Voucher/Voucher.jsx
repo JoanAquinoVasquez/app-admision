@@ -16,7 +16,7 @@ import {
     Chip,
     Pagination,
     Spinner as NextUISpinner,
-} from "@nextui-org/react";
+} from "@heroui/react";
 
 import { capitalize } from "../../../services/utils.js";
 import Spinner from "../../../components/Spinner/Spinner.jsx";

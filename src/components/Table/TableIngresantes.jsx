@@ -18,7 +18,7 @@ import {
     DropdownItem,
     Chip,
     Pagination,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import useDataIngresantes from "../../data/Resultados/dataIngresantes";
 import Select from "../../components/Select/Select";
 import useProgramasHabilitados from "../../data/Inscripcion/dataProgramasHabilitados";
@@ -707,7 +707,7 @@ export default function App() {
                 items={items}
                 className="space-y-1" // Reducir espacio entre filas
                 isLoading={dataLoading || loading}
-                loadingContent={<Spinner label="Cargando..." />}
+                loadingContent={<div className="w-full h-full flex justify-center items-center z-50 bg-content1/50 backdrop-blur-sm top-0 left-0 absolute"><Spinner label="Cargando..." /></div>}
             >
                 {(item) => (
                     <TableRow

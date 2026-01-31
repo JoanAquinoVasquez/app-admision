@@ -9,6 +9,7 @@ const SelectGradoPrograma = ({
     programaInicial = null,
     onChangeGrado,
     onChangePrograma,
+    idPrefix = "", // Prefijo único para evitar conflictos de ID
 }) => {
     const [gradoId, setGradoId] = useState(gradoInicial);
     const [programaId, setProgramaId] = useState(programaInicial);
@@ -32,13 +33,17 @@ const SelectGradoPrograma = ({
         setProgramaId(programaInicial);
     }, [programaInicial]);
 
-    const handleGradoChange = (selectedGradoId) => {
+    const handleGradoChange = (keys) => {
+        // HeroUI onSelectionChange returns a Set, extract the first value
+        const selectedGradoId = keys instanceof Set ? Array.from(keys)[0] : keys;
         setGradoId(selectedGradoId);
         setProgramaId(null); // Resetear programa cuando cambia el grado
         if (onChangeGrado) onChangeGrado(selectedGradoId);
     };
 
-    const handleProgramaChange = (selectedProgramaId) => {
+    const handleProgramaChange = (keys) => {
+        // HeroUI onSelectionChange returns a Set, extract the first value
+        const selectedProgramaId = keys instanceof Set ? Array.from(keys)[0] : keys;
         setProgramaId(selectedProgramaId);
         if (onChangePrograma) onChangePrograma(selectedProgramaId);
     };
@@ -67,6 +72,7 @@ const SelectGradoPrograma = ({
                         selectedKey={gradoId ? gradoId.toString() : ""}
                         onSelectionChange={handleGradoChange}
                         isRequired
+                        idPrefix={idPrefix}
                     />
                 </FormControl>
             )}
@@ -84,6 +90,7 @@ const SelectGradoPrograma = ({
                         onSelectionChange={handleProgramaChange}
                         isRequired
                         disabled={!gradoId} // Deshabilitar si no hay grado seleccionado
+                        idPrefix={idPrefix}
                     />
                 </FormControl>
             )}

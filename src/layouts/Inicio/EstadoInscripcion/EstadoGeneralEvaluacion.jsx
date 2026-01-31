@@ -1,4 +1,4 @@
-import { Card, CircularProgress, Chip, Spinner } from "@nextui-org/react";
+import { Card, CircularProgress, Chip, Spinner } from "@heroui/react";
 
 const EstadoGeneralEvaluacion = ({ docenteResumen, loading }) => {
     const totalEvaluados = docenteResumen?.reduce(

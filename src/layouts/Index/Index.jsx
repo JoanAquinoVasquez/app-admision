@@ -8,7 +8,7 @@ import {
     CardFooter,
     CardHeader,
     Chip,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import ChatBot from "../../layouts/ChatBot/ChatBot";
 import logoWithTextImage from "../../assets/Isotipos/isotipo_color_epg.webp";
 import Fondo from "../Fondo/Fondo";

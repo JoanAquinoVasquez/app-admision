@@ -1,4 +1,4 @@
-import { Select } from "@nextui-org/react";
+import { Select } from "@heroui/react";
 
 const MultiSelectExample = ({ defaultItems, selectedKeys, onSelectionChange }) => {
     const handleChange = (e) => {

@@ -1,12 +1,10 @@
 import React from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
-import SidebarMenu from "../../components/Sidebar/Sidebar";
 import NavbarDocente from "../../components/Navbar/NavbarDocente";
 import Notfound from "../../pages/NotFound/NotFound";
 import "./Dashboard.css";
-import Spinner from "../../components/Spinner/Spinner";
-import { DocenteProvider } from "../../services/UserContextDocente";
-import InicioDocente from "../Inicio/InicioDocente";
+
+const InicioDocenteLazy = React.lazy(() => import("../Inicio/InicioDocente"));
 
 function Dashboard() {
     const location = useLocation();
@@ -15,7 +13,7 @@ function Dashboard() {
     const routes = [
         {
             path: "/docente/inicio",
-            element: React.lazy(() => import("../Inicio/InicioDocente")),
+            element: InicioDocenteLazy,
         },
     ];
 
@@ -44,7 +42,7 @@ function Dashboard() {
                                 element={<route.element />}
                             />
                         ))}
-                        <Route path="*" element={<InicioDocente />} />
+                        <Route path="*" element={<InicioDocenteLazy />} />
                     </Routes>
                 </div>
             </div>

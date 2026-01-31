@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Box } from "@mui/material";
 import Select from "../../components/Select/Select";
 import Input from "../../components/Inputs/InputField";
-import { Radio, RadioGroup } from "@nextui-org/react";
+import { Radio, RadioGroup } from "@heroui/react";
 
 const FormularioUsuario = ({ defaultValues = {}, onChange }) => {
     const [tipo_documento, setTipo_documento] = useState(

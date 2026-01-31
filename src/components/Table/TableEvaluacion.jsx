@@ -1,6 +1,6 @@
 import React from "react";
 import { useState, useEffect, useMemo } from "react";
-import { Progress, Spinner } from "@nextui-org/react";
+import { Progress, Spinner } from "@heroui/react";
 import {
     Table,
     TableHeader,
@@ -15,7 +15,7 @@ import {
     DropdownMenu,
     DropdownItem,
     Pagination,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import DashboardCard from "../../components/Cards/DashboardCard";
 
 export const columns = [
@@ -517,7 +517,7 @@ export default function App({ resumenEvaluacion, grados, loading }) {
                 <TableBody
                     emptyContent={loading ? <Spinner label="Cargando..." /> : "No se encontró información"}
                     isLoading={loading}
-                    loadingContent={<Spinner label="Cargando..." />}
+                    loadingContent={<div className="w-full h-full flex justify-center items-center z-50 bg-content1/50 backdrop-blur-sm top-0 left-0 absolute"><Spinner label="Cargando..." /></div>}
                     items={items}
                     className="space-y-1"
                     aria-label="Cuerpo de la tabla"

@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { Checkbox, FormControlLabel, Typography } from "@mui/material";
-import { Button } from "@nextui-org/react";
+import { Button } from "@heroui/react";
 import Select from "../../components/Select/Select";
 import Input from "../../components/Inputs/InputField";
 import logo from "../../assets/Isotipos/isotipo_color_epg.webp";

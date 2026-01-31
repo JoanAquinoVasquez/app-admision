@@ -1,6 +1,6 @@
 import React from "react";
 import { useState, useEffect, useMemo } from "react";
-import { Progress, Spinner } from "@nextui-org/react";
+import { Progress, Spinner } from "@heroui/react";
 import {
     Table,
     TableHeader,
@@ -15,7 +15,7 @@ import {
     DropdownMenu,
     DropdownItem,
     Pagination,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import DashboardCard from "../../components/Cards/DashboardCard";
 
 export const columns = [

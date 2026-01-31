@@ -9,11 +9,11 @@ import {
     Input,
     RadioGroup,
     Radio,
-} from "@nextui-org/react";
+    Spinner,
+} from "@heroui/react";
 import { Box, FormControl, Typography } from "@mui/material";
 import Select from "../../components/Select/Select";
 import RenderFileUpload from "../../components/Inputs/RenderFileUpload";
-import Spinner from "../../components/Spinner/Spinner";
 import { toast } from "react-hot-toast";
 import axios from "../../axios";
 
@@ -338,6 +338,7 @@ export default function EditInscripcionModal({
                                     }}
                                 />
                                 <RadioGroup
+                                    label="Sexo"
                                     isRequired
                                     value={sexo}
                                     orientation="horizontal"

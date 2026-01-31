@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import useGrados from "../../../data/dataGrados";
 import axios from "../../../axios";
 import { toast } from "react-hot-toast";
-import { Spinner, Select, SelectItem } from "@nextui-org/react";
+import { Spinner, Select, SelectItem } from "@heroui/react";
 import useDocentes from "../../../data/Evaluacion/dataDocentes";
 import ModalDocente from "./M_NewDocente"; // Importa el modal
 

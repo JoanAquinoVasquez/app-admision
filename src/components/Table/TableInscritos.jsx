@@ -17,7 +17,7 @@ import {
     DropdownItem,
     Chip,
     Spinner,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import useInscripcion from "../../data/Inscripcion/dataInscripcion";
 import useProgramas from "../../data/dataProgramas";
 import useProvincias from "../../data/dataProvincias";
@@ -244,7 +244,7 @@ export default function App() {
                                             key="observacion"
                                             onPress={() => {
                                                 setValidarId(user.id);
-                                                setObservacion(user.observacion);
+                                                setObservacion(user.observacion || "");
                                                 setIsObservarOpen(true);
                                             }}
                                         >
@@ -339,11 +339,14 @@ export default function App() {
                     )}
                 </TableHeader>
                 <TableBody
-                    emptyContent={(dataLoading || loading) ? <Spinner label="Cargando..." /> : "No se encontró postulantes registrados"}
+                    emptyContent={(dataLoading || loading) ? 
+                        <div className="w-full flex justify-center py-8 z-50"><Spinner label="Cargando..." /></div> 
+                        : "No se encontró postulantes registrados"
+                    }
                     items={items}
                     className="space-y-1"
                     isLoading={dataLoading || loading}
-                    loadingContent={<Spinner label="Cargando..." />}
+                    loadingContent={<div className="w-full h-full flex justify-center items-center z-50 bg-content1/50 backdrop-blur-sm top-0 left-0 absolute"><Spinner label="Cargando datos..." /></div>}
                 >
                     {(item) => (
                         <TableRow key={item.id} className="p-1 text-sm leading-tight">
@@ -372,6 +375,7 @@ export default function App() {
                 distritos={distritos}
                 fetchProvincias={fetchProvincias}
                 fetchDistritos={fetchDistritos}
+                loading={loading}
             />
 
 

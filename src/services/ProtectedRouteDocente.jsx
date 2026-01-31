@@ -1,6 +1,6 @@
 import { Navigate } from "react-router-dom";
 import { useDocente } from "../services/UserContextDocente";
-import { Spinner } from "@nextui-org/react";
+import { Spinner } from "@heroui/react";
 
 const ProtectedRoute = ({ children }) => {
     const { docenteData, logout, loading } = useDocente();

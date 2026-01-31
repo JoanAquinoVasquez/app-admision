@@ -9,7 +9,7 @@ import {
     Button,
     Input,
     Divider
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { toast } from "react-hot-toast";
 import { Eye, EyeOff, Lock, Mail, Info } from "lucide-react";
 import Fondo from "../Fondo/Fondo";
