@@ -70,6 +70,10 @@ export const statusOptions = [
         name: "Correo de validación digital y constancia de postulante enviado",
         uid: "correo_de_validacion_digital_y_constancia_de_postulante_enviado",
     },
+    {
+        name: "Programas asignados a docente",
+        uid: "programas_asignados_a_docente",
+    },
 ];
 
 export function capitalize(s) {
@@ -283,8 +287,14 @@ export default function App() {
                 properties = changes.join(" | ");
             } else if (item.properties?.email) {
                 properties = item.properties.email;
-            } else if (item.properties?.programas?.nombres) {
-                properties = item.properties.programas.nombres;
+            } else if (item.properties?.programas) {
+                // Si es un array de programas
+                if (Array.isArray(item.properties.programas)) {
+                    properties = item.properties.programas.join(", ");
+                } else if (item.properties.programas.nombres) {
+                    properties = item.properties.programas.nombres;
+                }
+
                 if (item.properties.observacion) {
                     subject_nombre_programa = `Observación: ${item.properties.observacion}`;
                 }
@@ -749,7 +759,7 @@ export default function App() {
                 >
                     {(item) => (
                         <TableRow
-                            key={item.grado_programa}
+                            key={item.id}
                             className="p-1 text-sm leading-tight sm:text-base lg:text-lg"
                         >
                             {(columnKey) => (

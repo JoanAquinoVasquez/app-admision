@@ -1,7 +1,7 @@
 {
   "private": true,
   "type": "module",
-  "homepage": "/admision-epg/public/",
+  "homepage": "/admision-epg/",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

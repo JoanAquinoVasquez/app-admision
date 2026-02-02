@@ -279,7 +279,7 @@ export default function App() {
 
     const [filterValue, setFilterValue] = useState("");
     const [selectedKeys, setSelectedKeys] = useState(new Set([]));
-    const [selectedPostulantes, setSelectedPostulantes] = useState([]);
+    // const [selectedPostulantes, setSelectedPostulantes] = useState([]); // Removed redundant state
     const [visibleColumns, setVisibleColumns] = useState(
         new Set(INITIAL_VISIBLE_COLUMNS)
     );
@@ -350,27 +350,27 @@ export default function App() {
         filterByGrado(gradoFilter);
     }, [gradoFilter, filterByGrado]);
 
-    useEffect(() => {
-        if (selectedKeys == "all") {
-            // Si se seleccionan todos, extraer todos los `postulante_id` de filteredItems
-            setSelectedPostulantes(
-                filteredItems.map((item) => item.postulante_id)
-            );
-        } else {
-            // Si hay una selección específica, convertir el Set a Array y buscar los IDs correctos
-            setSelectedPostulantes(
-                Array.from(selectedKeys)
-                    .map((key) => {
-                        const item = filteredItems.find((i) => i.id == key);
-                        return item ? item.postulante_id : null;
-                    })
-                    .filter(Boolean) // Filtrar cualquier `null` accidental
-            );
+    // Función auxiliar para obtener IDs seleccionados de forma síncrona/on-demand
+    const getSelectedPostulanteIds = useCallback(() => {
+        if (selectedKeys === "all") {
+            // Si se seleccionan todos, devolvermos todos los IDs filtrados
+            return filteredItems.map((item) => item.postulante_id);
         }
+
+        // Si es una selección específica (Set)
+        // Nota: key suele ser string en HeroUI/NextUI, mientras que i.id puede ser number. Usamos String() para comparar.
+        return Array.from(selectedKeys)
+            .map((key) => {
+                const item = filteredItems.find((i) => String(i.id) === String(key));
+                return item ? item.postulante_id : null;
+            })
+            .filter(Boolean);
     }, [selectedKeys, filteredItems]);
 
-    const handleExportCarnetMasivo = async () => {
-        if (!selectedPostulantes.length) {
+    const handleExportCarnetMasivo = useCallback(async () => {
+        const ids = getSelectedPostulanteIds();
+
+        if (!ids.length) {
             toast.error("No has seleccionado ninguna inscripción");
             return;
         }
@@ -378,7 +378,7 @@ export default function App() {
         setLoading(true);
         try {
             const response = await axios.post("postulante-carnet", {
-                ids: selectedPostulantes, // Ahora se envían los `postulante_id`
+                ids: ids,
             });
 
             if (response.headers["content-type"].includes("text/html")) {
@@ -395,7 +395,7 @@ export default function App() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [getSelectedPostulanteIds]);
 
     // API Validar
     const handleValidar = async (inscripcionId) => {
@@ -1002,7 +1002,8 @@ export default function App() {
         users.length,
         gradoFilter,
         filteredProgramas,
-        grados
+        grados,
+        handleExportCarnetMasivo
     ]);
 
     const bottomContent = useMemo(
@@ -1055,8 +1056,8 @@ export default function App() {
                 handleValidar={handleValidar}
                 validarId={validarId}
                 isObservarOpen={false}
-                setIsObservarOpen={() => {}}
-                handleObservar={() => {}}
+                setIsObservarOpen={() => { }}
+                handleObservar={() => { }}
                 observacion=""
                 isEditarOpen={isEditarOpen}
                 setIsEditarOpen={setIsEditarOpen}
@@ -1102,562 +1103,562 @@ export default function App() {
                             </div>
                         ) : (
                             <form>
-                            <h3 className="font-bold">
-                                Seleccionar Grado y Programa a postular
-                            </h3>
-                            <Box
-                                sx={{
-                                    display: "grid",
-                                    gap: 2,
-                                    gridTemplateColumns: {
-                                        xs: "1fr",
-                                        md: "1fr 3fr",
-                                    },
-                                    mb: 2,
-                                }}
-                            >
-                                <FormControl>
+                                <h3 className="font-bold">
+                                    Seleccionar Grado y Programa a postular
+                                </h3>
+                                <Box
+                                    sx={{
+                                        display: "grid",
+                                        gap: 2,
+                                        gridTemplateColumns: {
+                                            xs: "1fr",
+                                            md: "1fr 3fr",
+                                        },
+                                        mb: 2,
+                                    }}
+                                >
+                                    <FormControl>
+                                        <Select
+                                            label="Grado Académico"
+                                            variant="flat"
+                                            className="w-30"
+                                            isRequired={true}
+                                            value={grado_id ? grado_id : ""}
+                                            defaultItems={gradosPosibles.map(
+                                                (item) => ({
+                                                    key: item.id.toString(),
+                                                    textValue: item.nombre,
+                                                    ...item,
+                                                })
+                                            )}
+                                            selectedKey={
+                                                grado_id
+                                                    ? grado_id.toString()
+                                                    : null
+                                            }
+                                            onSelectionChange={(grado_id) => {
+                                                setGrado_id(grado_id);
+                                                setPrograma_id(null);
+                                                handleChange(
+                                                    "grado_id",
+                                                    grado_id
+                                                );
+                                            }}
+                                        />
+                                    </FormControl>
+
+                                    <FormControl fullWidth>
+                                        <Select
+                                            label="Programa"
+                                            className="w-full"
+                                            defaultItems={programasFiltrados.map(
+                                                (item) => ({
+                                                    key: item.id.toString(),
+                                                    textValue: item.nombre,
+                                                    ...item,
+                                                })
+                                            )}
+                                            value={
+                                                programa_id ? programa_id : ""
+                                            }
+                                            selectedKey={
+                                                programa_id
+                                                    ? programa_id.toString()
+                                                    : null
+                                            }
+                                            onSelectionChange={(programaId) => {
+                                                setPrograma_id(programaId);
+                                                handleChange(
+                                                    "programa_id",
+                                                    programaId
+                                                );
+                                            }}
+                                            isRequired={true}
+                                            disabled={!grado_id}
+                                        />
+                                    </FormControl>
+                                </Box>
+                                <h3 className="font-bold mb-2">
+                                    Datos personales
+                                </h3>
+                                <Box
+                                    sx={{
+                                        display: "grid",
+                                        gap: 2,
+                                        gridTemplateColumns: {
+                                            xs: "1fr",
+                                            md: "2fr 2fr 2fr 2fr 2fr",
+                                        },
+                                        mb: 2,
+                                    }}
+                                >
                                     <Select
-                                        label="Grado Académico"
+                                        label="Tipo de Documento"
                                         variant="flat"
                                         className="w-30"
-                                        isRequired={true}
-                                        value={grado_id ? grado_id : ""}
-                                        defaultItems={gradosPosibles.map(
-                                            (item) => ({
-                                                key: item.id.toString(),
-                                                textValue: item.nombre,
-                                                ...item,
-                                            })
-                                        )}
-                                        selectedKey={
-                                            grado_id
-                                                ? grado_id.toString()
-                                                : null
-                                        }
-                                        onSelectionChange={(grado_id) => {
-                                            setGrado_id(grado_id);
-                                            setPrograma_id(null);
-                                            handleChange(
-                                                "grado_id",
-                                                grado_id
-                                            );
-                                        }}
-                                    />
-                                </FormControl>
-
-                                <FormControl fullWidth>
-                                    <Select
-                                        label="Programa"
-                                        className="w-full"
-                                        defaultItems={programasFiltrados.map(
-                                            (item) => ({
-                                                key: item.id.toString(),
-                                                textValue: item.nombre,
-                                                ...item,
-                                            })
-                                        )}
+                                        disabled={true}
                                         value={
-                                            programa_id ? programa_id : ""
-                                        }
-                                        selectedKey={
-                                            programa_id
-                                                ? programa_id.toString()
+                                            tipo_documento
+                                                ? tipo_documento.toString
                                                 : null
                                         }
-                                        onSelectionChange={(programaId) => {
-                                            setPrograma_id(programaId);
+                                        isRequired={true}
+                                        defaultItems={tipo_doc.map((item) => ({
+                                            key: item.nombre.toString(),
+                                            textValue: item.nombre,
+                                            ...item,
+                                        }))}
+                                        selectedKey={
+                                            tipo_documento
+                                                ? tipo_documento.toString()
+                                                : null
+                                        }
+                                    />
+
+                                    <Input
+                                        label={`Número de ${tipo_doc.find(
+                                            (item) =>
+                                                item.nombre ==
+                                                tipo_documento
+                                        )?.nombre ||
+                                            "Documento de Identidad"
+                                            }`}
+                                        value={num_iden ? num_iden : ""}
+                                        isRequired={true}
+                                        disabled={true}
+                                        onChange={(e) => {
+                                            setNum_iden(e.target.value);
                                             handleChange(
-                                                "programa_id",
-                                                programaId
+                                                "num_iden",
+                                                e.target.value
                                             );
                                         }}
-                                        isRequired={true}
-                                        disabled={!grado_id}
                                     />
-                                </FormControl>
-                            </Box>
-                            <h3 className="font-bold mb-2">
-                                Datos personales
-                            </h3>
-                            <Box
-                                sx={{
-                                    display: "grid",
-                                    gap: 2,
-                                    gridTemplateColumns: {
-                                        xs: "1fr",
-                                        md: "2fr 2fr 2fr 2fr 2fr",
-                                    },
-                                    mb: 2,
-                                }}
-                            >
-                                <Select
-                                    label="Tipo de Documento"
-                                    variant="flat"
-                                    className="w-30"
-                                    disabled={true}
-                                    value={
-                                        tipo_documento
-                                            ? tipo_documento.toString
-                                            : null
-                                    }
-                                    isRequired={true}
-                                    defaultItems={tipo_doc.map((item) => ({
-                                        key: item.nombre.toString(),
-                                        textValue: item.nombre,
-                                        ...item,
-                                    }))}
-                                    selectedKey={
-                                        tipo_documento
-                                            ? tipo_documento.toString()
-                                            : null
-                                    }
-                                />
 
-                                <Input
-                                    label={`Número de ${tipo_doc.find(
-                                        (item) =>
-                                            item.nombre ==
-                                            tipo_documento
-                                    )?.nombre ||
-                                        "Documento de Identidad"
-                                        }`}
-                                    value={num_iden ? num_iden : ""}
-                                    isRequired={true}
-                                    disabled={true}
-                                    onChange={(e) => {
-                                        setNum_iden(e.target.value);
-                                        handleChange(
-                                            "num_iden",
-                                            e.target.value
-                                        );
-                                    }}
-                                />
+                                    <Input
+                                        label="Nombres"
+                                        value={nombres ? nombres : ""}
+                                        isRequired={true}
+                                        onChange={(e) => {
+                                            setNombres(e.target.value);
+                                            handleChange(
+                                                "nombres",
+                                                e.target.value
+                                            );
+                                        }}
+                                    />
 
-                                <Input
-                                    label="Nombres"
-                                    value={nombres ? nombres : ""}
-                                    isRequired={true}
-                                    onChange={(e) => {
-                                        setNombres(e.target.value);
-                                        handleChange(
-                                            "nombres",
-                                            e.target.value
-                                        );
-                                    }}
-                                />
+                                    <Input
+                                        label="Apellido Paterno"
+                                        value={ap_paterno ? ap_paterno : ""}
+                                        isRequired={true}
+                                        onChange={(e) => {
+                                            setAp_paterno(e.target.value);
+                                            handleChange(
+                                                "ap_paterno",
+                                                e.target.value
+                                            );
+                                        }}
+                                    />
 
-                                <Input
-                                    label="Apellido Paterno"
-                                    value={ap_paterno ? ap_paterno : ""}
-                                    isRequired={true}
-                                    onChange={(e) => {
-                                        setAp_paterno(e.target.value);
-                                        handleChange(
-                                            "ap_paterno",
-                                            e.target.value
-                                        );
-                                    }}
-                                />
+                                    <Input
+                                        label="Apellido Materno"
+                                        value={ap_materno ? ap_materno : ""}
+                                        isRequired={true}
+                                        onChange={(e) => {
+                                            setAp_materno(e.target.value);
+                                            handleChange(
+                                                "ap_materno",
+                                                e.target.value
+                                            );
+                                        }}
+                                    />
+                                </Box>
 
-                                <Input
-                                    label="Apellido Materno"
-                                    value={ap_materno ? ap_materno : ""}
-                                    isRequired={true}
-                                    onChange={(e) => {
-                                        setAp_materno(e.target.value);
-                                        handleChange(
-                                            "ap_materno",
-                                            e.target.value
-                                        );
-                                    }}
-                                />
-                            </Box>
-
-                            <Box
-                                sx={{
-                                    display: "grid",
-                                    gap: 2,
-                                    gridTemplateColumns: {
-                                        xs: "1fr",
-                                        md: "2fr 2fr 4fr 2fr 1fr",
-                                    },
-                                    mb: 2,
-                                }}
-                            >
-                                <Input
-                                    label="Celular"
-                                    value={celular ? celular : ""}
-                                    isRequired={true}
-                                    onChange={(e) => {
-                                        setCelular(e.target.value);
-                                        handleChange(
-                                            "celular",
-                                            e.target.value
-                                        );
-                                    }}
-                                />
-
-                                <Input
-                                    label="Correo Electrónico"
-                                    value={email ? email : ""}
-                                    isRequired={true}
-                                    onChange={(e) => {
-                                        setEmail(e.target.value);
-                                        handleChange(
-                                            "email",
-                                            e.target.value
-                                        );
-                                    }}
-                                />
-                                <Input
-                                    label="Dirección"
-                                    value={direccion ? direccion : ""}
-                                    isRequired={true}
-                                    onChange={(e) => {
-                                        setDireccion(e.target.value);
-                                        handleChange(
-                                            "direccion",
-                                            e.target.value
-                                        );
-                                    }}
-                                />
-                                <Input
-                                    label="Fecha de Nacimiento"
-                                    type="date"
-                                    value={
-                                        fecha_nacimiento
-                                            ? fecha_nacimiento
-                                            : ""
-                                    }
-                                    isRequired={true}
-                                    onChange={(e) => {
-                                        setFecha_nacimiento(e.target.value);
-                                        handleChange(
-                                            "fecha_nacimiento",
-                                            e.target.value
-                                        );
-                                    }}
-                                />
-                                <RadioGroup
-                                    label="Sexo"
-                                    isRequired
-                                    value={sexo}
-                                    orientation="horizontal"
-                                    onChange={(e) => {
-                                        setSexo(e.target.value);
-                                        handleChange("sexo", e.target.value);
+                                <Box
+                                    sx={{
+                                        display: "grid",
+                                        gap: 2,
+                                        gridTemplateColumns: {
+                                            xs: "1fr",
+                                            md: "2fr 2fr 4fr 2fr 1fr",
+                                        },
+                                        mb: 2,
                                     }}
                                 >
-                                    <Radio value="M">M</Radio>
-                                    <Radio value="F">F</Radio>
-                                </RadioGroup>
-                            </Box>
+                                    <Input
+                                        label="Celular"
+                                        value={celular ? celular : ""}
+                                        isRequired={true}
+                                        onChange={(e) => {
+                                            setCelular(e.target.value);
+                                            handleChange(
+                                                "celular",
+                                                e.target.value
+                                            );
+                                        }}
+                                    />
 
-                            <Box
-                                sx={{
-                                    display: "grid",
-                                    gap: 2,
-                                    gridTemplateColumns: {
-                                        xs: "1fr",
-                                        sm: "1fr 1fr",
-                                        md: "1fr 1fr 1fr",
-                                    },
-                                    mb: 2,
-                                }}
-                            >
-                                <Select
-                                    label="Departamento"
-                                    isRequired={true}
-                                    className="flex-1 min-w-200"
-                                    selectedKey={
-                                        departamento_id
-                                            ? departamento_id.toString()
-                                            : ""
-                                    }
-                                    value={
-                                        departamento_id
-                                            ? departamento_id
-                                            : ""
-                                    }
-                                    defaultItems={departamentos.map(
-                                        (item) => ({
-                                            key: item.id.toString(),
-                                            textValue: item.nombre,
-                                            ...item,
-                                        })
-                                    )}
-                                    onSelectionChange={(departamentoId) => {
-                                        setDepartamento_id(departamentoId);
-                                        handleChange(
-                                            "departamento_id",
-                                            departamentoId
-                                        );
-                                        setProvincia_id(null);
-                                        setDistrito_id(null);
-                                    }}
-                                />
-
-                                <Select
-                                    label="Provincia"
-                                    isRequired={true}
-                                    selectedKey={
-                                        provincia_id
-                                            ? provincia_id.toString()
-                                            : ""
-                                    }
-                                    className="flex-1 min-w-200"
-                                    disabled={!departamento_id}
-                                    value={provincia_id ? provincia_id : ""}
-                                    defaultItems={provincias.map(
-                                        (item) => ({
-                                            key: item.id.toString(),
-                                            textValue: item.nombre,
-                                            ...item,
-                                        })
-                                    )}
-                                    onSelectionChange={(provinciaId) => {
-                                        setProvincia_id(provinciaId);
-                                        handleChange(
-                                            "provincia_id",
-                                            provinciaId
-                                        );
-                                        setDistrito_id(null);
-                                    }}
-                                />
-
-                                <Select
-                                    key={`distrito-${departamento_id}`}
-                                    label="Distrito"
-                                    disabled={!provincia_id}
-                                    selectedKey={
-                                        distrito_id
-                                            ? distrito_id.toString()
-                                            : ""
-                                    }
-                                    isRequired={true}
-                                    value={distrito_id ? distrito_id : ""}
-                                    className="flex-1 min-w-200"
-                                    defaultItems={distritos.map((item) => ({
-                                        key: item.id.toString(),
-                                        textValue: item.nombre,
-                                        ...item,
-                                    }))}
-                                    onSelectionChange={(distritoId) => {
-                                        setDistrito_id(distritoId);
-                                        handleChange(
-                                            "distrito_id",
-                                            distritoId
-                                        );
-                                    }}
-                                />
-                            </Box>
-                            <Box
-                                sx={{
-                                    display: "grid",
-                                    gap: 2,
-                                    gridTemplateColumns: {
-                                        xs: "1fr",
-                                        sm: "1fr 1fr",
-                                        md: "repeat(2, 1fr)",
-                                    },
-                                    mb: 2,
-                                }}
-                            >
-                                <Input
-                                    label="Dirección"
-                                    value={direccion ? direccion : ""}
-                                    isRequired={true}
-                                    onChange={(e) => {
-                                        setDireccion(e.target.value);
-                                        handleChange(
-                                            "direccion",
-                                            e.target.value
-                                        );
-                                    }}
-                                />
-
-                                <div className="flex flex-wrap md:flex-nowrap gap-4 mt-4 items-center">
-                                    <Button
-                                        aria-label="Editar Archivos"
-                                        variant="flat"
-                                        color="primary"
-                                        onPress={toggleEditMode}
-                                        className="flex-1 min-w-200"
-                                        sx={{ mb: 2 }}
+                                    <Input
+                                        label="Correo Electrónico"
+                                        value={email ? email : ""}
+                                        isRequired={true}
+                                        onChange={(e) => {
+                                            setEmail(e.target.value);
+                                            handleChange(
+                                                "email",
+                                                e.target.value
+                                            );
+                                        }}
+                                    />
+                                    <Input
+                                        label="Dirección"
+                                        value={direccion ? direccion : ""}
+                                        isRequired={true}
+                                        onChange={(e) => {
+                                            setDireccion(e.target.value);
+                                            handleChange(
+                                                "direccion",
+                                                e.target.value
+                                            );
+                                        }}
+                                    />
+                                    <Input
+                                        label="Fecha de Nacimiento"
+                                        type="date"
+                                        value={
+                                            fecha_nacimiento
+                                                ? fecha_nacimiento
+                                                : ""
+                                        }
+                                        isRequired={true}
+                                        onChange={(e) => {
+                                            setFecha_nacimiento(e.target.value);
+                                            handleChange(
+                                                "fecha_nacimiento",
+                                                e.target.value
+                                            );
+                                        }}
+                                    />
+                                    <RadioGroup
+                                        label="Sexo"
+                                        isRequired
+                                        value={sexo}
+                                        orientation="horizontal"
+                                        onChange={(e) => {
+                                            setSexo(e.target.value);
+                                            handleChange("sexo", e.target.value);
+                                        }}
                                     >
-                                        {editMode
-                                            ? "Cancelar Edición"
-                                            : "Editar Archivos"}
-                                    </Button>
-                                </div>
-                            </Box>
+                                        <Radio value="M">M</Radio>
+                                        <Radio value="F">F</Radio>
+                                    </RadioGroup>
+                                </Box>
 
-                            {!editMode ? (
                                 <Box
                                     sx={{
                                         display: "grid",
-                                        gridTemplateColumns:
-                                            "repeat(2, 1fr)",
                                         gap: 2,
+                                        gridTemplateColumns: {
+                                            xs: "1fr",
+                                            sm: "1fr 1fr",
+                                            md: "1fr 1fr 1fr",
+                                        },
+                                        mb: 2,
                                     }}
                                 >
-                                    {rutaVoucher && (
-                                        <Typography variant="body2">
-                                            <strong>Voucher:</strong>{" "}
-                                            <a
-                                                href={rutaVoucher}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-blue-800 hover:text-blue-400"
-                                            >
-                                                Ver Comprobante de Pago
-                                            </a>
-                                        </Typography>
-                                    )}
-                                    {rutaDocIden && (
-                                        <Typography variant="body2">
-                                            <strong>DNI:</strong>{" "}
-                                            <a
-                                                href={rutaDocIden}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-blue-800 hover:text-blue-400"
-                                            >
-                                                Ver Copia DNI
-                                            </a>
-                                        </Typography>
-                                    )}
-                                    {rutaCV && (
-                                        <Typography variant="body2">
-                                            <strong>Currículum:</strong>{" "}
-                                            <a
-                                                href={rutaCV}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-blue-800 hover:text-blue-400"
-                                            >
-                                                Ver CV
-                                            </a>
-                                        </Typography>
-                                    )}
-                                    {rutaFoto && (
-                                        <Typography variant="body2">
-                                            <strong>Foto Carnet:</strong>{" "}
-                                            <a
-                                                href={rutaFoto}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-blue-800 hover:text-blue-400"
-                                            >
-                                                Ver Foto Carnet
-                                            </a>
-                                        </Typography>
-                                    )}
+                                    <Select
+                                        label="Departamento"
+                                        isRequired={true}
+                                        className="flex-1 min-w-200"
+                                        selectedKey={
+                                            departamento_id
+                                                ? departamento_id.toString()
+                                                : ""
+                                        }
+                                        value={
+                                            departamento_id
+                                                ? departamento_id
+                                                : ""
+                                        }
+                                        defaultItems={departamentos.map(
+                                            (item) => ({
+                                                key: item.id.toString(),
+                                                textValue: item.nombre,
+                                                ...item,
+                                            })
+                                        )}
+                                        onSelectionChange={(departamentoId) => {
+                                            setDepartamento_id(departamentoId);
+                                            handleChange(
+                                                "departamento_id",
+                                                departamentoId
+                                            );
+                                            setProvincia_id(null);
+                                            setDistrito_id(null);
+                                        }}
+                                    />
+
+                                    <Select
+                                        label="Provincia"
+                                        isRequired={true}
+                                        selectedKey={
+                                            provincia_id
+                                                ? provincia_id.toString()
+                                                : ""
+                                        }
+                                        className="flex-1 min-w-200"
+                                        disabled={!departamento_id}
+                                        value={provincia_id ? provincia_id : ""}
+                                        defaultItems={provincias.map(
+                                            (item) => ({
+                                                key: item.id.toString(),
+                                                textValue: item.nombre,
+                                                ...item,
+                                            })
+                                        )}
+                                        onSelectionChange={(provinciaId) => {
+                                            setProvincia_id(provinciaId);
+                                            handleChange(
+                                                "provincia_id",
+                                                provinciaId
+                                            );
+                                            setDistrito_id(null);
+                                        }}
+                                    />
+
+                                    <Select
+                                        key={`distrito-${departamento_id}`}
+                                        label="Distrito"
+                                        disabled={!provincia_id}
+                                        selectedKey={
+                                            distrito_id
+                                                ? distrito_id.toString()
+                                                : ""
+                                        }
+                                        isRequired={true}
+                                        value={distrito_id ? distrito_id : ""}
+                                        className="flex-1 min-w-200"
+                                        defaultItems={distritos.map((item) => ({
+                                            key: item.id.toString(),
+                                            textValue: item.nombre,
+                                            ...item,
+                                        }))}
+                                        onSelectionChange={(distritoId) => {
+                                            setDistrito_id(distritoId);
+                                            handleChange(
+                                                "distrito_id",
+                                                distritoId
+                                            );
+                                        }}
+                                    />
                                 </Box>
-                            ) : (
                                 <Box
                                     sx={{
                                         display: "grid",
-                                        gridTemplateColumns:
-                                            "repeat(2, 1fr)",
                                         gap: 2,
+                                        gridTemplateColumns: {
+                                            xs: "1fr",
+                                            sm: "1fr 1fr",
+                                            md: "repeat(2, 1fr)",
+                                        },
+                                        mb: 2,
                                     }}
                                 >
-                                    <div>
-                                        <RenderFileUpload
-                                            uploadType="Subir Voucher (PDF)"
-                                            allowedFileTypes={[
-                                                "application/pdf",
-                                            ]}
-                                            inputId="rutaVoucher"
-                                            tamicono={24}
-                                            tamletra={14}
-                                            required={true}
-                                            onFileUpload={handleFileUpload}
-                                        />
-                                        <Typography
-                                            variant="body2"
-                                            color="textSecondary"
-                                            sx={{ fontSize: "0.7rem" }}
-                                        >
-                                            * Suba el comprobante de pago de
-                                            inscripción en formato PDF.
-                                        </Typography>
-                                    </div>
+                                    <Input
+                                        label="Dirección"
+                                        value={direccion ? direccion : ""}
+                                        isRequired={true}
+                                        onChange={(e) => {
+                                            setDireccion(e.target.value);
+                                            handleChange(
+                                                "direccion",
+                                                e.target.value
+                                            );
+                                        }}
+                                    />
 
-                                    <div>
-                                        <RenderFileUpload
-                                            uploadType="Subir Copia DNI (PDF)"
-                                            allowedFileTypes={[
-                                                "application/pdf",
-                                            ]}
-                                            inputId="rutaDocIden"
-                                            tamicono={24}
-                                            tamletra={14}
-                                            onFileUpload={handleFileUpload}
-                                        />
-                                        <Typography
-                                            variant="body2"
-                                            color="textSecondary"
-                                            sx={{ fontSize: "0.7rem" }}
+                                    <div className="flex flex-wrap md:flex-nowrap gap-4 mt-4 items-center">
+                                        <Button
+                                            aria-label="Editar Archivos"
+                                            variant="flat"
+                                            color="primary"
+                                            onPress={toggleEditMode}
+                                            className="flex-1 min-w-200"
+                                            sx={{ mb: 2 }}
                                         >
-                                            * Suba una copia legible de su
-                                            DNI (ambas caras) en formato
-                                            PDF.
-                                        </Typography>
-                                    </div>
-
-                                    <div>
-                                        <RenderFileUpload
-                                            uploadType="Subir Curriculum Vitae (PDF)"
-                                            allowedFileTypes={[
-                                                "application/pdf",
-                                            ]}
-                                            inputId="rutaCV"
-                                            tamicono={24}
-                                            tamletra={14}
-                                            onFileUpload={handleFileUpload}
-                                        />
-                                        <Typography
-                                            variant="body2"
-                                            color="textSecondary"
-                                            sx={{ fontSize: "0.7rem" }}
-                                        >
-                                            * Suba su Curriculum Vitae en
-                                            formato PDF. Tamaño máximo:
-                                            10MB.
-                                        </Typography>
-                                    </div>
-
-                                    <div>
-                                        <RenderFileUpload
-                                            uploadType="Subir Foto Carnet (IMG)"
-                                            value={rutaFoto}
-                                            allowedFileTypes={[
-                                                "image/jpeg",
-                                                "image/png",
-                                                "image/jpg",
-                                            ]}
-                                            inputId="rutaFoto"
-                                            tamicono={24}
-                                            tamletra={14}
-                                            onFileUpload={handleFileUpload}
-                                        />
-                                        <Typography
-                                            variant="body2"
-                                            color="textSecondary"
-                                            sx={{ fontSize: "0.7rem" }}
-                                        >
-                                            * Suba una foto tipo carnet en
-                                            formato JPG o PNG. Debe ser a
-                                            color, con fondo blanco, sin
-                                            lentes. No escaneado.
-                                        </Typography>
+                                            {editMode
+                                                ? "Cancelar Edición"
+                                                : "Editar Archivos"}
+                                        </Button>
                                     </div>
                                 </Box>
-                            )}
-                        </form>
+
+                                {!editMode ? (
+                                    <Box
+                                        sx={{
+                                            display: "grid",
+                                            gridTemplateColumns:
+                                                "repeat(2, 1fr)",
+                                            gap: 2,
+                                        }}
+                                    >
+                                        {rutaVoucher && (
+                                            <Typography variant="body2">
+                                                <strong>Voucher:</strong>{" "}
+                                                <a
+                                                    href={rutaVoucher}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-800 hover:text-blue-400"
+                                                >
+                                                    Ver Comprobante de Pago
+                                                </a>
+                                            </Typography>
+                                        )}
+                                        {rutaDocIden && (
+                                            <Typography variant="body2">
+                                                <strong>DNI:</strong>{" "}
+                                                <a
+                                                    href={rutaDocIden}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-800 hover:text-blue-400"
+                                                >
+                                                    Ver Copia DNI
+                                                </a>
+                                            </Typography>
+                                        )}
+                                        {rutaCV && (
+                                            <Typography variant="body2">
+                                                <strong>Currículum:</strong>{" "}
+                                                <a
+                                                    href={rutaCV}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-800 hover:text-blue-400"
+                                                >
+                                                    Ver CV
+                                                </a>
+                                            </Typography>
+                                        )}
+                                        {rutaFoto && (
+                                            <Typography variant="body2">
+                                                <strong>Foto Carnet:</strong>{" "}
+                                                <a
+                                                    href={rutaFoto}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-800 hover:text-blue-400"
+                                                >
+                                                    Ver Foto Carnet
+                                                </a>
+                                            </Typography>
+                                        )}
+                                    </Box>
+                                ) : (
+                                    <Box
+                                        sx={{
+                                            display: "grid",
+                                            gridTemplateColumns:
+                                                "repeat(2, 1fr)",
+                                            gap: 2,
+                                        }}
+                                    >
+                                        <div>
+                                            <RenderFileUpload
+                                                uploadType="Subir Voucher (PDF)"
+                                                allowedFileTypes={[
+                                                    "application/pdf",
+                                                ]}
+                                                inputId="rutaVoucher"
+                                                tamicono={24}
+                                                tamletra={14}
+                                                required={true}
+                                                onFileUpload={handleFileUpload}
+                                            />
+                                            <Typography
+                                                variant="body2"
+                                                color="textSecondary"
+                                                sx={{ fontSize: "0.7rem" }}
+                                            >
+                                                * Suba el comprobante de pago de
+                                                inscripción en formato PDF.
+                                            </Typography>
+                                        </div>
+
+                                        <div>
+                                            <RenderFileUpload
+                                                uploadType="Subir Copia DNI (PDF)"
+                                                allowedFileTypes={[
+                                                    "application/pdf",
+                                                ]}
+                                                inputId="rutaDocIden"
+                                                tamicono={24}
+                                                tamletra={14}
+                                                onFileUpload={handleFileUpload}
+                                            />
+                                            <Typography
+                                                variant="body2"
+                                                color="textSecondary"
+                                                sx={{ fontSize: "0.7rem" }}
+                                            >
+                                                * Suba una copia legible de su
+                                                DNI (ambas caras) en formato
+                                                PDF.
+                                            </Typography>
+                                        </div>
+
+                                        <div>
+                                            <RenderFileUpload
+                                                uploadType="Subir Curriculum Vitae (PDF)"
+                                                allowedFileTypes={[
+                                                    "application/pdf",
+                                                ]}
+                                                inputId="rutaCV"
+                                                tamicono={24}
+                                                tamletra={14}
+                                                onFileUpload={handleFileUpload}
+                                            />
+                                            <Typography
+                                                variant="body2"
+                                                color="textSecondary"
+                                                sx={{ fontSize: "0.7rem" }}
+                                            >
+                                                * Suba su Curriculum Vitae en
+                                                formato PDF. Tamaño máximo:
+                                                10MB.
+                                            </Typography>
+                                        </div>
+
+                                        <div>
+                                            <RenderFileUpload
+                                                uploadType="Subir Foto Carnet (IMG)"
+                                                value={rutaFoto}
+                                                allowedFileTypes={[
+                                                    "image/jpeg",
+                                                    "image/png",
+                                                    "image/jpg",
+                                                ]}
+                                                inputId="rutaFoto"
+                                                tamicono={24}
+                                                tamletra={14}
+                                                onFileUpload={handleFileUpload}
+                                            />
+                                            <Typography
+                                                variant="body2"
+                                                color="textSecondary"
+                                                sx={{ fontSize: "0.7rem" }}
+                                            >
+                                                * Suba una foto tipo carnet en
+                                                formato JPG o PNG. Debe ser a
+                                                color, con fondo blanco, sin
+                                                lentes. No escaneado.
+                                            </Typography>
+                                        </div>
+                                    </Box>
+                                )}
+                            </form>
                         )}
                     </ModalBody>
                     <ModalFooter>

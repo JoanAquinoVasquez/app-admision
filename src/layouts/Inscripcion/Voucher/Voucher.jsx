@@ -115,6 +115,7 @@ export default function CargarVoucher() {
     const { vouchers, fetchVouchers } = useVouchers();
     const [isFetching, setIsFetching] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    const [isExporting, setIsExporting] = useState(false);
     const [filterValue, setFilterValue] = useState("");
     const [selectedKeys, setSelectedKeys] = useState(new Set([]));
     const [visibleColumns, setVisibleColumns] = useState(
@@ -238,9 +239,9 @@ export default function CargarVoucher() {
         }
     };
 
-    const handleExportVouchers = async () => {
+    const handleExportVouchers = useCallback(async () => {
         try {
-            setIsSaving(true);
+            setIsExporting(true);
             const response = await axios.get("/voucher/exportar", {
                 responseType: "blob",
             });
@@ -260,13 +261,13 @@ export default function CargarVoucher() {
             link.setAttribute("download", fileName); // Nombre del archivo dinámico
             document.body.appendChild(link);
             link.click(); // Simula el click para descargar el archivo
-            setIsSaving(false);
+            setIsExporting(false);
             link.remove(); // Eliminar el enlace del DOM
         } catch (error) {
-            setIsSaving(false);
+            setIsExporting(false);
             toast.error("Error al exportar vouchers:", error);
         }
-    };
+    }, []);
 
     const renderCell = useCallback((vouchers, columnKey) => {
         const cellValue = vouchers[columnKey];
@@ -369,7 +370,11 @@ export default function CargarVoucher() {
                         onValueChange={onSearchChange}
                     />
                     <div className="flex gap-3 w-full sm:w-auto ml-auto justify-end">
-                        <Button color="primary" onPress={handleExportVouchers}>
+                        <Button
+                            color="primary"
+                            onPress={handleExportVouchers}
+                            isLoading={isExporting}
+                        >
                             Exportar Vouchers
                         </Button>
                         <Dropdown>
@@ -465,6 +470,8 @@ export default function CargarVoucher() {
             vouchers.length,
             onRowsPerPageChange,
             onClear,
+            handleExportVouchers,
+            isExporting
         ]
     );
 

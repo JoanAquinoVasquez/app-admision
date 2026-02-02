@@ -16,6 +16,7 @@ import {
     TableRow,
     TableCell,
 
+    Input,
     Button,
     DropdownTrigger,
     Dropdown,
@@ -498,7 +499,7 @@ export default function App() {
                         <Select
                             label="Grado Académico"
                             variant="flat"
-                            defaultItems={grados.map((item) => ({
+                            defaultItems={(grados || []).map((item) => ({
                                 key: item.id,
                                 textValue: item.nombre,
                                 ...item,
@@ -525,24 +526,30 @@ export default function App() {
                         <MultiSelect
                             label="Selecciona Programas"
                             defaultItems={
-                                gradoFilter !== "all"
-                                    ? filteredProgramas.map((item) => ({
-                                        key: item.id.toString(),
-                                        textValue: item.nombre,
-                                        ...item,
-                                    }))
-                                    : [] // Si no hay grado seleccionado, no mostrar opciones
+                                (gradoFilter !== "all"
+                                    ? filteredProgramas
+                                    : users // Si no hay grado, dejar que el usuario filtre por programas de la lista actual
+                                        .reduce((acc, current) => {
+                                            if (!acc.find(item => item.id === current.programa_id)) {
+                                                acc.push({ id: current.programa_id, nombre: current.programa });
+                                            }
+                                            return acc;
+                                        }, [])
+                                ).map((item) => ({
+                                    key: item.id.toString(),
+                                    textValue: item.nombre,
+                                    ...item,
+                                }))
                             }
                             className="w-full min-h-[50px]"
                             selectedKeys={selectedKeysPrograma}
                             onSelectionChange={(keys) => {
                                 setSelectedKeysPrograma(keys);
                                 setProgramaFilter(
-                                    Array.from(keys).map((key) => parseInt(key))
-                                ); // Convertir a números
+                                    keys.map((key) => parseInt(key))
+                                );
                             }}
                             isRequired={true}
-                            disabled={gradoFilter === "all"}
                             closeOnSelect={false} // Mantener el dropdown abierto al seleccionar
                         />
                     </div>
@@ -648,8 +655,16 @@ export default function App() {
         statusFilter,
         visibleColumns,
         onRowsPerPageChange,
-        onClear,
         users.length,
+        gradoFilter,
+        filteredProgramas,
+        grados,
+        selectedKeysPrograma,
+        isObservarOpen,
+        isNotaEntrevista,
+        validarId,
+        selectedNota,
+        gradoSelected
     ]);
 
     const bottomContent = useMemo(
