@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect, Suspense } from "react";
 import { toast } from "react-hot-toast";
 import Breadcrumb from "../../../components/Breadcrumb/Breadcrumb";
 import {
@@ -17,7 +17,13 @@ import {
     Chip,
     Pagination,
     Spinner as NextUISpinner,
+    Modal,
+    ModalContent,
+    ModalHeader,
+    ModalBody,
+    useDisclosure,
 } from "@heroui/react";
+import FormularioUnificado from "../FormPreinscripcion";
 import Select from "../../../components/Select/Select";
 import useGrado from "../../../data/dataGrados";
 import useProgramas from "../../../data/dataProgramas";
@@ -122,6 +128,7 @@ const INITIAL_VISIBLE_COLUMNS = [
 
 export default function App() {
     const { preInscripciones, loading: dataLoading } = usePreInscripcion();
+    const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
     const { grados } = useGrado();
     const { filteredProgramas, filterByGrado } = useProgramas();
@@ -235,13 +242,13 @@ export default function App() {
         }
         if (gradoFilter !== "all") {
             filteredUsers = filteredUsers.filter(
-                (user) => user.grado_id === gradoFilter
+                (user) => user.grado_id == gradoFilter
             );
         }
 
         if (programaFilter !== "all") {
             filteredUsers = filteredUsers.filter(
-                (user) => user.programa_id === programaFilter
+                (user) => user.programa_id == programaFilter
             );
         }
 
@@ -624,6 +631,16 @@ export default function App() {
                             </DropdownMenu>
                         </Dropdown>
 
+                        {/* Nueva Preinscripción */}
+                        <Button
+                            color="success"
+                            variant="solid"
+                            className="h-12 w-full text-white font-medium"
+                            onPress={onOpen}
+                        >
+                            Nueva Preinscripción
+                        </Button>
+
                         {/* Exportar */}
                         <div className="flex justify-end">
                             <Dropdown>
@@ -683,16 +700,15 @@ export default function App() {
             </>
         );
     }, [
-        [
-            filterValue,
-            onSearchChange,
-            statusFilter,
-            pagoFilter,
-            visibleColumns,
-            onRowsPerPageChange,
-            onClear,
-            users.length,
-        ],
+        filterValue,
+        onSearchChange,
+        statusFilter,
+        pagoFilter,
+        visibleColumns,
+        onRowsPerPageChange,
+        onClear,
+        users.length,
+        onOpen,
     ]);
 
     const bottomContent = useMemo(
@@ -734,61 +750,78 @@ export default function App() {
     );
 
     return (
-        <Table
-            aria-label="Tabla de Preinscritos"
-            layout="auto"
-            isHeaderSticky
-            bottomContent={bottomContent}
-            bottomContentPlacement="outside"
-            classNames={{
-                wrapper: "max-h-auto overflow-auto w-full p-4", // Ajustar tamaño y eliminar márgenes
-            }}
-            selectedKeys={selectedKeys}
-            sortDescriptor={sortDescriptor}
-            topContent={topContent}
-            topContentPlacement="outside"
-            onSelectionChange={setSelectedKeys}
-            onSortChange={setSortDescriptor}
-        >
-            <TableHeader columns={headerColumns}>
-                {(column) => (
-                    <TableColumn
-                        key={column.uid}
-                        align={
-                            column.uid === "nombre_completo" ||
-                                column.uid === "grado"
-                                ? "start"
-                                : "center"
-                        }
-                        allowsSorting={column.sortable}
-                        className="p-1 text-sm" // Reducir padding y tamaño de fuente
-                        aria-label={column.name}
-                        scope="col"
-                    >
-                        {column.name}
-                    </TableColumn>
-                )}
-            </TableHeader>
-            <TableBody
-                emptyContent={dataLoading ? <NextUISpinner label="Cargando..." /> : "No se encontró postulantes registrados"}
-                items={items}
-                className="space-y-1" // Reducir espacio entre filas
-                isLoading={dataLoading}
-                loadingContent={<NextUISpinner label="Cargando..." />}
+        <>
+            <Table
+                aria-label="Tabla de Preinscritos"
+                layout="auto"
+                isHeaderSticky
+                bottomContent={bottomContent}
+                bottomContentPlacement="outside"
+                classNames={{
+                    wrapper: "max-h-auto overflow-auto w-full p-4", // Ajustar tamaño y eliminar márgenes
+                }}
+                selectedKeys={selectedKeys}
+                sortDescriptor={sortDescriptor}
+                topContent={topContent}
+                topContentPlacement="outside"
+                onSelectionChange={setSelectedKeys}
+                onSortChange={setSortDescriptor}
             >
-                {(item) => (
-                    <TableRow
-                        key={`${item.id}`}
-                        className="p-1 text-sm leading-tight"
-                    >
-                        {(columnKey) => (
-                            <TableCell className="p-1 text-sm">
-                                {renderCell(item, columnKey)}
-                            </TableCell>
-                        )}
-                    </TableRow>
-                )}
-            </TableBody>
-        </Table>
+                <TableHeader columns={headerColumns}>
+                    {(column) => (
+                        <TableColumn
+                            key={column.uid}
+                            align={
+                                column.uid === "nombre_completo" ||
+                                    column.uid === "grado"
+                                    ? "start"
+                                    : "center"
+                            }
+                            allowsSorting={column.sortable}
+                            className="p-1 text-sm" // Reducir padding y tamaño de fuente
+                            aria-label={column.name}
+                            scope="col"
+                        >
+                            {column.name}
+                        </TableColumn>
+                    )}
+                </TableHeader>
+                <TableBody
+                    emptyContent={dataLoading ? <NextUISpinner label="Cargando..." /> : "No se encontró postulantes registrados"}
+                    items={items}
+                    className="space-y-1" // Reducir espacio entre filas
+                    isLoading={dataLoading}
+                    loadingContent={<NextUISpinner label="Cargando..." />}
+                >
+                    {(item) => (
+                        <TableRow
+                            key={`${item.id}`}
+                            className="p-1 text-sm leading-tight"
+                        >
+                            {(columnKey) => (
+                                <TableCell className="p-1 text-sm">
+                                    {renderCell(item, columnKey)}
+                                </TableCell>
+                            )}
+                        </TableRow>
+                    )}
+                </TableBody>
+            </Table>
+
+            <Modal isOpen={isOpen} onOpenChange={onOpenChange} size="5xl" scrollBehavior="inside" isDismissable={false}>
+                <ModalContent>
+                    {(onClose) => (
+                        <>
+                            <ModalHeader className="flex flex-col gap-1">Registrar Nueva Preinscripción</ModalHeader>
+                            <ModalBody className="p-0 h-[80vh]">
+                                <Suspense fallback={<NextUISpinner label="Cargando formulario..." className="flex justify-center p-10" />}>
+                                    <FormularioUnificado isAdmin={true} isModal={true} />
+                                </Suspense>
+                            </ModalBody>
+                        </>
+                    )}
+                </ModalContent>
+            </Modal>
+        </>
     );
 }

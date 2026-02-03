@@ -71,10 +71,11 @@ const INITIAL_FORM_DATA = {
  * Componente principal del formulario de preinscripción
  * Orquesta los diferentes pasos y maneja el estado global
  */
-export default function FormularioUnificado() {
+// Main Component
+export default function FormularioUnificado({ isAdmin = false, isModal = false }) {
     // Control de estado (Variable de entorno)
     const isPreinscriptionOpen =
-        getAdmissionStage() === "PREINSCRIPCION";
+        getAdmissionStage() === "PREINSCRIPCION" || isAdmin;
 
     // Hooks de datos
     const { grados } = useGrados();
@@ -93,13 +94,13 @@ export default function FormularioUnificado() {
     // Memoización de opciones
     const gradoOptions = useMemo(
         () =>
-            grados.map((g) => ({ key: g.id.toString(), textValue: g.nombre })),
+            (grados || []).map((g) => ({ key: g.id.toString(), textValue: g.nombre })),
         [grados]
     );
 
     const programaOptions = useMemo(
         () =>
-            filteredProgramas.map((p) => ({
+            (filteredProgramas || []).map((p) => ({
                 key: p.id.toString(),
                 textValue: p.nombre,
             })),
@@ -145,30 +146,31 @@ export default function FormularioUnificado() {
         }
     };
 
-    return (
-        <Fondo>
-            {/* Spinner solo se muestra si está cargando Y la admisión está abierta */}
-            {isPreinscriptionOpen && loading && (
+    const content = (
+        <div className="w-full h-full flex flex-col">
+            {/* Spinner solo se muestra si está cargando */}
+            {loading && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-20 z-50">
                     <Spinner label="Enviando formulario..." />
                 </div>
             )}
 
             {/* Layout Principal Unificado */}
-            <div className="relative bg-white w-full md:w-[98%] md:max-w-[1800px] mx-auto md:rounded-xl md:shadow-2xl overflow-hidden flex flex-col h-full md:h-[95vh]">
+            <div className={`relative bg-white w-full mx-auto overflow-hidden flex flex-col h-full ${!isModal ? 'md:w-[98%] md:max-w-[1800px] md:rounded-xl md:shadow-2xl md:h-[95vh]' : ''}`}>
+
                 {/* 1. HEADER (Fijo) */}
-                {isPreinscriptionOpen && (
+                {(isPreinscriptionOpen || isAdmin) && (
                     <div className="w-full bg-gray-50/50 border-b border-gray-100 p-2 md:px-6 flex-shrink-0">
                         <StepIndicator currentStep={step} totalSteps={3} />
                     </div>
                 )}
 
                 {/* 2. CONTENEDOR DE CONTENIDO (Flexible) */}
-                <div className="flex flex-col md:flex-row flex-grow overflow-y-auto md:overflow-hidden">
+                <div className={`flex flex-col flex-grow overflow-y-auto ${!isModal ? 'md:flex-row md:overflow-hidden' : ''}`}>
                     {/* COLUMNA IZQUIERDA: Formulario */}
-                    <div className="w-full md:w-[60%] p-4 md:p-6 flex flex-col md:overflow-y-auto">
+                    <div className={`w-full p-4 md:p-6 flex flex-col ${!isModal ? 'md:w-[60%] md:overflow-y-auto' : ''}`}>
                         <div className="w-full max-w-4xl xl:max-w-4xl mx-auto my-auto">
-                            {isPreinscriptionOpen ? (
+                            {(isPreinscriptionOpen || isAdmin) ? (
                                 <div className="animate-fadeIn">
                                     {renderActiveFormStep()}
                                 </div>
@@ -178,19 +180,28 @@ export default function FormularioUnificado() {
                         </div>
                     </div>
 
-                    {/* COLUMNA DERECHA: Carrusel */}
-                    <div className="w-full md:w-[40%] h-[450px] md:h-full flex-shrink-0 relative bg-gray-100">
-                        <div className="absolute inset-0">
-                            <Carrusel
-                                slides={SLIDES_DATA}
-                                autoPlay
-                                interval={3000}
-                            />
+                    {/* COLUMNA DERECHA: Carrusel (Solo si no es modal) */}
+                    {!isModal && (
+                        <div className="w-full md:w-[40%] h-[450px] md:h-full flex-shrink-0 relative bg-gray-100">
+                            <div className="absolute inset-0">
+                                <Carrusel
+                                    slides={SLIDES_DATA}
+                                    autoPlay
+                                    interval={3000}
+                                />
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
+        </div>
+    );
 
+    if (isModal) return content;
+
+    return (
+        <Fondo>
+            {content}
             <Chatbot />
         </Fondo>
     );

@@ -17,7 +17,7 @@ const Select = ({
     const [filteredOptions, setFilteredOptions] = useState(defaultItems);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
-    const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
+    const [coords, setCoords] = useState({ top: 0, left: 0, width: 0, placement: 'bottom' });
     const dropdownRef = useRef(null);
     const selectRef = useRef(null);
     const [isItemSelected, setIsItemSelected] = useState(false);
@@ -119,20 +119,22 @@ const Select = ({
     const handleSelectOption = (option, event) => {
         if (event) {
             event.stopPropagation();
-            event.preventDefault();
+            // No preventDefault here to allow focus handling if needed, 
+            // but stopPropagation is key for modals
         }
         setSearchValue(option.textValue);
         setIsDropdownOpen(false);
-        setIsItemSelected(true); // Marcar como seleccionado solo al hacer clic
+        setIsItemSelected(true);
         if (onSelectionChange) onSelectionChange(option.key);
     };
 
     // Limpia la selección
-    const handleClear = () => {
+    const handleClear = (e) => {
+        if (e) e.stopPropagation();
         setSearchValue("");
         setFilteredOptions(defaultItems);
         setIsDropdownOpen(false);
-        setIsItemSelected(false); // Restablecer selección al limpiar
+        setIsItemSelected(false);
         if (onSelectionChange) onSelectionChange(null);
     };
 
@@ -169,9 +171,18 @@ const Select = ({
                     value={searchValue}
                     onChange={handleInputChange}
                     required={isRequired}
-                    onFocus={() => { updateCoords(); setIsDropdownOpen(true); }}
-                    onClick={() => { updateCoords(); setIsDropdownOpen(true); }}
-                    onBlur={null}
+                    onFocus={() => {
+                        updateCoords();
+                        setIsDropdownOpen(true);
+                    }}
+                    onClick={() => {
+                        updateCoords();
+                        if (!isDropdownOpen) setIsDropdownOpen(true);
+                    }}
+                    onBlur={() => {
+                        // Retraso para permitir que el onMouseDown del item ocurra primero
+                        setTimeout(() => setIsDropdownOpen(false), 200);
+                    }}
                     onKeyDown={(e) => {
                         if (e.key === "Enter") {
                             e.preventDefault();
@@ -235,7 +246,10 @@ const Select = ({
                         {filteredOptions.map((item) => (
                             <li
                                 key={item.key}
-                                onClick={(e) => handleSelectOption(item, e)}
+                                onMouseDown={(e) => {
+                                    e.stopPropagation();
+                                    handleSelectOption(item, e);
+                                }}
                                 className="p-2 mx-2 my-1 hover:bg-gray-100 cursor-pointer text-sm rounded-lg transition-colors"
                             >
                                 {item.textValue}

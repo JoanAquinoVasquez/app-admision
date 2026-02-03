@@ -16,6 +16,12 @@ import {
     Chip,
     Pagination,
     Spinner as NextUISpinner,
+    Modal,
+    ModalContent,
+    ModalHeader,
+    ModalBody,
+    ModalFooter,
+    useDisclosure,
 } from "@heroui/react";
 
 import { capitalize } from "../../../services/utils.js";
@@ -24,6 +30,7 @@ import axios from "../../../axios.js";
 import { toast } from "react-hot-toast";
 import RenderManyFilesUpload from "../../../components/Inputs/RenderManyFilesUpload.jsx";
 import useVouchers from "../../../data/Inscripcion/dataVouchers.jsx";
+import { dniApi } from "../../../services/api/dniApi.js";
 
 export const columns = [
     { name: "ID", uid: "id", sortable: true },
@@ -113,6 +120,7 @@ const INITIAL_VISIBLE_COLUMNS = [
 
 export default function CargarVoucher() {
     const { vouchers, fetchVouchers } = useVouchers();
+    const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [isFetching, setIsFetching] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
@@ -129,6 +137,20 @@ export default function CargarVoucher() {
     });
     const [page, setPage] = useState(1);
     const [voucher, setVoucher] = useState([]);
+    const [conceptosPago, setConceptosPago] = useState([]);
+    const [isSearchingDni, setIsSearchingDni] = useState(false);
+    const [tipoPago, setTipoPago] = useState("BN"); // BN o PAGALO
+    const [manualVoucher, setManualVoucher] = useState({
+        num_iden: "",
+        nombre_completo: "",
+        concepto_pago_id: "",
+        numero: "",
+        monto: "",
+        fecha_pago: "",
+        hora_pago: "00:00:00",
+        agencia: "0000",
+        cajero: "0000",
+    });
     const headerColumns = useMemo(() => {
         return visibleColumns === "all"
             ? columns
@@ -180,13 +202,135 @@ export default function CargarVoucher() {
             setIsFetching(false); // Finaliza la carga de la tabla
         };
 
+        const fetchConceptos = async () => {
+            try {
+                const response = await axios.get("/concepto-pago");
+                setConceptosPago(response.data.data);
+            } catch (error) {
+                console.error("Error al cargar conceptos de pago", error);
+            }
+        };
+
         loadData();
+        fetchConceptos();
     }, [fetchVouchers]);
 
     useEffect(() => {
         setPage(1); // Reiniciar a la primera página cuando se aplica un filtro
     }, [filterValue, statusFilter, sortedItems]);
 
+    const handleDniSearch = async (dni) => {
+        if (dni.length !== 8) return;
+
+        try {
+            setIsSearchingDni(true);
+            const response = await dniApi.search(dni);
+            if (response.success && response.data) {
+                const { nombres, apellidoPaterno, apellidoMaterno } = response.data;
+                setManualVoucher((prev) => ({
+                    ...prev,
+                    nombre_completo: `${nombres} ${apellidoPaterno} ${apellidoMaterno}`.trim(),
+                }));
+            } else {
+                toast.error("No se encontró información para el DNI ingresado.");
+            }
+        } catch (error) {
+            console.error("Error buscando DNI:", error);
+            toast.error("Error al consultar el servicio de DNI.");
+        } finally {
+            setIsSearchingDni(false);
+        }
+    };
+
+    const handleConceptoChange = (id) => {
+        const concepto = conceptosPago.find((c) => c.id.toString() === id);
+        setManualVoucher((prev) => ({
+            ...prev,
+            concepto_pago_id: id,
+            monto: concepto ? concepto.monto : "",
+        }));
+    };
+
+    const handleSaveManual = async () => {
+        // Validaciones básicas
+        if (!manualVoucher.num_iden || manualVoucher.num_iden.length !== 8) {
+            toast.error("El DNI debe tener 8 dígitos.");
+            return;
+        }
+        if (!manualVoucher.nombre_completo) {
+            toast.error("El nombre completo es requerido.");
+            return;
+        }
+        if (!manualVoucher.concepto_pago_id) {
+            toast.error("Debe seleccionar un concepto de pago.");
+            return;
+        }
+        if (!manualVoucher.numero) {
+            toast.error("El número de voucher es requerido.");
+            return;
+        }
+
+        // Validar longitud del voucher según tipo
+        if (tipoPago === "BN" && manualVoucher.numero.length !== 7) {
+            toast.error("El voucher del Banco de la Nación debe tener 7 dígitos.");
+            return;
+        }
+        if (tipoPago === "PAGALO" && manualVoucher.numero.length !== 6) {
+            toast.error("El voucher de Págalo.pe debe tener 6 dígitos.");
+            return;
+        }
+
+        // Validar longitud de agencia y cajero
+        if (!manualVoucher.agencia || manualVoucher.agencia.length !== 4) {
+            toast.error("La agencia debe tener 4 dígitos.");
+            return;
+        }
+        if (!manualVoucher.cajero || manualVoucher.cajero.length !== 4) {
+            toast.error("El cajero debe tener 4 dígitos.");
+            return;
+        }
+
+        // Preparar datos (leading zero para Pagalo)
+        const finalNumero = tipoPago === "PAGALO"
+            ? manualVoucher.numero.padStart(7, '0')
+            : manualVoucher.numero;
+
+        const dataToSend = {
+            ...manualVoucher,
+            numero: finalNumero,
+            // La agencia y cajero ya vienen del estado manualVoucher y se validan arriba.
+            // No se asigna automáticamente "PAGALO" a la agencia aquí.
+        };
+
+        try {
+            setIsSaving(true);
+            const response = await axios.post("/vouchers", dataToSend);
+            setIsSaving(false);
+            fetchVouchers();
+            onOpenChange(false);
+            setManualVoucher({
+                num_iden: "",
+                nombre_completo: "",
+                concepto_pago_id: "",
+                numero: "",
+                monto: "",
+                fecha_pago: "",
+                hora_pago: "00:00:00",
+                agencia: "0000",
+                cajero: "0000",
+            });
+            setTipoPago("BN");
+            toast.success(
+                response.data.message || "Voucher registrado exitosamente."
+            );
+        } catch (error) {
+            setIsSaving(false);
+            toast.error(
+                "Error al registrar el voucher: " +
+                (error.response?.data?.message || error.message)
+            );
+        }
+    };
     const handleSave = async () => {
         if (!voucher || voucher.length === 0) {
             toast.error("No se ha seleccionado ningún archivo para subir.");
@@ -376,6 +520,13 @@ export default function CargarVoucher() {
                             isLoading={isExporting}
                         >
                             Exportar Vouchers
+                        </Button>
+                        <Button
+                            color="success"
+                            variant="flat"
+                            onPress={onOpen}
+                        >
+                            Registrar Voucher Manual
                         </Button>
                         <Dropdown>
                             <DropdownTrigger className="w-full sm:w-auto hidden md:flex lg:flex xl:flex">
@@ -607,6 +758,112 @@ export default function CargarVoucher() {
                     </TableBody>
                 </Table>
             </div>
+
+            <Modal isOpen={isOpen} onOpenChange={onOpenChange} size="2xl">
+                <ModalContent>
+                    {(onClose) => (
+                        <>
+                            <ModalHeader className="flex flex-col gap-1">Registrar Voucher Manual</ModalHeader>
+                            <ModalBody>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <Input
+                                        label="DNI"
+                                        placeholder="Ingrese DNI"
+                                        maxLength={8}
+                                        value={manualVoucher.num_iden}
+                                        onValueChange={(val) => {
+                                            setManualVoucher({ ...manualVoucher, num_iden: val });
+                                            if (val.length === 8) handleDniSearch(val);
+                                        }}
+                                        isLoading={isSearchingDni}
+                                    />
+                                    <Input
+                                        label="Nombre Completo"
+                                        placeholder="Ingrese Nombre Completo"
+                                        value={manualVoucher.nombre_completo}
+                                        onValueChange={(val) => setManualVoucher({ ...manualVoucher, nombre_completo: val })}
+                                    />
+                                    <div className="md:col-span-2">
+                                        <label className="text-sm font-medium text-gray-700 mb-1 block">Tipo de Pago</label>
+                                        <select
+                                            className="w-full p-2 border rounded-md bg-gray-50"
+                                            value={tipoPago}
+                                            onChange={(e) => setTipoPago(e.target.value)}
+                                        >
+                                            <option value="BN">Banco de la Nación (7 dígitos)</option>
+                                            <option value="PAGALO">Págalo.pe (6 dígitos)</option>
+                                        </select>
+                                    </div>
+                                    <div className="md:col-span-2">
+                                        <label className="text-sm font-medium text-gray-700 mb-1 block">Concepto de Pago</label>
+                                        <select
+                                            className="w-full p-2 border rounded-md bg-gray-50"
+                                            value={manualVoucher.concepto_pago_id}
+                                            onChange={(e) => handleConceptoChange(e.target.value)}
+                                        >
+                                            <option value="">Seleccione un concepto</option>
+                                            {conceptosPago.map((c) => (
+                                                <option key={c.id} value={c.id}>
+                                                    {c.nombre} ({c.cod_concepto}) - S/. {c.monto}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <Input
+                                        label="Número de Voucher"
+                                        placeholder={tipoPago === "BN" ? "7 dígitos" : "6 dígitos"}
+                                        maxLength={tipoPago === "BN" ? 7 : 6}
+                                        value={manualVoucher.numero}
+                                        onValueChange={(val) => setManualVoucher({ ...manualVoucher, numero: val })}
+                                    />
+                                    <Input
+                                        label="Monto"
+                                        type="number"
+                                        placeholder="0.00"
+                                        value={manualVoucher.monto}
+                                        onValueChange={(val) => setManualVoucher({ ...manualVoucher, monto: val })}
+                                    />
+                                    <Input
+                                        label="Fecha de Pago"
+                                        type="date"
+                                        value={manualVoucher.fecha_pago}
+                                        onChange={(e) => setManualVoucher({ ...manualVoucher, fecha_pago: e.target.value })}
+                                    />
+                                    <Input
+                                        label="Hora de Pago"
+                                        type="time"
+                                        step="1"
+                                        value={manualVoucher.hora_pago}
+                                        onValueChange={(val) => setManualVoucher({ ...manualVoucher, hora_pago: val })}
+                                    />
+                                    <Input
+                                        label="Agencia"
+                                        placeholder="4 dígitos"
+                                        maxLength={4}
+                                        value={manualVoucher.agencia}
+                                        onValueChange={(val) => setManualVoucher({ ...manualVoucher, agency: val, agencia: val })}
+                                    />
+                                    <Input
+                                        label="Cajero"
+                                        placeholder="4 dígitos"
+                                        maxLength={4}
+                                        value={manualVoucher.cajero}
+                                        onValueChange={(val) => setManualVoucher({ ...manualVoucher, cajero: val })}
+                                    />
+                                </div>
+                            </ModalBody>
+                            <ModalFooter>
+                                <Button color="danger" variant="light" onPress={onClose}>
+                                    Cancelar
+                                </Button>
+                                <Button color="primary" onPress={handleSaveManual} isLoading={isSaving}>
+                                    Registrar Voucher
+                                </Button>
+                            </ModalFooter>
+                        </>
+                    )}
+                </ModalContent>
+            </Modal>
         </div>
     );
 }
