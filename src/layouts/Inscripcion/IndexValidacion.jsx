@@ -154,9 +154,26 @@ function InscripcionForm({ datosPago }) {
         } catch (error) {
             console.error(error);
             setSuccess(false);
-            setProgressText(
-                error.message || "Error al registrar la inscripción."
-            );
+
+            let errorMessage = "Error al registrar la inscripción.";
+            
+            if (error.response && error.response.data) {
+                // Error desde el servidor (Laravel)
+                const { message, errors } = error.response.data;
+                
+                if (errors) {
+                    // Si hay errores de validación de campos, mostramos el primero
+                    const firstError = Object.values(errors).flat()[0];
+                    errorMessage = firstError || message;
+                } else if (message) {
+                    errorMessage = message;
+                }
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+
+            setProgressText(errorMessage);
+            toast.error(errorMessage);
         } finally {
             loadingBarRef.current?.complete();
             setTimeout(() => setLoading(false), 4000);
