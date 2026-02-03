@@ -426,13 +426,13 @@ export default function App() {
                         description={
                             user.causer_email
                                 ? user.causer_email
-                                : "No disponible"
+                                : "Sistema"
                         }
                         name={cellValue ? cellValue : "Sistema"}
                     >
                         {user.causer_email
                             ? user.causer_email
-                            : "No disponible"}
+                            : "Sistema"}
                     </User>
                 );
             case "subject":
