@@ -7,6 +7,7 @@ import PageHeader from "../../components/PageHeader/PageHeader";
 import InfoProspecto from "../../components/InfoProspecto/InfoProspecto";
 import { useProgramasLanding } from "../../hooks/useProgramasLanding";
 import doctoradosImg from "../../assets/Img/doctorados.webp";
+import Chatbot from "../ChatBot/ChatBot";
 
 export default function Doctorados() {
     // Fetch doctorados from API (grado_id = 1)
@@ -25,6 +26,7 @@ export default function Doctorados() {
 
     return (
         <Fondo>
+            <Chatbot />
             {/* Contenedor fluido extra ancho para simular dashboard */}
             <div className="w-full max-w-[1900px] mx-auto px-4 md:px-6 lg:px-8 py-6">
 

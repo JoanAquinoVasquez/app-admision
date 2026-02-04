@@ -7,6 +7,7 @@ import PageHeader from "../../components/PageHeader/PageHeader";
 import InfoProspecto from "../../components/InfoProspecto/InfoProspecto";
 import { useProgramasLanding } from "../../hooks/useProgramasLanding";
 import maestriasImg from "../../assets/Img/maestrias.webp";
+import Chatbot from "../ChatBot/ChatBot";
 
 export default function Maestrias() {
     // Fetch maestrías from API (grado_id = 2) - optimized endpoint
@@ -25,6 +26,7 @@ export default function Maestrias() {
 
     return (
         <Fondo>
+            <Chatbot />
             {/* Contenedor fluido con ancho máximo amplio */}
             <div className="w-full max-w-[1900px] mx-auto px-4 md:px-6 lg:px-8 py-6">
 

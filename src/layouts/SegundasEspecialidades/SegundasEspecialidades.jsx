@@ -7,6 +7,7 @@ import PageHeader from "../../components/PageHeader/PageHeader";
 import InfoProspecto from "../../components/InfoProspecto/InfoProspecto";
 import { useProgramasLanding } from "../../hooks/useProgramasLanding";
 import segundasEspecialidadesImg from "../../assets/Img/segundas-especialidades.webp";
+import Chatbot from "../ChatBot/ChatBot";
 
 export default function SegundasEspecialidades() {
     // Fetch segundas especialidades from API (grado_id = 3)
@@ -25,6 +26,7 @@ export default function SegundasEspecialidades() {
 
     return (
         <Fondo>
+            <Chatbot />
             {/* Contenedor con ancho máximo extendido para el layout de dos columnas */}
             <div className="w-full max-w-[1900px] mx-auto px-4 md:px-6 lg:px-8 py-6">
 
