@@ -1,11 +1,11 @@
 import ReactDOM from "react-dom/client";
 import { StrictMode, lazy, Suspense, useEffect } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import { HeroUIProvider } from "@heroui/react";
 import "./index.css";
 import "./bootstrap";
 import Spinner from "./components/Spinner/Spinner.jsx";
-import { Toaster, toast } from "react-hot-toast";
+import { Toaster } from "react-hot-toast";
 
 // Lazy load route components for code splitting
 const Index = lazy(() => import("./layouts/Index/Index.jsx"));
@@ -38,77 +38,73 @@ const App = () => {
             <Toaster position="top-center" containerStyle={{ zIndex: 99999 }} />
             <HeroUIProvider>
                 <BrowserRouter basename="/admision-epg">
-                    <UserProvider>
-                        <div
-                            style={{
-                                display: "flex",
-                                flexDirection: "column",
-                                minHeight: "100vh",
-                            }}
-                        >
-                            <main style={{ flex: 1 }}>
-                                <Suspense fallback={<Spinner />}>
-                                    <Routes>
-                                        {/* Rutas públicas */}
-                                        <Route path="/" element={<Index />} />
+                    <div
+                        style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            minHeight: "100vh",
+                        }}
+                    >
+                        <main style={{ flex: 1 }}>
+                            <Suspense fallback={<Spinner />}>
+                                <Routes>
+                                    {/* Rutas públicas (Sin check-auth innecesario) */}
+                                    <Route path="/" element={<Index />} />
+                                    <Route
+                                        path="/inscripcion"
+                                        element={<IndexInscripcion />}
+                                    />
+                                    <Route
+                                        path="/preinscripcion"
+                                        element={<IndexPreInscripcion />}
+                                    />
+                                    <Route
+                                        path="/inscripcion/confirmacion"
+                                        element={<IndexValidacion />}
+                                    />
+
+                                    {/* Landing pages de posgrado */}
+                                    <Route path="/maestrias" element={<Maestrias />} />
+                                    <Route path="/doctorados" element={<Doctorados />} />
+                                    <Route path="/prospecto" element={<Prospecto />} />
+                                    <Route path="/segundas-especialidades" element={<SegundasEspecialidades />} />
+
+                                    {/* Zona de Usuarios / Admin (Con UserProvider) */}
+                                    <Route element={<UserProvider><Outlet /></UserProvider>}>
                                         <Route path="/login" element={<Login />} />
-                                        <Route
-                                            path="/inscripcion"
-                                            element={<IndexInscripcion />}
-                                        />
-                                        <Route
-                                            path="/preinscripcion"
-                                            element={<IndexPreInscripcion />}
-                                        />
-                                        <Route
-                                            path="/inscripcion/confirmacion"
-                                            element={<IndexValidacion />}
-                                        />
-
-                                        {/* Landing pages de posgrado */}
-                                        <Route path="/maestrias" element={<Maestrias />} />
-                                        <Route path="/doctorados" element={<Doctorados />} />
-                                        <Route path="/prospecto" element={<Prospecto />} />
-                                        <Route path="/segundas-especialidades" element={<SegundasEspecialidades />} />
-
-                                        {/* Rutas de docente (login y protegidas) */}
-                                        <Route
-                                            path="/iniciar-sesion"
-                                            element={
-                                                <DocenteProvider>
-                                                    <LoginDocente />
-                                                </DocenteProvider>
-                                            }
-                                        />
-                                        <Route
-                                            path="/docente/*"
-                                            element={
-                                                <DocenteProvider>
-                                                    <Suspense fallback={<Spinner />}>
-                                                        <ProtectedRouteDocente>
-                                                            <DashboardDocente />
-                                                            <Footer />
-                                                        </ProtectedRouteDocente>
-                                                    </Suspense>
-                                                </DocenteProvider>
-                                            }
-                                        />
-
-                                        {/* Rutas protegidas generales */}
                                         <Route
                                             path="/auth/*"
                                             element={
                                                 <Dashboard />
                                             }
                                         />
+                                    </Route>
 
-                                        {/* Página 404 al final */}
-                                        <Route path="*" element={<Notfound />} />
-                                    </Routes>
-                                </Suspense>
-                            </main>
-                        </div>
-                    </UserProvider>
+                                    {/* Zona de Docentes (Con DocenteProvider) */}
+                                    <Route element={<DocenteProvider><Outlet /></DocenteProvider>}>
+                                        <Route
+                                            path="/iniciar-sesion"
+                                            element={<LoginDocente />}
+                                        />
+                                        <Route
+                                            path="/docente/*"
+                                            element={
+                                                <Suspense fallback={<Spinner />}>
+                                                    <ProtectedRouteDocente>
+                                                        <DashboardDocente />
+                                                    </ProtectedRouteDocente>
+                                                </Suspense>
+                                            }
+                                        />
+                                    </Route>
+
+                                    {/* Página 404 al final */}
+                                    <Route path="*" element={<Notfound />} />
+                                </Routes>
+                            </Suspense>
+                        </main>
+                        <Footer />
+                    </div>
                 </BrowserRouter>
             </HeroUIProvider>
         </StrictMode>

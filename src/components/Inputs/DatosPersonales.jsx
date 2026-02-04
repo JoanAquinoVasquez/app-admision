@@ -5,8 +5,8 @@ import Input from "../../components/Inputs/InputField";
 import { Radio, RadioGroup } from "@heroui/react";
 
 const FormularioUsuario = ({ defaultValues = {}, onChange }) => {
-    const [tipo_documento, setTipo_documento] = useState(
-        defaultValues.tipo_documento || "DNI"
+    const [tipo_doc, setTipo_doc] = useState(
+        defaultValues.tipo_doc || "DNI"
     );
     const [num_iden, setNum_iden] = useState(
         defaultValues.num_iden ? defaultValues.num_iden : ""
@@ -39,7 +39,20 @@ const FormularioUsuario = ({ defaultValues = {}, onChange }) => {
         }
     };
 
-    const tipo_doc = [
+    // Sincronizar estado local con defaultValues cuando cambien
+    React.useEffect(() => {
+        if (defaultValues.tipo_doc) setTipo_doc(defaultValues.tipo_doc);
+        if (defaultValues.num_iden) setNum_iden(defaultValues.num_iden);
+        if (defaultValues.nombres) setNombres(defaultValues.nombres);
+        if (defaultValues.ap_paterno) setAp_paterno(defaultValues.ap_paterno);
+        if (defaultValues.ap_materno) setAp_materno(defaultValues.ap_materno);
+        if (defaultValues.email) setEmail(defaultValues.email);
+        if (defaultValues.celular) setCelular(defaultValues.celular);
+        if (defaultValues.fecha_nacimiento) setFecha_nacimiento(defaultValues.fecha_nacimiento);
+        if (defaultValues.sexo) setSexo(defaultValues.sexo);
+    }, [defaultValues]);
+
+    const tipo_doc_list = [
         { id: 1, nombre: "DNI", label: "Número de DNI" },
         { id: 2, nombre: "CE", label: "Número de Carnet de Extranjería" },
         { id: 3, nombre: "PASAPORTE", label: "Número de Pasaporte" },
@@ -61,28 +74,28 @@ const FormularioUsuario = ({ defaultValues = {}, onChange }) => {
             <Box sx={{ gridColumn: { xs: "1 / -1", md: "span 3" } }}>
                 <Select
                     label="Tipo de Documento"
-                    name="tipo_documento"
+                    name="tipo_doc"
                     variant="flat"
                     className="w-full"
                     disabled={true}
-                    value={tipo_documento ? tipo_documento.toString : ""}
+                    value={tipo_doc ? tipo_doc.toString : ""}
                     isRequired={true}
-                    defaultItems={tipo_doc.map((item) => ({
+                    defaultItems={tipo_doc_list.map((item) => ({
                         key: item.nombre.toString(),
                         textValue: item.nombre,
                         ...item,
                     }))}
-                    selectedKey={tipo_documento ? tipo_documento.toString() : ""}
+                    selectedKey={tipo_doc ? tipo_doc.toString() : ""}
                     onSelectionChange={(valor) => {
-                        setTipo_documento(valor);
-                        handleChange("tipo_documento", valor);
+                        setTipo_doc(valor);
+                        handleChange("tipo_doc", valor);
                     }}
                 />
             </Box>
 
             <Box sx={{ gridColumn: { xs: "1 / -1", md: "span 3" } }}>
                 <Input
-                    label={`Número de ${tipo_doc.find((item) => item.nombre === tipo_documento)
+                    label={`Número de ${tipo_doc_list.find((item) => item.nombre === tipo_doc)
                         ?.nombre || "Documento de Identidad"
                         }`}
                     name="num_iden"
@@ -91,7 +104,7 @@ const FormularioUsuario = ({ defaultValues = {}, onChange }) => {
                     disabled={true}
                     uppercase={true}
                     isRequired={true}
-                    maxLength={tipo_documento == "DNI" ? 8 : 20}
+                    maxLength={tipo_doc == "DNI" ? 8 : 20}
                     onlyNumbers={true}
                     onChange={(e) => {
                         setNum_iden(e.target.value);

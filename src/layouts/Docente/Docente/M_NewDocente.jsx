@@ -60,7 +60,7 @@ const M_NewDocente = ({ isOpen, onClose, onSave }) => {
 
     // Función para validar que solo se ingresen letras en nombres y apellidos
     const handleTextChange = (setter) => (e) => {
-        const value = e.target.value;
+        const value = e.target.value.toUpperCase();
         if (/^[a-zA-Z\s]*$/.test(value)) {
             setter(value);
         }
@@ -103,6 +103,7 @@ const M_NewDocente = ({ isOpen, onClose, onSave }) => {
                             value={nombres}
                             onChange={handleTextChange(setNombres)}
                             isRequired={true}
+                            classNames={{ input: "uppercase" }}
                         />
                         <Input
                             type="text"
@@ -111,6 +112,7 @@ const M_NewDocente = ({ isOpen, onClose, onSave }) => {
                             value={apPaterno}
                             onChange={handleTextChange(setApPaterno)}
                             isRequired={true}
+                            classNames={{ input: "uppercase" }}
                         />
                         <Input
                             type="text"
@@ -119,6 +121,7 @@ const M_NewDocente = ({ isOpen, onClose, onSave }) => {
                             value={apMaterno}
                             onChange={handleTextChange(setApMaterno)}
                             isRequired={true}
+                            classNames={{ input: "uppercase" }}
                         />
                         <Input
                             type="text"

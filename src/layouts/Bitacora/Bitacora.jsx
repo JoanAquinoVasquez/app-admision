@@ -74,6 +74,14 @@ export const statusOptions = [
         name: "Programas asignados a docente",
         uid: "programas_asignados_a_docente",
     },
+    {
+        name: "Nota CV registrada",
+        uid: "nota_cv_registrada",
+    },
+    {
+        name: "Nota de entrevista guardada",
+        uid: "nota_de_entrevista_guardada",
+    },
 ];
 
 export function capitalize(s) {
@@ -231,7 +239,7 @@ export default function App() {
             const { fecha, hora } = formatoFechaHora(item.created_at);
 
             // Extraer información del causante
-            const causer = item.causer?.name || "Sistema";
+            let causer = item.causer?.name || "Sistema";
             const causer_profile_picture = item.causer?.profile_picture ||
                 "https://cdn-icons-png.flaticon.com/512/1077/1077012.png";
             const causer_email = item.causer?.email || "";
@@ -298,6 +306,37 @@ export default function App() {
                 if (item.properties.observacion) {
                     subject_nombre_programa = `Observación: ${item.properties.observacion}`;
                 }
+            }
+
+            // Ajustes específicos para registros de notas de evaluación
+            if (item.description === 'Nota CV registrada' || item.description === 'Nota de entrevista guardada') {
+                // Causante (Docente o Usuario)
+                causer = item.properties?.docente || item.properties?.usuario || causer;
+
+                // Si existe el objeto subject (nuevo estándar), usarlo
+                if (item.properties?.subject) {
+                    const s = item.properties.subject;
+                    subject = `${s.nombres || ""} ${s.ap_paterno || ""} ${s.ap_materno || ""}`.trim();
+                    subject_tipo_doc = s.tipo_doc || "DNI";
+                    subject_num_iden = s.num_iden || "";
+                } else {
+                    // Compatibilidad con logs anteriores
+                    subject = item.properties?.postulante || subject;
+                    subject_tipo_doc = item.properties?.tipo_doc || "DNI";
+                    subject_num_iden = item.properties?.dni || item.properties?.num_iden || subject_num_iden;
+                }
+
+                const gradoStr = item.properties?.grado ? `${item.properties.grado} en ` : "";
+                const fullPrograma = `${gradoStr}${item.properties?.programa || ""}`;
+
+                subject_nombre_programa = fullPrograma || subject_nombre_programa;
+
+                const notaLabel = item.description === 'Nota CV registrada' ? 'Nota CV' : 'Nota Entrevista';
+                const notaValue = item.properties?.nota_cv || item.properties?.nota || "";
+                properties = `${fullPrograma}\n | ${notaLabel}: ${notaValue}`;
+            } else if (item.properties?.mensaje) {
+                // PRIORIDAD: Si hay un mensaje descriptivo en las propiedades para otros tipos
+                properties = item.properties.mensaje;
             }
 
             return {
@@ -712,10 +751,7 @@ export default function App() {
             icon={<ChevronDownIcon className="text-green-500" />}
             className="p-2 m-0" // Reducir padding y márgenes del DashboardCard
         >
-            {/* Overlay de carga para exportación (opcional, si lo quieres mantener solo para exportar) */}
-            {exportLoading && (
-                <Spinner label={"Exportando..."} />
-            )}
+            {/* El spinner de exportación ahora se maneja dentro de la tabla */}
             <Table
                 aria-label="Tabla de bitácora"
                 layout="auto"
@@ -751,11 +787,15 @@ export default function App() {
                     ))}
                 </TableHeader>
                 <TableBody
-                    emptyContent={dataLoading ? <NextUISpinner label="Cargando..." /> : "No se encontró información"}
+                    emptyContent={(dataLoading || exportLoading) ? <div className="flex justify-center items-center p-10"><NextUISpinner label={exportLoading ? "Exportando..." : "Cargando..."} /></div> : "No se encontró información"}
                     items={items}
                     className="space-y-1 sm:space-y-2 lg:space-y-3" // Reducir espacio entre filas en pantallas pequeñas
-                    isLoading={dataLoading}
-                    loadingContent={<NextUISpinner label="Cargando..." />}
+                    isLoading={dataLoading || exportLoading}
+                    loadingContent={
+                        <div className="w-full h-full flex justify-center items-center z-50 bg-content1/50 backdrop-blur-sm top-0 left-0 absolute">
+                            <NextUISpinner label={exportLoading ? "Exportando..." : "Cargando..."} />
+                        </div>
+                    }
                 >
                     {(item) => (
                         <TableRow

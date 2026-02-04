@@ -97,6 +97,15 @@ function InicioDocente() {
         });
     }, [postulantes, searchQueryPostulante]);
 
+    // --- LÓGICA DE PROGRAMA ACTUAL ---
+    const programaActual = useMemo(() => {
+        return programaDocente.find(p => p.id_programa === programaSeleccionado);
+    }, [programaDocente, programaSeleccionado]);
+
+    const maxNota = useMemo(() => {
+        return programaActual?.id_grado === 3 ? 20 : 30;
+    }, [programaActual]);
+
     // --- EFECTOS ---
     useEffect(() => {
         if (programasFiltrados.length > 0 && !programaSeleccionado) {
@@ -142,15 +151,26 @@ function InicioDocente() {
     };
 
     const guardarNota = async (postulante_id) => {
+        const nota = parseFloat(notas[postulante_id]);
+
+        if (isNaN(nota)) {
+            return toast.error("Ingresa una nota válida");
+        }
+
+        if (nota < 0 || nota > maxNota) {
+            return toast.error(`La nota debe estar entre 0 y ${maxNota}`);
+        }
+
         try {
             await axios.post("/registrar-nota", {
                 postulante_id,
-                notaCv: notas[postulante_id],
+                notaCv: nota,
             });
             fetchProgramaDocente(); // Actualizar contadores del sidebar
             toast.success("Nota guardada");
         } catch (error) {
-            toast.error("No se pudo guardar");
+            const message = error.response?.data?.message || "No se pudo guardar";
+            toast.error(message);
         }
     };
 
@@ -353,7 +373,7 @@ function InicioDocente() {
                                                 <TableHeader aria-label="Encabezado de la tabla">
                                                     <TableColumn width={50}>N</TableColumn>
                                                     <TableColumn>POSTULANTE</TableColumn>
-                                                    <TableColumn width={200} align="center">NOTA (0-20/30)</TableColumn>
+                                                    <TableColumn width={200} align="center">NOTA (0-{maxNota})</TableColumn>
                                                     <TableColumn width={100} align="center">ACCIÓN</TableColumn>
                                                 </TableHeader>
                                                 <TableBody emptyContent={"No hay postulantes encontrados."}>

@@ -27,7 +27,6 @@ import {
     Pagination,
     Select,
     Spinner,
-    user,
 } from "@heroui/react";
 import Typography from "@mui/material/Typography";
 import RenderFileUpload from "../../components/Inputs/RenderFileUpload";
@@ -171,11 +170,6 @@ export default function App() {
 
     // ✅ Aseguramos que `inscripciones` tenga datos antes de mapear
     const users = useMemo(() => {
-        if (loadingUsers) {
-            setLoading(true);
-            return []; // Evita errores si aún no hay datos
-        }
-        setLoading(false);
         return dataUsers.map((item) => {
             const formatoFechaHora = (fechaHora) => {
                 if (!fechaHora) {
@@ -530,136 +524,6 @@ export default function App() {
     const topContent = useMemo(() => {
         return (
             <>
-                <ModalConfirm
-                    isOpen={isValidarOpen}
-                    onClose={() => setIsValidarOpen(false)}
-                    onConfirm={() => handleValidar(validarId)}
-                    message={`¿Estás seguro que deseas ${users.find((u) => u.id === validarId)?.estado
-                        ? "inhabilitar"
-                        : "habilitar"
-                        } este usuario?`}
-                />
-
-                <Modal
-                    backdrop="opaque"
-                    isOpen={isModalOpen}
-                    placement="center"
-                    size="5xl"
-                    scrollBehavior="inside"
-                    onClose={() => setIsModalOpen(false)}
-                >
-                    <ModalContent>
-                        <ModalHeader className="flex flex-col gap-1">
-                            {modo === "editar"
-                                ? "Editar Usuario"
-                                : "Nuevo Usuario"}
-                        </ModalHeader>
-
-                        <ModalBody>
-                            <form>
-                                <h3 className="font-bold mb-2">
-                                    Datos personales
-                                </h3>
-                                <Box
-                                    sx={{
-                                        display: "grid",
-                                        gap: 2,
-                                        gridTemplateColumns: {
-                                            xs: "1fr",
-                                            md: "2fr 2fr 2fr",
-                                        },
-                                        mb: 2,
-                                    }}
-                                >
-                                    <Input
-                                        label="Nombres Completos"
-                                        name="name"
-                                        value={nombres || ""}
-                                        isRequired
-                                        maxLength={50}
-                                        onChange={(e) => {
-                                            setNombres(e.target.value);
-                                            handleChange(
-                                                "name",
-                                                e.target.value
-                                            );
-                                        }}
-                                    />
-                                    <Input
-                                        label="Correo Electrónico"
-                                        name="email"
-                                        value={email || ""}
-                                        isRequired
-                                        maxLength={50}
-                                        type="email"
-                                        onChange={(e) => {
-                                            setEmail(e.target.value);
-                                            handleChange(
-                                                "email",
-                                                e.target.value
-                                            );
-                                        }}
-                                    />
-                                    <Select
-                                        label="Rol del Usuario"
-                                        placeholder="Selecciona un rol"
-                                        selectedKeys={rol ? [rol] : []} // ✅ Forma correcta en NextUI
-                                        onSelectionChange={(keys) => {
-                                            const value = Array.from(keys)[0]; // Obtener el valor seleccionado
-                                            setRol(value);
-                                            handleChange("rol", value);
-                                        }}
-                                        isRequired
-                                    >
-                                        <SelectItem
-                                            key="Super Administrativo"
-                                            value="super-admin"
-                                        >
-                                            Super Admin
-                                        </SelectItem>
-                                        <SelectItem
-                                            key="Administrativo"
-                                            value="admin"
-                                        >
-                                            Administrativo
-                                        </SelectItem>
-                                        <SelectItem
-                                            key="Comision Admision"
-                                            value="comision"
-                                        >
-                                            Comisión de Admisión
-                                        </SelectItem>
-                                    </Select>
-                                </Box>
-                            </form>
-                        </ModalBody>
-
-                        <ModalFooter>
-                            <Button
-                                color="default"
-                                variant="flat"
-                                onPress={() => setIsModalOpen(false)}
-                            >
-                                Cancelar
-                            </Button>
-                            <Button
-                                color="primary"
-                                onPress={() =>
-                                    modo === "editar"
-                                        ? handleSubmitEditar(selectedUserId)
-                                        : handleSubmitNuevo()
-                                }
-                            >
-                                {modo === "editar"
-                                    ? "Guardar Cambios"
-                                    : "Crear Usuario"}
-                            </Button>
-                        </ModalFooter>
-                    </ModalContent>
-                </Modal>
-
-
-
                 <div className="flex flex-col gap-2">
                     {/* 🔎 Fila 1: Búsqueda y Filtros Principales */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-1 w-full">
@@ -775,6 +639,8 @@ export default function App() {
         onRowsPerPageChange,
         onClear,
         users.length,
+        isModalOpen,
+        isValidarOpen
     ]);
 
     const bottomContent = useMemo(
@@ -816,61 +682,190 @@ export default function App() {
     );
 
     return (
-        <Table
-            aria-label="Example table"
-            layout="auto"
-            isHeaderSticky
-            bottomContent={bottomContent}
-            bottomContentPlacement="outside"
-            classNames={{
-                wrapper: "max-h-auto overflow-auto w-full p-4", // Ajustar tamaño y eliminar márgenes
-            }}
-            selectedKeys={selectedKeys}
-            sortDescriptor={sortDescriptor}
-            topContent={topContent}
-            topContentPlacement="outside"
-            onSelectionChange={setSelectedKeys}
-            onSortChange={setSortDescriptor}
-        >
-            <TableHeader columns={headerColumns}>
-                {(column) => (
-                    <TableColumn
-                        key={column.uid}
-                        align={
-                            column.uid === "nombre_completo" ||
-                                column.uid === "grado"
-                                ? "start"
-                                : "center"
-                        }
-                        allowsSorting={column.sortable}
-                        className="p-1 text-sm" // Reducir padding y tamaño de fuente
-                        aria-label={column.name}
-                        scope="col"
-                    >
-                        {column.name}
-                    </TableColumn>
-                )}
-            </TableHeader>
-            <TableBody
-                emptyContent={(loading || loadingUsers) ? <Spinner label="Cargando..." /> : "No se encontró usuarios"}
-                items={items}
-                className="space-y-1" // Reducir espacio entre filas
-                isLoading={loading || loadingUsers}
-                loadingContent={<div className="w-full h-full flex justify-center items-center z-50 bg-content1/50 backdrop-blur-sm top-0 left-0 absolute"><Spinner label="Cargando..." /></div>}
+        <>
+            <ModalConfirm
+                isOpen={isValidarOpen}
+                onClose={() => setIsValidarOpen(false)}
+                onConfirm={() => handleValidar(validarId)}
+                message={`¿Estás seguro que deseas ${users.find((u) => u.id === validarId)?.estado
+                    ? "inhabilitar"
+                    : "habilitar"
+                    } este usuario?`}
+            />
+
+            <Modal
+                backdrop="opaque"
+                isOpen={isModalOpen}
+                placement="center"
+                size="5xl"
+                scrollBehavior="inside"
+                onClose={() => setIsModalOpen(false)}
             >
-                {(item) => (
-                    <TableRow
-                        key={`${item.id}`}
-                        className="p-1 text-sm leading-tight"
-                    >
-                        {(columnKey) => (
-                            <TableCell className="p-1 text-sm">
-                                {renderCell(item, columnKey)}
-                            </TableCell>
-                        )}
-                    </TableRow>
-                )}
-            </TableBody>
-        </Table >
+                <ModalContent>
+                    <ModalHeader className="flex flex-col gap-1">
+                        {modo === "editar"
+                            ? "Editar Usuario"
+                            : "Nuevo Usuario"}
+                    </ModalHeader>
+
+                    <ModalBody>
+                        <form>
+                            <h3 className="font-bold mb-2">
+                                Datos personales
+                            </h3>
+                            <Box
+                                sx={{
+                                    display: "grid",
+                                    gap: 2,
+                                    gridTemplateColumns: {
+                                        xs: "1fr",
+                                        md: "2fr 2fr 2fr",
+                                    },
+                                    mb: 2,
+                                }}
+                            >
+                                <Input
+                                    label="Nombres Completos"
+                                    name="name"
+                                    value={nombres || ""}
+                                    isRequired
+                                    maxLength={50}
+                                    onChange={(e) => {
+                                        setNombres(e.target.value);
+                                        handleChange(
+                                            "name",
+                                            e.target.value
+                                        );
+                                    }}
+                                />
+                                <Input
+                                    label="Correo Electrónico"
+                                    name="email"
+                                    value={email || ""}
+                                    isRequired
+                                    maxLength={50}
+                                    type="email"
+                                    onChange={(e) => {
+                                        setEmail(e.target.value);
+                                        handleChange(
+                                            "email",
+                                            e.target.value
+                                        );
+                                    }}
+                                />
+                                <Select
+                                    label="Rol del Usuario"
+                                    placeholder="Selecciona un rol"
+                                    selectedKeys={rol ? [rol] : []} // ✅ Forma correcta en NextUI
+                                    onSelectionChange={(keys) => {
+                                        const value = Array.from(keys)[0]; // Obtener el valor seleccionado
+                                        setRol(value);
+                                        handleChange("rol", value);
+                                    }}
+                                    isRequired
+                                >
+                                    <SelectItem
+                                        key="Super Administrativo"
+                                        value="super-admin"
+                                    >
+                                        Super Admin
+                                    </SelectItem>
+                                    <SelectItem
+                                        key="Administrativo"
+                                        value="admin"
+                                    >
+                                        Administrativo
+                                    </SelectItem>
+                                    <SelectItem
+                                        key="Comision Admision"
+                                        value="comision"
+                                    >
+                                        Comisión de Admisión
+                                    </SelectItem>
+                                </Select>
+                            </Box>
+                        </form>
+                    </ModalBody>
+
+                    <ModalFooter>
+                        <Button
+                            color="default"
+                            variant="flat"
+                            onPress={() => setIsModalOpen(false)}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            color="primary"
+                            onPress={() =>
+                                modo === "editar"
+                                    ? handleSubmitEditar(selectedUserId)
+                                    : handleSubmitNuevo()
+                            }
+                        >
+                            {modo === "editar"
+                                ? "Guardar Cambios"
+                                : "Crear Usuario"}
+                        </Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
+            <Table
+                aria-label="Example table"
+                layout="auto"
+                isHeaderSticky
+                bottomContent={bottomContent}
+                bottomContentPlacement="outside"
+                classNames={{
+                    wrapper: "max-h-auto overflow-auto w-full p-4", // Ajustar tamaño y eliminar márgenes
+                }}
+                selectedKeys={selectedKeys}
+                sortDescriptor={sortDescriptor}
+                topContent={topContent}
+                topContentPlacement="outside"
+                onSelectionChange={setSelectedKeys}
+                onSortChange={setSortDescriptor}
+            >
+                <TableHeader columns={headerColumns}>
+                    {(column) => (
+                        <TableColumn
+                            key={column.uid}
+                            align={
+                                column.uid === "nombre_completo" ||
+                                    column.uid === "grado"
+                                    ? "start"
+                                    : "center"
+                            }
+                            allowsSorting={column.sortable}
+                            className="p-1 text-sm" // Reducir padding y tamaño de fuente
+                            aria-label={column.name}
+                            scope="col"
+                        >
+                            {column.name}
+                        </TableColumn>
+                    )}
+                </TableHeader>
+                <TableBody
+                    emptyContent={(loading || loadingUsers) ? <Spinner label="Cargando..." /> : "No se encontró usuarios"}
+                    items={items}
+                    className="space-y-1" // Reducir espacio entre filas
+                    isLoading={loading || loadingUsers}
+                    loadingContent={<div className="w-full h-full flex justify-center items-center z-50 bg-content1/50 backdrop-blur-sm top-0 left-0 absolute"><Spinner label="Cargando..." /></div>}
+                >
+                    {(item) => (
+                        <TableRow
+                            key={`${item.id}`}
+                            className="p-1 text-sm leading-tight"
+                        >
+                            {(columnKey) => (
+                                <TableCell className="p-1 text-sm">
+                                    {renderCell(item, columnKey)}
+                                </TableCell>
+                            )}
+                        </TableRow>
+                    )}
+                </TableBody>
+            </Table >
+        </>
     );
 }

@@ -591,7 +591,7 @@ export default function App() {
             );
 
             // Verificar si la respuesta fue exitosa antes de mostrar el éxito
-            if (response.status === 200) {
+            if (response.data.success) {
                 toast.success(response.data.message);
                 setIsModalOpen(false);
                 fetchProgramasPosibles();
@@ -615,7 +615,7 @@ export default function App() {
             const response = await axios.get(`/reservas/inscripcion/${id}`, {
                 headers: { "Content-Type": "application/json" },
             });
-            if (response.status === 200) {
+            if (response.data.success) {
                 toast.success(response.data.message);
                 setIsValidarOpen(false);
                 fetchInscripcionesInhabilitadas();
@@ -639,7 +639,7 @@ export default function App() {
             const response = await axios.get(`/devolucion/inscripcion/${id}`, {
                 headers: { "Content-Type": "application/json" },
             });
-            if (response.status === 200) {
+            if (response.data.success) {
                 toast.success(response.data.message);
                 setIsDevolucionOpen(false);
                 fetchInscripcionesInhabilitadas();
@@ -662,7 +662,7 @@ export default function App() {
 
         try {
             const payload = { programa_id: parseInt(programaId) };
-            
+
             const response = await axios.post(
                 `/programa-cambio/${id}`,
                 payload,
@@ -670,8 +670,8 @@ export default function App() {
                     headers: { "Content-Type": "application/json" },
                 }
             );
-            
-            if (response.status === 200) {
+
+            if (response.data.success) {
                 toast.success(response.data.message);
                 setIsCambioOpen(false);
                 fetchInscripcionesInhabilitadas();
@@ -700,7 +700,7 @@ export default function App() {
                     headers: { "Content-Type": "application/json" },
                 }
             );
-            if (response.status === 200) {
+            if (response.data.success) {
                 toast.success(response.data.message);
                 setIsValidarOpen(false);
                 fetchInscripcionesInhabilitadas();
@@ -727,7 +727,7 @@ export default function App() {
                     headers: { "Content-Type": "application/json" },
                 }
             );
-            if (response.status === 200) {
+            if (response.data.success) {
                 toast.success(response.data.message);
                 setIsDevolucionOpen(false);
                 fetchInscripcionesInhabilitadas();
@@ -1020,11 +1020,10 @@ export default function App() {
                                                     (item) => (
                                                         <div
                                                             key={item.id}
-                                                            className={`p-3 rounded-lg border-2 transition-all cursor-pointer hover:shadow-md ${
-                                                                selectedProgramas.includes(item.id)
+                                                            className={`p-3 rounded-lg border-2 transition-all cursor-pointer hover:shadow-md ${selectedProgramas.includes(item.id)
                                                                     ? 'border-warning bg-warning-50 shadow-sm'
                                                                     : 'border-default-200 hover:border-default-300'
-                                                            }`}
+                                                                }`}
                                                             onClick={() => handleProgramSelection(item.id)}
                                                         >
                                                             <div className="flex items-start gap-3">

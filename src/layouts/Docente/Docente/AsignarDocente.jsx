@@ -165,8 +165,8 @@ function DocenteEvaluador() {
                 },
             });
 
-            if (response.status === 200) {
-                toast.success("Docente agregado correctamente");
+            if (response.data.success) {
+                toast.success(response.data.message || "Docente agregado correctamente");
                 fetchDocentes();
             } else {
                 toast.error(`Error: ${response.data.message}`);
@@ -269,7 +269,7 @@ function DocenteEvaluador() {
                                     <CardBody className="p-3">
                                         <div className="flex items-center justify-between gap-3">
                                             <User
-                                                name={`${docente.nombres} ${docente.ap_paterno}`}
+                                                name={`${docente.nombres} ${docente.ap_paterno} ${docente.ap_materno}`}
                                                 className="text-lg"
                                                 description={
                                                     <div className="flex flex-col gap-0.5">

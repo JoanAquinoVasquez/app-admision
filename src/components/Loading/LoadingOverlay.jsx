@@ -2,8 +2,8 @@ import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
 
-const LoadingOverlay = ({ open, progress, text, success }) => {
-    if (!open) return null;
+const LoadingOverlay = ({ isVisible, progress, text, success, onClose }) => {
+    if (!isVisible) return null;
 
     return (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -73,14 +73,14 @@ const LoadingOverlay = ({ open, progress, text, success }) => {
                     key={`desc-${text}`}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="text-gray-500 dark:text-gray-400 text-sm"
+                    className="text-gray-500 dark:text-gray-400 text-sm mb-6"
                 >
                     {text}
                 </motion.p>
 
                 {/* Progress Bar (Only when loading) */}
                 {success === null && (
-                    <div className="w-full bg-gray-100 rounded-full h-2 mt-6 overflow-hidden">
+                    <div className="w-full bg-gray-100 rounded-full h-2 mt-2 overflow-hidden">
                         <motion.div
                             className="h-full bg-blue-600 rounded-full"
                             initial={{ width: 0 }}
@@ -88,6 +88,16 @@ const LoadingOverlay = ({ open, progress, text, success }) => {
                             transition={{ duration: 0.5 }}
                         />
                     </div>
+                )}
+
+                {/* Close button only on error */}
+                {success === false && (
+                    <button
+                        onClick={onClose}
+                        className="w-full py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-white font-bold rounded-2xl transition-all active:scale-95"
+                    >
+                        Cerrar e Intentar de Nuevo
+                    </button>
                 )}
             </motion.div>
         </div>

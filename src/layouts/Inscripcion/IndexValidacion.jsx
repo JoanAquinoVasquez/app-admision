@@ -27,15 +27,15 @@ function InscripcionForm({ datosPago }) {
     const [formData, setFormData] = useState(() => {
         const postulante = datosPago?.postulante || {};
         return {
-            tipo_doc: "DNI",
-            num_iden: datosPago?.num_iden || postulante.num_iden || "",
-            nombres: postulante.nombres || datosPago?.nombres || "",
-            ap_paterno: postulante.ap_paterno || datosPago?.ap_paterno || "",
-            ap_materno: postulante.ap_materno || datosPago?.ap_materno || "",
-            email: postulante.email || datosPago?.correo || "",
-            celular: postulante.celular || datosPago?.celular || "",
-            fecha_nacimiento: postulante.fecha_nacimiento || datosPago?.fecha_nacimiento || "",
-            sexo: postulante.sexo || datosPago?.sexo || "",
+            tipo_doc: postulante.tipo_doc || datosPago?.tipo_doc || "DNI",
+            num_iden: postulante.num_iden || datosPago?.num_iden || "",
+            nombres: postulante.nombres || "",
+            ap_paterno: postulante.ap_paterno || "",
+            ap_materno: postulante.ap_materno || "",
+            email: postulante.email || "",
+            celular: postulante.celular || "",
+            fecha_nacimiento: postulante.fecha_nacimiento || "",
+            sexo: postulante.sexo || "",
         };
     });
 
@@ -44,9 +44,9 @@ function InscripcionForm({ datosPago }) {
         datosPago?.programa_id || null
     );
     const [distrito_id, setDistrito_id] = useState(
-        datosPago?.distrito_id || null
+        datosPago?.distrito_id || datosPago?.postulante?.distrito_id || null
     );
-    const [direccion, setDireccion] = useState("");
+    const [direccion, setDireccion] = useState(datosPago?.postulante?.direccion || "");
     const [files, setFiles] = useState({
         rutaVoucher: null,
         rutaDocIden: null,
@@ -70,8 +70,14 @@ function InscripcionForm({ datosPago }) {
 
     const validateForm = () => {
         if (!programa_id || !grado_id) return "Selecciona un grado y programa.";
-        if (!formData.tipo_doc || !formData.sexo)
-            return "Completa todos los datos personales.";
+
+        // Validar datos personales básicos
+        const fields = ["nombres", "ap_paterno", "ap_materno", "email", "celular", "sexo", "tipo_doc"];
+        for (const field of fields) {
+            if (!formData[field]) {
+                return `El campo ${field.replace("_", " ")} es obligatorio.`;
+            }
+        }
 
         if (formData.fecha_nacimiento) {
             const birth = new Date(formData.fecha_nacimiento);
@@ -156,11 +162,11 @@ function InscripcionForm({ datosPago }) {
             setSuccess(false);
 
             let errorMessage = "Error al registrar la inscripción.";
-            
+
             if (error.response && error.response.data) {
                 // Error desde el servidor (Laravel)
                 const { message, errors } = error.response.data;
-                
+
                 if (errors) {
                     // Si hay errores de validación de campos, mostramos el primero
                     const firstError = Object.values(errors).flat()[0];
@@ -176,7 +182,6 @@ function InscripcionForm({ datosPago }) {
             toast.error(errorMessage);
         } finally {
             loadingBarRef.current?.complete();
-            setTimeout(() => setLoading(false), 4000);
         }
     }, [
         formData,
@@ -212,6 +217,11 @@ function InscripcionForm({ datosPago }) {
         }
     ];
 
+    const handleCloseOverlay = () => {
+        setLoading(false);
+        setSuccess(null);
+    };
+
     return (
         <div className="flex flex-col lg:flex-row bg-white rounded-lg w-full max-w-8xl mx-auto p-4 sm:p-6 gap-2">
             {/* Formulario principal */}
@@ -241,12 +251,15 @@ function InscripcionForm({ datosPago }) {
                     />
 
                     <SelectDPD
-                        initialDepartamentoId={
-                            datosPago?.departamento_id || null
-                        }
-                        initialProvinciaId={datosPago?.provincia_id || null}
+                        initialDepartamentoId={datosPago?.postulante?.departamento_id}
+                        initialProvinciaId={datosPago?.postulante?.provincia_id}
                         initialDistritoId={distrito_id}
-                        onDistritoSeleccionado={setDistrito_id}
+                        initialDepartamentoNombre={datosPago?.postulante?.departamento_nombre}
+                        initialProvinciaNombre={datosPago?.postulante?.provincia_nombre}
+                        initialDistritoNombre={datosPago?.postulante?.distrito_nombre}
+                        onDistritoSeleccionado={(id) => {
+                            setDistrito_id(id);
+                        }}
                     />
 
                     <Input
@@ -279,10 +292,11 @@ function InscripcionForm({ datosPago }) {
 
             {/* Capa de carga con progreso */}
             <LoadingOverlay
-                open={loading || success !== null}
+                isVisible={loading}
                 progress={progress}
                 text={progressText}
                 success={success}
+                onClose={handleCloseOverlay}
             />
         </div>
     );

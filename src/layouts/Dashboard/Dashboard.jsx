@@ -41,7 +41,6 @@ const DashboardLayout = () => (
             <div className="px-3 sm:px-3 md:px-3 h-auto flex-1">
                 <Outlet />
             </div>
-            <Footer />
         </div>
     </div>
 );
