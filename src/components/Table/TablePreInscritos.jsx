@@ -32,7 +32,7 @@ export const statusOptions = [
 ];
 
 export function capitalize(s) {
-    return s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : "";
+    return s || ""; // No forzar minúsculas, respetar nombres de DB
 }
 
 export const SearchIcon = (props) => {
@@ -100,18 +100,20 @@ const INITIAL_VISIBLE_COLUMNS = [
     "recaudación",
 ];
 
-export default function App({ resumenPreInscripcion, loading }) {
+export default function App({ resumenPreInscripcion, loading, grados = [] }) {
     // ✅ Aseguramos que `resumenPreInscripcion` tenga datos antes de mapear
     const users = React.useMemo(() => {
         if (!resumenPreInscripcion || resumenPreInscripcion.length === 0) {
             return []; // Evita errores si aún no hay datos
         }
         return resumenPreInscripcion.map((item) => ({
+            id: item.grado_programa, // Usamos el nombre como ID único temporalmente
             grado_programa: item.grado_programa,
             preinscritos: item.preinscritos,
             vacantes: item.vacantes,
             cobertura: item.cobertura,
             facultad: item.facultad,
+            // Agregamos info de grado si es posible parsear, sino string match
         }));
     }, [resumenPreInscripcion]);
 
@@ -150,17 +152,13 @@ export default function App({ resumenPreInscripcion, loading }) {
                 )
             );
         }
-        if (statusFilter !== "all") {
-            filteredUsers = filteredUsers.filter((user) =>
-                statusFilter.has(user.estado.toString())
-            );
-        }
-        if (gradoFilter !== "all") {
+
+        if (gradoFilter !== "all" && gradoFilter.size > 0) {
             filteredUsers = filteredUsers.filter((user) => {
-                const gradoProgramUid = user.grado_programa
-                    ? user.grado_programa.split(" - ")[0] // Extrae la parte antes del primer guion
-                    : "";
-                return gradoFilter.has(gradoProgramUid); // Verifica si el gradoProgramUid está en el Set
+                // Buscamos si alguno de los grados seleccionados está contenido en el texto "grado_programa"
+                return Array.from(gradoFilter).some(gradoNombre =>
+                    user.grado_programa.toLowerCase().includes(gradoNombre.toLowerCase())
+                );
             });
         }
 
@@ -315,21 +313,25 @@ export default function App({ resumenPreInscripcion, loading }) {
                             </DropdownTrigger>
                             <DropdownMenu
                                 disallowEmptySelection
-                                aria-label="Table Columns"
+                                aria-label="Filtro de Grados"
                                 closeOnSelect={false}
                                 selectedKeys={gradoFilter}
                                 selectionMode="multiple"
                                 onSelectionChange={setGradoFilter}
                             >
-                                {statusOptions.map((status) => (
-                                    <DropdownItem
-                                        key={status.uid}
-                                        textValue={status.name}
-                                        className="capitalize"
-                                    >
-                                        {capitalize(status.name)}
-                                    </DropdownItem>
-                                ))}
+                                {grados.map((item) => {
+                                    const nombre = item.nombre;
+                                    const uid = item.nombre;
+                                    return (
+                                        <DropdownItem
+                                            key={uid}
+                                            textValue={nombre}
+                                            className="capitalize"
+                                        >
+                                            {capitalize(nombre)}
+                                        </DropdownItem>
+                                    );
+                                })}
                             </DropdownMenu>
                         </Dropdown>
 
@@ -376,6 +378,7 @@ export default function App({ resumenPreInscripcion, loading }) {
         users.length,
         onSearchChange,
         hasSearchFilter,
+        grados, // ✅ IMPORTANTE: Re-generar barra de herramientas cuando carguen los grados
     ]);
 
     const bottomContent = React.useMemo(() => {

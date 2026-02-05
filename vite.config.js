@@ -8,6 +8,7 @@ export default defineConfig({
     base: '/admision-epg/', // Ruta base para producción
     server: {
         port: 5173,
+        host: "0.0.0.0",
         open: true,
     },
     build: {

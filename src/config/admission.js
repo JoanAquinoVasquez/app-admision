@@ -25,6 +25,14 @@ export const admissionConfig = {
 };
 
 export const getAdmissionStage = () => {
+    // Permitir override desde Cypress (window o localStorage para persistencia al recargar)
+    if (typeof window !== 'undefined') {
+        if (window.CYPRESS_STAGE) return window.CYPRESS_STAGE;
+        if (window.localStorage && window.localStorage.getItem('CYPRESS_STAGE')) {
+            return window.localStorage.getItem('CYPRESS_STAGE');
+        }
+    }
+
     const config = admissionConfig.cronograma;
     const etapa = config.etapa_manual;
 

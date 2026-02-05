@@ -40,7 +40,7 @@ const useRoutes = () => {
             to: "cargar-vouchers",
             icon: <UserCogIcon className="text-xl" />,
             text: "Cargar Vouchers",
-            roles: ["super-admin"],
+            roles: ["super-admin", "admin"],
         },
         {
             to: "inscripcion-pendiente",
@@ -70,7 +70,7 @@ const useRoutes = () => {
             to: "bitacora",
             icon: <UserCogIcon className="text-xl" />,
             text: "Ver Bitácora",
-            roles: ["super-admin"],
+            roles: ["super-admin", "admin"],
         },
     ];
 

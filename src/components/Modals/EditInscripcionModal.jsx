@@ -310,6 +310,7 @@ export default function EditInscripcionModal({
                             <Box sx={{ display: "grid", gap: 2, gridTemplateColumns: { xs: "1fr", md: "4fr 2fr 2fr 1fr" }, mb: 2 }}>
                                 <Input
                                     label="Correo Electrónico"
+                                    name="email"
                                     value={email}
                                     isRequired={true}
                                     type="email"
@@ -320,6 +321,7 @@ export default function EditInscripcionModal({
                                 />
                                 <Input
                                     label="Celular"
+                                    name="celular"
                                     value={celular}
                                     isRequired={true}
                                     onChange={(e) => {

@@ -40,6 +40,7 @@ export default function TabPreinscripcion() {
                     <TablePreInscritos
                         resumenPreInscripcion={tablePreInscripcion ?? []}
                         loading={loadingTable}
+                        grados={grados ?? []}
                     />
                 </div>
                 <div className="lg:col-span-4">

@@ -68,9 +68,10 @@ export default function GraphicSummary({ preInscripciones, grados }) {
             return new Date(2025, mA - 1, dA) - new Date(2025, mB - 1, dB);
         });
 
-        const allGrados = [...grados, "conteo_total"];
+        const gradoNames = grados.map(g => g.nombre || g);
+        const allGrados = [...gradoNames, "conteo_total"];
         const filled = dates.map((date) => {
-            const data = grouped[date];
+            const data = { ...grouped[date] }; // Evitar mutar el objeto original
             allGrados.forEach((g) => (data[g] ??= 0));
             return data;
         });
@@ -83,7 +84,7 @@ export default function GraphicSummary({ preInscripciones, grados }) {
                     ...d,
                     conteo_total: d.conteo_total + prev.conteo_total,
                     ...Object.fromEntries(
-                        grados.map((g) => [g, d[g] + (prev[g] || 0)])
+                        gradoNames.map((g) => [g, d[g] + (prev[g] || 0)])
                     ),
                 };
             });

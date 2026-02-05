@@ -72,7 +72,7 @@ const Dashboard = () => {
                 <Route
                     path="cargar-vouchers"
                     element={
-                        <ProtectedRoute allowedRoles={["super-admin"]}>
+                        <ProtectedRoute allowedRoles={["super-admin", "admin"]}>
                             <Suspense
                                 fallback={<Spinner label="Cargando..." />}
                             >
@@ -84,7 +84,7 @@ const Dashboard = () => {
                 <Route
                     path="bitacora"
                     element={
-                        <ProtectedRoute allowedRoles={["super-admin"]}>
+                        <ProtectedRoute allowedRoles={["super-admin", "admin"]}>
                             <Suspense
                                 fallback={<Spinner label="Cargando..." />}
                             >

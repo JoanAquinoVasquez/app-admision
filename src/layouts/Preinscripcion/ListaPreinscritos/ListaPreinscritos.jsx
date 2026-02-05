@@ -131,7 +131,9 @@ export default function App() {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
     const { grados } = useGrado();
-    const { filteredProgramas, filterByGrado } = useProgramas();
+
+    // Obtener todos los programas (se filtrará más abajo, después de definir los estados)
+    const { programas } = useProgramas();
 
 
 
@@ -212,6 +214,16 @@ export default function App() {
         direction: "ascending",
     });
     const [page, setPage] = useState(1);
+    const [loading, setLoading] = useState(false); // Estado para controlar cargas de exportación
+
+    // --- LÓGICA SIMPLIFICADA DE FILTROS ---
+    const listaGrados = Array.isArray(grados) ? grados : [];
+
+    const listaProgramasFiltrados = useMemo(() => {
+        if (gradoFilter === "all" || !programas || !Array.isArray(programas)) return [];
+        return programas.filter(p => String(p.grado_id) === String(gradoFilter));
+    }, [programas, gradoFilter]);
+    // --------------------------------------
 
     const headerColumns = useMemo(() => {
         return visibleColumns === "all"
@@ -423,12 +435,7 @@ export default function App() {
         }
     }, []);
 
-    // Filtrar programas en la tabla cuando cambia el grado seleccionado
-    useEffect(() => {
-        if (gradoFilter !== "all") {
-            filterByGrado(gradoFilter);
-        }
-    }, [gradoFilter, filterByGrado]);
+    // Efecto de filtrado eliminado: ahora se usa useMemo (filteredProgramasLocal)
 
     const onRowsPerPageChange = useCallback((e) => {
         setRowsPerPage(Number(e.target.value));
@@ -479,25 +486,20 @@ export default function App() {
                         {/* Select Grado Académico */}
                         <div className="md:col-span-1">
                             <Select
+                                idPrefix="filter-"
                                 label="Grado Académico"
                                 variant="flat"
                                 className="w-full h-12 text-sm"
-                                defaultItems={grados.map((item) => ({
-                                    key: item.id, // mantiene key como número si tu componente lo acepta así
+                                defaultItems={listaGrados.map((item) => ({
+                                    key: String(item.id),
                                     textValue: item.nombre,
                                     ...item,
                                 }))}
-                                selectedKey={
-                                    gradoFilter !== "all" ? gradoFilter : null
-                                }
-                                onSelectionChange={(grado_id) => {
-                                    if (grado_id === null) {
-                                        setGradoFilter("all");
-                                        setProgramaFilter("all");
-                                    } else {
-                                        setGradoFilter(grado_id); // grado_id ya es el key exacto
-                                        setProgramaFilter("all");
-                                    }
+                                selectedKey={gradoFilter !== "all" ? String(gradoFilter) : null}
+                                onSelectionChange={(key) => {
+                                    const val = key ? String(key) : "all";
+                                    setGradoFilter(val);
+                                    setProgramaFilter("all"); // Reset programa
                                 }}
                             />
                         </div>
@@ -505,25 +507,18 @@ export default function App() {
                         {/* Select Programa */}
                         <div className="md:col-span-3">
                             <Select
+                                idPrefix="filter-"
                                 label="Programa"
                                 className="w-full h-12 text-sm"
-                                disabled={gradoFilter === "all"}
-                                defaultItems={filteredProgramas.map((item) => ({
-                                    key: item.id, // igual que arriba
+                                disabled={listaProgramasFiltrados.length === 0}
+                                defaultItems={listaProgramasFiltrados.map((item) => ({
+                                    key: String(item.id),
                                     textValue: item.nombre,
                                     ...item,
                                 }))}
-                                selectedKey={
-                                    programaFilter !== "all"
-                                        ? programaFilter
-                                        : null
-                                }
-                                onSelectionChange={(programa_id) => {
-                                    if (programa_id === null) {
-                                        setProgramaFilter("all");
-                                    } else {
-                                        setProgramaFilter(programa_id);
-                                    }
+                                selectedKey={programaFilter !== "all" ? String(programaFilter) : null}
+                                onSelectionChange={(key) => {
+                                    setProgramaFilter(key ? String(key) : "all");
                                 }}
                             />
                         </div>
@@ -709,6 +704,10 @@ export default function App() {
         onClear,
         users.length,
         onOpen,
+        listaGrados, // Necesario para re-renderizar select de grados cuando cargan
+        listaProgramasFiltrados, // Necesario para re-renderizar select de programas
+        gradoFilter, // Necesario para visual update
+        programaFilter,
     ]);
 
     const bottomContent = useMemo(
@@ -787,10 +786,10 @@ export default function App() {
                     )}
                 </TableHeader>
                 <TableBody
-                    emptyContent={dataLoading ? <NextUISpinner label="Cargando..." /> : "No se encontró postulantes registrados"}
-                    items={items}
-                    className="space-y-1" // Reducir espacio entre filas
-                    isLoading={dataLoading}
+                    emptyContent={dataLoading || loading ? <NextUISpinner label="Cargando..." /> : "No se encontró postulantes registrados"}
+                    items={loading ? [] : items} // Ocultar filas al exportar
+                    className="space-y-1"
+                    isLoading={dataLoading || loading}
                     loadingContent={<NextUISpinner label="Cargando..." />}
                 >
                     {(item) => (

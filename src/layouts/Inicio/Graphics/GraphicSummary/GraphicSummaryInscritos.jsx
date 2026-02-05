@@ -25,6 +25,18 @@ import DashboardCard from "../../../../components/Cards/DashboardCard";
 export function capitalize(s) {
     return s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : "";
 }
+
+const COLORS = [
+    "#8884d8",
+    "#82ca9d",
+    "#ffc658",
+    "#ff7300",
+    "#0088FE",
+    "#00C49F",
+    "#FFBB28",
+    "#FF8042",
+];
+
 export default function GraphicSummaryInscritos({ inscripciones, loading }) {
     const [selectedGrados, setSelectedGrados] = useState(new Set()); // Cambiado a Set
     const [showAccumulated, setShowAccumulated] = useState(false); // Estado para mostrar acumulados

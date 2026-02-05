@@ -735,7 +735,7 @@ export default function App() {
                                     key="carnet"
                                     onPress={() => {
                                         setValidarId(user.id);
-                                        handleExportCarnet(user.id);
+                                        handleExportCarnet(user.postulante_id);
                                     }}
                                 >
                                     Exportar Carnet
