@@ -132,16 +132,16 @@ export default defineConfig({
           const phpCode = `
             try {
                 App\\Models\\Voucher::where('num_iden', '${num_iden}')->delete();
-                $grado = App\\Models\\Grado::firstOrCreate(['nombre' => 'Maestría Cypress'], ['estado' => 1]);
+                $grado = App\\Models\\Grado::firstOrCreate(['nombre' => 'MAESTRIA CYPRESS'], ['estado' => 1]);
                 $facultad = App\\Models\\Facultad::firstOrCreate(['nombre' => 'FICSA'], ['siglas' => 'FICSA', 'estado' => 1]);
                 $concepto = App\\Models\\ConceptoPago::first(); 
                 $concepto_id = $concepto ? $concepto->id : 1;
-                $programa = App\\Models\\Programa::firstOrCreate(['nombre' => 'Programa Cypress'], [
+                $programa = App\\Models\\Programa::firstOrCreate(['nombre' => 'PROGRAMA AUTOMATIZADO CYPRESS'], [
                     'grado_id' => $grado->id,
                     'facultad_id' => $facultad->id,
                     'concepto_pago_id' => $concepto_id, 
                     'estado' => 1,
-                    'vacantes' => 50
+                    'vacantes' => 100
                 ]);
                 $distrito = App\\Models\\Distrito::first();
                 $distrito_id = $distrito ? $distrito->id : '140101';
@@ -194,15 +194,15 @@ export default defineConfig({
                      $distrito = App\\Models\\Distrito::create(['id' => '140101', 'nombre' => 'Distrito Test', 'provincia_id' => 1, 'ubigeo' => '140101']); 
                      $distrito_id = $distrito->id;
                 }
-                $grado = App\\Models\\Grado::firstOrCreate(['nombre' => 'Maestría Cypress'], ['estado' => 1]);
+                $grado = App\\Models\\Grado::firstOrCreate(['nombre' => 'MAESTRIA CYPRESS'], ['estado' => 1]);
                 $facultad = App\\Models\\Facultad::firstOrCreate(['nombre' => 'FICSA'], ['siglas' => 'FICSA', 'estado' => 1]);
                 $concepto = App\\Models\\ConceptoPago::first();
-                $programa = App\\Models\\Programa::firstOrCreate(['nombre' => 'Programa Cypress'], [
+                $programa = App\\Models\\Programa::firstOrCreate(['nombre' => 'PROGRAMA AUTOMATIZADO CYPRESS'], [
                     'grado_id' => $grado->id,
                     'facultad_id' => $facultad->id,
                     'concepto_pago_id' => $concepto ? $concepto->id : 1,
                     'estado' => 1,
-                    'vacantes' => 50
+                    'vacantes' => 100
                 ]);
 
                 $postulante = App\\Models\\Postulante::updateOrCreate(['num_iden' => $dni], [

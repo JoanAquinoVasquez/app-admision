@@ -17,6 +17,7 @@ import {
     Pagination,
 } from "@heroui/react";
 import DashboardCard from "../../components/Cards/DashboardCard";
+import { admissionConfig } from "../../config/admission";
 
 export const columns = [
     { name: "Grado y Programa", uid: "grado_programa", sortable: true },
@@ -123,6 +124,7 @@ export default function App({ resumenInscripcion, loading }) {
     }, [resumenInscripcion]);
 
     const [filterValue, setFilterValue] = useState("");
+    const config = admissionConfig.cronograma || {};
     const [gradoFilter, setGradoFilter] = useState("all");
     const [selectedKeys, setSelectedKeys] = useState(new Set([]));
     const [visibleColumns, setVisibleColumns] = useState(
@@ -461,7 +463,7 @@ export default function App({ resumenInscripcion, loading }) {
 
     return (
         <DashboardCard
-            title="Resumen Proc. Admisión 2025 - I"
+            title={`Resumen Proc. Admisión ${config.periodo}`}
             icon={<ChevronDownIcon className="text-green-500" />}
         >
             <Table
