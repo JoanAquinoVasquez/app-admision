@@ -281,7 +281,7 @@ export default function GraphicSummaryEvaluacion({ notasDiariasCV, loading }) {
                                         }}
                                     />
 
-                                    <YAxis />
+                                    <YAxis allowDecimals={false} />
                                     <Tooltip
                                         labelFormatter={(str) => {
                                             const date = new Date(str);

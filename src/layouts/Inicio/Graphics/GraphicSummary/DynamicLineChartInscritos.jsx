@@ -17,7 +17,7 @@ function DynamicLineChart({ data, lines }) {
         >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="date" />
-            <YAxis />
+            <YAxis allowDecimals={false} />
             <Tooltip
                 formatter={(value) =>
                     `$${new Intl.NumberFormat("us").format(value)}`

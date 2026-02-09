@@ -199,7 +199,7 @@ export default function GraphicSummary({ preInscripciones, grados }) {
                                 >
                                     <CartesianGrid strokeDasharray="3 3" />
                                     <XAxis dataKey="date" />
-                                    <YAxis />
+                                    <YAxis allowDecimals={false} />
                                     <Tooltip />
                                     <Legend />
                                     <Line

@@ -279,7 +279,7 @@ export default function GraphicSummaryInscritos({ inscripciones, loading }) {
                                 >
                                     <CartesianGrid strokeDasharray="3 3" />
                                     <XAxis dataKey="date" />
-                                    <YAxis />
+                                    <YAxis allowDecimals={false} />
                                     <Tooltip />
                                     <Legend />
                                     <Line
