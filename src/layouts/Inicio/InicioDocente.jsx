@@ -421,6 +421,7 @@ function InicioDocente() {
                                                                             isIconOnly
                                                                             color="primary"
                                                                             variant="light"
+                                                                            aria-label="Guardar Nota"
                                                                             onPress={() => guardarNota(postulante.id)}
                                                                         >
                                                                             <MdSave size={22} />

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import ChatBotIcon from "../../assets/Isotipos/chatbot.png";
 import { Button, Input, Card, CardBody, CardHeader, ScrollShadow, Divider } from "@heroui/react";
 import axios from "../../axios";
@@ -58,11 +59,11 @@ const Chatbot = () => {
         if (e.key === 'Enter') handleSend();
     };
 
-    return (
-        <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end">
-            {/* Chat Window */}
+    return createPortal(
+        <div className="fixed bottom-5 right-5 z-[9999] flex flex-col items-end pointer-events-none">
+            {/* Chat Window - Enable pointer events for content */}
             {isOpen && (
-                <Card className={`mb-4 w-80 md:w-96 shadow-xl border border-gray-200 transition-all duration-300 ${isMobile ? 'fixed inset-0 m-0 w-full h-full z-[60]' : 'h-[500px]'}`}>
+                <Card className={`mb-4 w-80 md:w-96 shadow-xl border border-gray-200 transition-all duration-300 pointer-events-auto ${isMobile ? 'fixed inset-0 m-0 w-full h-full z-[60]' : 'h-[500px]'}`}>
                     <CardHeader className="flex justify-between items-center bg-blue-900 text-white p-4 rounded-t-lg">
                         <div className="flex items-center gap-2">
                             <div className="w-8 h-8 rounded-full bg-white p-1">
@@ -137,18 +138,19 @@ const Chatbot = () => {
                 </Card>
             )}
 
-            {/* Floating Toggle Button */}
+            {/* Floating Toggle Button - Enable pointer events */}
             {!isOpen && (
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-blue-900 border-4 border-white shadow-2xl flex items-center justify-center hover:scale-110 transition-transform duration-300 group"
+                    className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-blue-900 border-4 border-white shadow-2xl flex items-center justify-center hover:scale-110 transition-transform duration-300 group pointer-events-auto"
                 >
                     <img src={ChatBotIcon} alt="Chat" className="w-8 h-8 md:w-10 md:h-10 object-contain group-hover:rotate-12 transition-transform" />
                     {/* Badge de notification opcional */}
                     <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 rounded-full border-2 border-white"></span>
                 </button>
             )}
-        </div>
+        </div>,
+        document.body
     );
 };
 

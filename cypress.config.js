@@ -128,24 +128,28 @@ export default defineConfig({
             throw new Error(e.message);
           }
         },
-        createPreInscripcion({ num_iden, nombres, ap_paterno, ap_materno, email }) {
+        createPreInscripcion({ num_iden, nombres, ap_paterno, ap_materno, email, grado, programa }) {
           const phpCode = `
             try {
-                App\\Models\\Voucher::where('num_iden', '${num_iden}')->delete();
-                $grado = App\\Models\\Grado::firstOrCreate(['nombre' => 'MAESTRIA CYPRESS'], ['estado' => 1]);
-                $facultad = App\\Models\\Facultad::firstOrCreate(['nombre' => 'FICSA'], ['siglas' => 'FICSA', 'estado' => 1]);
-                $concepto = App\\Models\\ConceptoPago::first(); 
+                $num_iden = '${num_iden}';
+                $gradoName = '${grado || 'MAESTRIA PRUEBA'}';
+                $progName = '${programa || 'PROGRAMA PRUEBA'}';
+                
+                \\App\\Models\\Voucher::where('num_iden', $num_iden)->delete();
+                $grado = \\App\\Models\\Grado::firstOrCreate(['nombre' => $gradoName], ['estado' => 1]);
+                $facultad = \\App\\Models\\Facultad::firstOrCreate(['nombre' => 'FICSA'], ['siglas' => 'FICSA', 'estado' => 1]);
+                $concepto = \\App\\Models\\ConceptoPago::first(); 
                 $concepto_id = $concepto ? $concepto->id : 1;
-                $programa = App\\Models\\Programa::firstOrCreate(['nombre' => 'PROGRAMA AUTOMATIZADO CYPRESS'], [
+                $programa = \\App\\Models\\Programa::firstOrCreate(['nombre' => $progName], [
                     'grado_id' => $grado->id,
                     'facultad_id' => $facultad->id,
                     'concepto_pago_id' => $concepto_id, 
                     'estado' => 1,
                     'vacantes' => 100
                 ]);
-                $distrito = App\\Models\\Distrito::first();
+                $distrito = \\App\\Models\\Distrito::first();
                 $distrito_id = $distrito ? $distrito->id : '140101';
-                App\\Models\\PreInscripcion::updateOrCreate(['num_iden' => '${num_iden}'], [
+                \\App\\Models\\PreInscripcion::updateOrCreate(['num_iden' => $num_iden], [
                     'nombres' => '${nombres}',
                     'ap_paterno' => '${ap_paterno}',
                     'ap_materno' => '${ap_materno}',
@@ -174,11 +178,13 @@ export default defineConfig({
             throw new Error(e.message);
           }
         },
-        createTestInscripcion({ num_iden, nombres, ap_paterno, ap_materno, email, val_digital, val_fisica }) {
+        createTestInscripcion({ num_iden, nombres, ap_paterno, ap_materno, email, val_digital, val_fisica, grado, programa }) {
           // Write to a temporary file in the api directory to avoid shell quoting hell
           const phpScriptContent = `<?php
             try {
                 $dni = '${num_iden}';
+                $gradoName = '${grado || 'MAESTRIA PRUEBA'}';
+                $progName = '${programa || 'PROGRAMA PRUEBA'}';
 
                 $postulante = App\\Models\\Postulante::where('num_iden', $dni)->first();
                 if ($postulante) {
@@ -194,10 +200,10 @@ export default defineConfig({
                      $distrito = App\\Models\\Distrito::create(['id' => '140101', 'nombre' => 'Distrito Test', 'provincia_id' => 1, 'ubigeo' => '140101']); 
                      $distrito_id = $distrito->id;
                 }
-                $grado = App\\Models\\Grado::firstOrCreate(['nombre' => 'MAESTRIA CYPRESS'], ['estado' => 1]);
+                $grado = App\\Models\\Grado::firstOrCreate(['nombre' => $gradoName], ['estado' => 1]);
                 $facultad = App\\Models\\Facultad::firstOrCreate(['nombre' => 'FICSA'], ['siglas' => 'FICSA', 'estado' => 1]);
                 $concepto = App\\Models\\ConceptoPago::first();
-                $programa = App\\Models\\Programa::firstOrCreate(['nombre' => 'PROGRAMA AUTOMATIZADO CYPRESS'], [
+                $programa = App\\Models\\Programa::firstOrCreate(['nombre' => $progName], [
                     'grado_id' => $grado->id,
                     'facultad_id' => $facultad->id,
                     'concepto_pago_id' => $concepto ? $concepto->id : 1,
@@ -290,27 +296,32 @@ export default defineConfig({
           }
         },
         createTestDocente({ dni, nombres, ap_paterno, ap_materno, email }) {
-          const phpCode = `
+          const scriptName = `create_docente_${Date.now()}.php`;
+          const scriptPath = path.join(process.cwd(), "..", "api", scriptName);
+          const phpCode = `<?php
               try {
-                  $d = App\\Models\\Docente::updateOrCreate(['dni' => '${dni}'], [
+                  $d = \\App\\Models\\Docente::updateOrCreate(['dni' => '${dni}'], [
                       'nombres' => '${nombres}',
                       'ap_paterno' => '${ap_paterno}',
                       'ap_materno' => '${ap_materno}',
                       'email' => '${email}',
-                      'grado_academico' => 'DOCTORADO', 
-                      'especialidad' => 'Ingeniería de Sistemas',
+                      'password' => \\Illuminate\\Support\\Facades\\Hash::make('12345678'),
                       'estado' => 1
                   ]);
-                  echo 'Docente creado: ' . $d->nombres;
+                  echo 'DOCENTE_CREATED_SUCCESS';
               } catch (\\Exception $e) {
-                  echo 'Error creando docente: ' . $e->getMessage();
+                  echo 'ERROR: ' . $e->getMessage();
               }
             `;
-          const cmd = `php artisan tinker --execute="${phpCode.replace(/\n/g, '')}"`;
+
+          fs.writeFileSync(scriptPath, phpCode);
+          const cmd = `php artisan tinker --execute="include '${scriptName}';"`;
           try {
             const output = execSync(cmd, { cwd: path.join(process.cwd(), "..", "api") });
+            if (fs.existsSync(scriptPath)) fs.unlinkSync(scriptPath);
             return output.toString();
           } catch (e) {
+            if (fs.existsSync(scriptPath)) fs.unlinkSync(scriptPath);
             throw new Error(e.message);
           }
         },
@@ -332,6 +343,22 @@ export default defineConfig({
             if (fs.existsSync(scriptPath)) fs.unlinkSync(scriptPath);
             throw new Error(e.message);
           }
+        },
+        clearDownloads() {
+          const downloadsPath = path.join(process.cwd(), "cypress", "downloads");
+          if (fs.existsSync(downloadsPath)) {
+            const files = fs.readdirSync(downloadsPath);
+            for (const file of files) {
+              try {
+                fs.unlinkSync(path.join(downloadsPath, file));
+              } catch (e) { /* ignore */ }
+            }
+          }
+          return null;
+        },
+        listFiles(folderName) {
+          const folderPath = path.resolve(folderName);
+          return fs.existsSync(folderPath) ? fs.readdirSync(folderPath) : [];
         }
       });
 

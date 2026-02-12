@@ -260,20 +260,34 @@ export default function App() {
     }, [gradoFilter, filterByGrado]);
 
     const [currentPage, setCurrentPage] = useState(1);
+    const [programSearchValue, setProgramSearchValue] = useState("");
     const programasPerPage = 7;
 
+    // Filtrar programas por búsqueda
+    const searchFilteredProgramas = useMemo(() => {
+        if (!programSearchValue) return filteredProgramasHabilitados;
+        return filteredProgramasHabilitados.filter(programa =>
+            programa.nombre.toLowerCase().includes(programSearchValue.toLowerCase())
+        );
+    }, [filteredProgramasHabilitados, programSearchValue]);
+
     // Usamos los programas filtrados para calcular las páginas
-    const totalProgramas = filteredProgramasHabilitados.length;
+    const totalProgramas = searchFilteredProgramas.length;
     const totalPages =
         totalProgramas > 0 ? Math.ceil(totalProgramas / programasPerPage) : 1;
 
     // Calcular el índice de los programas en la página actual
     const indexOfLastProgram = currentPage * programasPerPage;
     const indexOfFirstProgram = indexOfLastProgram - programasPerPage;
-    const currentProgramas = filteredProgramasHabilitados.slice(
+    const currentProgramas = searchFilteredProgramas.slice(
         indexOfFirstProgram,
         indexOfLastProgram
     );
+
+    // Resetear página cuando cambia la búsqueda
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [programSearchValue]);
 
     const headerColumns = useMemo(() => {
         return visibleColumns === "all"
@@ -993,14 +1007,28 @@ export default function App() {
                                 />
 
                                 <div className="flex flex-col gap-3 mt-2">
-                                    <div className="flex items-center justify-between">
-                                        <p className="font-semibold text-default-700">
-                                            Programas Disponibles
-                                        </p>
-                                        {selectedProgramas.length > 0 && (
-                                            <Chip size="sm" color="warning" variant="flat">
-                                                {selectedProgramas.length} seleccionado{selectedProgramas.length !== 1 ? 's' : ''}
-                                            </Chip>
+                                    <div className="flex flex-col gap-2">
+                                        <div className="flex items-center justify-between">
+                                            <p className="font-semibold text-default-700">
+                                                Programas Disponibles
+                                            </p>
+                                            {selectedProgramas.length > 0 && (
+                                                <Chip size="sm" color="warning" variant="flat">
+                                                    {selectedProgramas.length} seleccionado{selectedProgramas.length !== 1 ? 's' : ''}
+                                                </Chip>
+                                            )}
+                                        </div>
+                                        {gradoFilter !== "all" && (
+                                            <Input
+                                                isClearable
+                                                className="w-full"
+                                                placeholder="Buscar programa..."
+                                                startContent={<SearchIcon />}
+                                                value={programSearchValue}
+                                                onClear={() => setProgramSearchValue("")}
+                                                onValueChange={setProgramSearchValue}
+                                                size="sm"
+                                            />
                                         )}
                                     </div>
 
@@ -1021,8 +1049,8 @@ export default function App() {
                                                         <div
                                                             key={item.id}
                                                             className={`p-3 rounded-lg border-2 transition-all cursor-pointer hover:shadow-md ${selectedProgramas.includes(item.id)
-                                                                    ? 'border-warning bg-warning-50 shadow-sm'
-                                                                    : 'border-default-200 hover:border-default-300'
+                                                                ? 'border-warning bg-warning-50 shadow-sm'
+                                                                : 'border-default-200 hover:border-default-300'
                                                                 }`}
                                                             onClick={() => handleProgramSelection(item.id)}
                                                         >

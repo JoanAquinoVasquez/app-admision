@@ -109,6 +109,11 @@ function DocenteEvaluador() {
         setProgramasFiltrados(filteredProgramas); // Actualizamos programas filtrados
     }, [filteredProgramas]); // Dependencia de filteredProgramas
 
+    // Resetear a la primera página cuando cambie la búsqueda para evitar resultados ocultos
+    useEffect(() => {
+        setPage(1);
+    }, [searchQuery]);
+
     // Ordenamos los programas alfabéticamente por nombre
     const programasOrdenados = programasFiltrados.sort((a, b) =>
         a.nombre.localeCompare(b.nombre)
@@ -338,8 +343,12 @@ function DocenteEvaluador() {
                                 placeholder="Filtrar por grado"
                                 size="sm"
                                 variant="bordered"
-                                selectedKeys={gradoSeleccionado ? [String(gradoSeleccionado)] : []}
-                                onChange={(e) => setGradoSeleccionado(e.target.value)}
+                                selectionMode="single"
+                                selectedKeys={gradoSeleccionado ? new Set([String(gradoSeleccionado)]) : new Set([])}
+                                onSelectionChange={(keys) => {
+                                    const selected = Array.from(keys)[0];
+                                    if (selected) setGradoSeleccionado(selected);
+                                }}
                                 startContent={<GraduationCap className="text-slate-400" size={18} />}
                                 classNames={{
                                     trigger: "border-slate-200 shadow-sm hover:border-blue-300 transition-colors",
@@ -406,7 +415,7 @@ function DocenteEvaluador() {
 
                                                         {estaAsignado && (
                                                             <div className="flex items-center gap-2 flex-shrink-0 animate-in fade-in slide-in-from-right-3">
-                                                                <Chip size="sm" color="warning" variant="shadow" className="h-6 text-[10px] px-2 font-bold capitalize">Ocupado</Chip>
+                                                                <Chip size="sm" color="warning" variant="shadow" className="h-6 text-[10px] px-2 font-bold capitalize">Asignado</Chip>
                                                                 <span className="text-[11px] text-slate-500 font-semibold italic hidden sm:inline truncate max-w-[140px]">
                                                                     {docenteAsignado?.nombres} {docenteAsignado?.ap_paterno}
                                                                 </span>

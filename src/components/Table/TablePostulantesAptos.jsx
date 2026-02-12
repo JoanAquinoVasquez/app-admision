@@ -97,6 +97,24 @@ export const VerticalDotsIcon = ({ size = 24, width, height, ...props }) => {
     );
 };
 
+export const RefreshIcon = (props) => (
+    <svg
+        aria-hidden="true"
+        fill="none"
+        focusable="false"
+        height="1em"
+        role="presentation"
+        viewBox="0 0 24 24"
+        width="1em"
+        {...props}
+    >
+        <path
+            d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"
+            fill="currentColor"
+        />
+    </svg>
+);
+
 export const SearchIcon = (props) => {
     return (
         <svg
@@ -546,7 +564,7 @@ export default function App() {
                             onSelectionChange={(keys) => {
                                 setSelectedKeysPrograma(keys);
                                 setProgramaFilter(
-                                    keys.map((key) => parseInt(key))
+                                    Array.from(keys).map((key) => parseInt(key))
                                 );
                             }}
                             isRequired={true}
@@ -555,7 +573,16 @@ export default function App() {
                     </div>
 
                     {/* Botón de PDF */}
-                    <div className="w-full sm:w-auto md:w-[10%] mb-3 flex items-end gap-2">
+                    <div className="w-full sm:w-auto md:w-[15%] mb-3 flex items-end gap-2">
+                        <Button
+                            color="default"
+                            variant="flat"
+                            isIconOnly
+                            onPress={fetchInscripcionNota}
+                            aria-label="Recargar"
+                        >
+                            <RefreshIcon />
+                        </Button>
                         <Button
                             color="danger"
                             onPress={() => {
