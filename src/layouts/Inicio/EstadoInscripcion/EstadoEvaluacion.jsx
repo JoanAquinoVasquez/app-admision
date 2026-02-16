@@ -14,7 +14,7 @@ const EstadoEvaluacion = ({ estadoEvaluacion, loading }) => {
             </div>
 
             {loading ? (
-                <div className="flex items-center justify-center h-36 border border-gray-200 rounded-lg bg-white shadow-sm">
+                <div className="flex items-center justify-center h-72 border border-gray-200 rounded-lg bg-white shadow-sm">
                     <Spinner label="Cargando docentes..." />
                 </div>
             ) : (
