@@ -1,5 +1,5 @@
 import { MdPeople } from "react-icons/md";
-import { Divider, Spinner, Tooltip } from "@heroui/react";
+import { Divider, Skeleton, Tooltip } from "@heroui/react";
 import DashboardCard from "../../../components/Cards/DashboardCard";
 import CountUp from "react-countup";
 
@@ -31,11 +31,21 @@ const EstadoPreinscritos = ({ preinscripciones, loading }) => {
             icon={<MdPeople className="text-blue-500" />}
         >
             {loading ? (
-                <div className="flex flex-col items-center justify-center py-16">
-                    <Spinner size="md" color="primary" label="Cargando..." />
+                <div className="flex flex-col justify-center h-[165px] w-full px-4 gap-4">
+                    <div className="grid grid-cols-2 w-full gap-8">
+                        <div className="flex flex-col items-center gap-2">
+                            <Skeleton className="h-16 w-24 rounded-lg" />
+                            <Skeleton className="h-4 w-32 rounded-lg" />
+                        </div>
+                        <div className="flex flex-col gap-3">
+                            <Skeleton className="h-6 w-full rounded-lg" />
+                            <Skeleton className="h-6 w-full rounded-lg" />
+                            <Skeleton className="h-6 w-full rounded-lg" />
+                        </div>
+                    </div>
                 </div>
             ) : (
-                <>
+                <div className="flex-1 flex flex-col justify-around">
                     <div className="grid grid-cols-2 p-0 items-center">
                         <div className="text-center">
                             <Tooltip content="Número total de preinscritos que ya se inscribieron">
@@ -122,7 +132,7 @@ const EstadoPreinscritos = ({ preinscripciones, loading }) => {
                             </p>
                         </div>
                     </div>
-                </>
+                </div>
             )}
         </DashboardCard>
     );

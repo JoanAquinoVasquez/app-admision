@@ -19,7 +19,8 @@ import {
     Badge,
     Chip,
     Pagination as NextPagination,
-    Tooltip
+    Tooltip,
+    Skeleton
 } from "@heroui/react";
 import {
     Search,
@@ -241,9 +242,10 @@ function DocenteEvaluador() {
                     <CardBody className="px-4 py-4 max-h-[700px] overflow-y-auto custom-scrollbar">
                         <div className="flex flex-col gap-3">
                             {loading && (
-                                <div className="flex flex-col items-center justify-center py-12 gap-3">
-                                    <Spinner color="primary" labelColor="primary" />
-                                    <span className="text-sm font-medium text-blue-500">Sincronizando docentes...</span>
+                                <div className="flex flex-col gap-3">
+                                    {[1, 2, 3, 4, 5].map((i) => (
+                                        <Skeleton key={i} className="h-16 w-full rounded-xl" />
+                                    ))}
                                 </div>
                             )}
 

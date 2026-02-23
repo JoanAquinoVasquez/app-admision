@@ -1,48 +1,28 @@
 import { Suspense, lazy } from "react";
-import { Routes, Route, Navigate, Outlet } from "react-router-dom";
-import SidebarMenu from "../../components/Sidebar/Sidebar";
-import Navbar from "../../components/Navbar/Navbar";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Spinner from "../../components/Spinner/Spinner";
 import NotFound from "../../pages/NotFound/NotFound";
 import ProtectedRoute from "../../services/ProtectedRoute";
-import Footer from "../../components/Footer/Footer";
+import DashboardLayout from "./DashboardLayout";
 
+// Lazy loading components
 const Inicio = lazy(() => import("../Inicio/Inicio"));
-const ListaPreinscritos = lazy(() =>
-    import("../Preinscripcion/ListaPreinscritos/ListaPreinscritos")
-);
-const ListaInscritos = lazy(() =>
-    import("../Inscripcion/ListaInscritos/ListaInscritos")
-);
-const ListaInscritosFisico = lazy(() =>
-    import("../Inscripcion/ListaInscritos/ListaInscritosFisico")
-);
-const ListaInscritosPendientes = lazy(() =>
-    import("../Inscripcion/ListaInscritos/ListaInscritosPendientes")
-);
-const PostulantesAptos = lazy(() =>
-    import("../Evaluacion/PostulantesAptos/PostulantesAptos")
-);
-const ListaIngresantes = lazy(() =>
-    import("../Resultados/ListaIngresantes/ListaIngresantes")
-);
-const GestionUsuarios = lazy(() =>
-    import("../Usuarios/GestionUsuarios/GestionUsuarios")
-);
+const ListaPreinscritos = lazy(() => import("../Preinscripcion/ListaPreinscritos/ListaPreinscritos"));
+const ListaInscritos = lazy(() => import("../Inscripcion/ListaInscritos/ListaInscritos"));
+const ListaInscritosFisico = lazy(() => import("../Inscripcion/ListaInscritos/ListaInscritosFisico"));
+const ListaInscritosPendientes = lazy(() => import("../Inscripcion/ListaInscritos/ListaInscritosPendientes"));
+const PostulantesAptos = lazy(() => import("../Evaluacion/PostulantesAptos/PostulantesAptos"));
+const ListaIngresantes = lazy(() => import("../Resultados/ListaIngresantes/ListaIngresantes"));
+const GestionUsuarios = lazy(() => import("../Usuarios/GestionUsuarios/GestionUsuarios"));
 const Voucher = lazy(() => import("../Inscripcion/Voucher/Voucher"));
 const Bitacora = lazy(() => import("../Bitacora/Bitacora"));
 const AsignarDocente = lazy(() => import("../Docente/Docente/AsignarDocente"));
 
-const DashboardLayout = () => (
-    <div className="flex h-screen overflow-hidden">
-        <SidebarMenu />
-        <div className="flex-1 overflow-x-auto h-full flex flex-col">
-            <Navbar />
-            <div className="px-3 sm:px-3 md:px-3 h-auto flex-1">
-                <Outlet />
-            </div>
-        </div>
-    </div>
+// Helper for cleaner JSX
+const SuspenseWrapper = ({ children }) => (
+    <Suspense fallback={<Spinner label="Cargando..." fullScreen={false} />}>
+        {children}
+    </Suspense>
 );
 
 const Dashboard = () => {
@@ -51,9 +31,7 @@ const Dashboard = () => {
             <Route
                 path="/"
                 element={
-                    <ProtectedRoute
-                        allowedRoles={["super-admin", "admin", "comision"]}
-                    >
+                    <ProtectedRoute allowedRoles={["super-admin", "admin", "comision"]}>
                         <DashboardLayout />
                     </ProtectedRoute>
                 }
@@ -62,9 +40,9 @@ const Dashboard = () => {
                 <Route
                     path="inicio"
                     element={
-                        <Suspense fallback={<Spinner label="Cargando..." />}>
+                        <SuspenseWrapper>
                             <Inicio />
-                        </Suspense>
+                        </SuspenseWrapper>
                     }
                 />
 
@@ -73,11 +51,9 @@ const Dashboard = () => {
                     path="cargar-vouchers"
                     element={
                         <ProtectedRoute allowedRoles={["super-admin", "admin"]}>
-                            <Suspense
-                                fallback={<Spinner label="Cargando..." />}
-                            >
+                            <SuspenseWrapper>
                                 <Voucher />
-                            </Suspense>
+                            </SuspenseWrapper>
                         </ProtectedRoute>
                     }
                 />
@@ -85,11 +61,9 @@ const Dashboard = () => {
                     path="bitacora"
                     element={
                         <ProtectedRoute allowedRoles={["super-admin", "admin"]}>
-                            <Suspense
-                                fallback={<Spinner label="Cargando..." />}
-                            >
+                            <SuspenseWrapper>
                                 <Bitacora />
-                            </Suspense>
+                            </SuspenseWrapper>
                         </ProtectedRoute>
                     }
                 />
@@ -97,11 +71,9 @@ const Dashboard = () => {
                     path="asignar-docentes"
                     element={
                         <ProtectedRoute allowedRoles={["super-admin"]}>
-                            <Suspense
-                                fallback={<Spinner label="Cargando..." />}
-                            >
+                            <SuspenseWrapper>
                                 <AsignarDocente />
-                            </Suspense>
+                            </SuspenseWrapper>
                         </ProtectedRoute>
                     }
                 />
@@ -111,11 +83,9 @@ const Dashboard = () => {
                     path="validar-expedientes"
                     element={
                         <ProtectedRoute allowedRoles={["super-admin", "admin"]}>
-                            <Suspense
-                                fallback={<Spinner label="Cargando..." />}
-                            >
+                            <SuspenseWrapper>
                                 <ListaInscritosFisico />
-                            </Suspense>
+                            </SuspenseWrapper>
                         </ProtectedRoute>
                     }
                 />
@@ -123,11 +93,9 @@ const Dashboard = () => {
                     path="gestionar-evaluaciones"
                     element={
                         <ProtectedRoute allowedRoles={["super-admin", "admin"]}>
-                            <Suspense
-                                fallback={<Spinner label="Cargando..." />}
-                            >
+                            <SuspenseWrapper>
                                 <PostulantesAptos />
-                            </Suspense>
+                            </SuspenseWrapper>
                         </ProtectedRoute>
                     }
                 />
@@ -136,70 +104,50 @@ const Dashboard = () => {
                 <Route
                     path="inicio"
                     element={
-                        <ProtectedRoute
-                            allowedRoles={["super-admin", "admin", "comision"]}
-                        >
-                            <Suspense
-                                fallback={<Spinner label="Cargando..." />}
-                            >
+                        <ProtectedRoute allowedRoles={["super-admin", "admin", "comision"]}>
+                            <SuspenseWrapper>
                                 <Inicio />
-                            </Suspense>
+                            </SuspenseWrapper>
                         </ProtectedRoute>
                     }
                 />
                 <Route
                     path="preinscripciones"
                     element={
-                        <ProtectedRoute
-                            allowedRoles={["super-admin", "admin", "comision"]}
-                        >
-                            <Suspense
-                                fallback={<Spinner label="Cargando..." />}
-                            >
+                        <ProtectedRoute allowedRoles={["super-admin", "admin", "comision"]}>
+                            <SuspenseWrapper>
                                 <ListaPreinscritos />
-                            </Suspense>
+                            </SuspenseWrapper>
                         </ProtectedRoute>
                     }
                 />
                 <Route
                     path="inscripciones"
                     element={
-                        <ProtectedRoute
-                            allowedRoles={["super-admin", "admin", "comision"]}
-                        >
-                            <Suspense
-                                fallback={<Spinner label="Cargando..." />}
-                            >
+                        <ProtectedRoute allowedRoles={["super-admin", "admin", "comision"]}>
+                            <SuspenseWrapper>
                                 <ListaInscritos />
-                            </Suspense>
+                            </SuspenseWrapper>
                         </ProtectedRoute>
                     }
                 />
                 <Route
                     path="inscripcion-pendiente"
                     element={
-                        <ProtectedRoute
-                            allowedRoles={["super-admin", "admin", "comision"]}
-                        >
-                            <Suspense
-                                fallback={<Spinner label="Cargando..." />}
-                            >
+                        <ProtectedRoute allowedRoles={["super-admin", "admin", "comision"]}>
+                            <SuspenseWrapper>
                                 <ListaInscritosPendientes />
-                            </Suspense>
+                            </SuspenseWrapper>
                         </ProtectedRoute>
                     }
                 />
                 <Route
                     path="resultados"
                     element={
-                        <ProtectedRoute
-                            allowedRoles={["super-admin", "admin", "comision"]}
-                        >
-                            <Suspense
-                                fallback={<Spinner label="Cargando..." />}
-                            >
+                        <ProtectedRoute allowedRoles={["super-admin", "admin", "comision"]}>
+                            <SuspenseWrapper>
                                 <ListaIngresantes />
-                            </Suspense>
+                            </SuspenseWrapper>
                         </ProtectedRoute>
                     }
                 />
@@ -208,11 +156,9 @@ const Dashboard = () => {
                     path="gestionar-usuarios"
                     element={
                         <ProtectedRoute allowedRoles={["super-admin"]}>
-                            <Suspense
-                                fallback={<Spinner label="Cargando..." />}
-                            >
+                            <SuspenseWrapper>
                                 <GestionUsuarios />
-                            </Suspense>
+                            </SuspenseWrapper>
                         </ProtectedRoute>
                     }
                 />

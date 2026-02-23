@@ -46,7 +46,7 @@ const App = () => {
                         }}
                     >
                         <main style={{ flex: 1 }}>
-                            <Suspense fallback={<Spinner />}>
+                            <Suspense fallback={<Spinner fullScreen={true} label="Cargando..." />}>
                                 <Routes>
                                     {/* Rutas públicas (Sin check-auth innecesario) */}
                                     <Route path="/" element={<Index />} />
@@ -70,7 +70,11 @@ const App = () => {
                                     <Route path="/segundas-especialidades" element={<SegundasEspecialidades />} />
 
                                     {/* Zona de Usuarios / Admin (Con UserProvider) */}
-                                    <Route element={<UserProvider><Outlet /></UserProvider>}>
+                                    <Route element={
+                                        <Suspense fallback={<Spinner fullScreen={true} label="Cargando Usuario..." />}>
+                                            <UserProvider><Outlet /></UserProvider>
+                                        </Suspense>
+                                    }>
                                         <Route path="/login" element={<Login />} />
                                         <Route
                                             path="/auth/*"
@@ -81,7 +85,11 @@ const App = () => {
                                     </Route>
 
                                     {/* Zona de Docentes (Con DocenteProvider) */}
-                                    <Route element={<DocenteProvider><Outlet /></DocenteProvider>}>
+                                    <Route element={
+                                        <Suspense fallback={<Spinner fullScreen={true} label="Cargando Docente..." />}>
+                                            <DocenteProvider><Outlet /></DocenteProvider>
+                                        </Suspense>
+                                    }>
                                         <Route
                                             path="/iniciar-sesion"
                                             element={<LoginDocente />}

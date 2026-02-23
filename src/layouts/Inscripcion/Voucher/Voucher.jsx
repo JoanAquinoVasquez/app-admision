@@ -14,7 +14,6 @@ import {
     DropdownMenu,
     DropdownItem,
     Chip,
-    Pagination,
     Spinner as NextUISpinner,
     Modal,
     ModalContent,
@@ -22,6 +21,9 @@ import {
     ModalBody,
     ModalFooter,
     useDisclosure,
+    Select,
+    SelectItem,
+    Skeleton,
 } from "@heroui/react";
 
 import { capitalize } from "../../../services/utils.js";
@@ -31,6 +33,8 @@ import { toast } from "react-hot-toast";
 import RenderManyFilesUpload from "../../../components/Inputs/RenderManyFilesUpload.jsx";
 import useVouchers from "../../../data/Inscripcion/dataVouchers.jsx";
 import { dniApi } from "../../../services/api/dniApi.js";
+import TablePagination from "../../../components/Table/components/TablePagination.jsx";
+
 
 export const columns = [
     { name: "ID", uid: "id", sortable: true },
@@ -179,7 +183,7 @@ export default function CargarVoucher() {
         return filtered;
     }, [filterValue, statusFilter, vouchers]);
 
-    const pages = Math.ceil(filteredItems.length / rowsPerPage);
+    const pages = Math.max(1, Math.ceil(filteredItems.length / rowsPerPage));
 
     const sortedItems = useMemo(() => {
         return [...filteredItems].sort((a, b) => {
@@ -384,11 +388,19 @@ export default function CargarVoucher() {
     };
 
     const handleExportVouchers = useCallback(async () => {
+        setIsExporting(true);
+        const exportPromise = axios.get("/voucher/exportar", {
+            responseType: "blob",
+        });
+
+        toast.promise(exportPromise, {
+            loading: "Generando reporte de vouchers...",
+            success: "Reporte generado con éxito",
+            error: "Error al exportar vouchers",
+        });
+
         try {
-            setIsExporting(true);
-            const response = await axios.get("/voucher/exportar", {
-                responseType: "blob",
-            });
+            const response = await exportPromise;
             // Obtener el nombre del archivo desde los encabezados de la respuesta
             const disposition = response.headers["content-disposition"];
             let fileName = `reporte_vouchers_${new Date().toLocaleDateString('es-PE').replace(/\//g, '-')}.xlsx`;
@@ -405,11 +417,11 @@ export default function CargarVoucher() {
             link.setAttribute("download", fileName); // Nombre del archivo dinámico
             document.body.appendChild(link);
             link.click(); // Simula el click para descargar el archivo
-            setIsExporting(false);
             link.remove(); // Eliminar el enlace del DOM
         } catch (error) {
+            // Error managed by toast.promise
+        } finally {
             setIsExporting(false);
-            toast.error("Error al exportar vouchers:", error);
         }
     }, []);
 
@@ -593,10 +605,7 @@ export default function CargarVoucher() {
                     </div>
                 </div>
                 {/* Total y filas por página */}
-                <div className="flex flex-wrap justify-between items-center">
-                    <span className="text-default-400 text-sm">
-                        Total {vouchers.length} vouchers
-                    </span>
+                <div className="flex flex-wrap justify-end items-center">
                     <label className="flex items-center text-default-400 text-sm">
                         Filas por página
                         <select
@@ -628,39 +637,16 @@ export default function CargarVoucher() {
 
     const bottomContent = useMemo(
         () => (
-            <div className="py-2 px-2 flex justify-between items-center">
-                <Pagination
-                    isCompact
-                    showControls
-                    showShadow
-                    color="primary"
-                    page={page}
-                    total={pages}
-                    onChange={setPage}
-                />
-                <div className="hidden sm:flex w-[30%] justify-end gap-2">
-                    {/* <Button
-                        isDisabled={page === 1}
-                        size="sm"
-                        variant="flat"
-                        onPress={() => setPage((prev) => Math.max(prev - 1, 1))}
-                    >
-                        Anterior
-                    </Button>
-                    <Button
-                        isDisabled={page === pages}
-                        size="sm"
-                        variant="flat"
-                        onPress={() =>
-                            setPage((prev) => Math.min(prev + 1, pages))
-                        }
-                    >
-                        Siguiente
-                    </Button> */}
-                </div>
-            </div>
+            <TablePagination
+                page={page}
+                pages={pages}
+                setPage={setPage}
+                filteredItemsLength={filteredItems.length}
+                selectedKeys={selectedKeys}
+                hasSelection={false}
+            />
         ),
-        [selectedKeys, filteredItems.length, page, pages]
+        [page, pages, filteredItems.length, setPage, selectedKeys]
     );
 
     return (
@@ -708,7 +694,15 @@ export default function CargarVoucher() {
                     layout="auto"
                     isHeaderSticky
                     isLoading={isFetching}
-                    loadingContent={<NextUISpinner label="Cargando vouchers..." />}
+                    loadingContent={
+                        <div className="w-full h-full flex flex-col gap-2 p-4 bg-white/50 backdrop-blur-sm z-50">
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                        </div>
+                    }
                     bottomContent={bottomContent}
                     bottomContentPlacement="outside"
                     topContent={topContent}
@@ -741,7 +735,13 @@ export default function CargarVoucher() {
                     <TableBody
                         items={items}
                         className="space-y-1" // Reducir espacio entre filas
-                        emptyContent={isFetching ? <NextUISpinner label="Cargando vouchers..." /> : "No se encontró información sobre vouchers."}
+                        emptyContent={isFetching ? (
+                            <div className="flex flex-col gap-2 w-full p-2">
+                                <Skeleton className="h-10 w-full rounded-lg" />
+                                <Skeleton className="h-10 w-full rounded-lg" />
+                                <Skeleton className="h-10 w-full rounded-lg" />
+                            </div>
+                        ) : "No se encontró información sobre vouchers."}
                     >
                         {(item) => (
                             <TableRow
@@ -784,30 +784,34 @@ export default function CargarVoucher() {
                                         onValueChange={(val) => setManualVoucher({ ...manualVoucher, nombre_completo: val })}
                                     />
                                     <div className="md:col-span-2">
-                                        <label className="text-sm font-medium text-gray-700 mb-1 block">Tipo de Pago</label>
-                                        <select
-                                            className="w-full p-2 border rounded-md bg-gray-50"
-                                            value={tipoPago}
-                                            onChange={(e) => setTipoPago(e.target.value)}
+                                        <Select
+                                            label="Tipo de Pago"
+                                            selectedKeys={[tipoPago]}
+                                            onSelectionChange={(keys) => {
+                                                const val = Array.from(keys)[0];
+                                                if (val) setTipoPago(val);
+                                            }}
                                         >
-                                            <option value="BN">Banco de la Nación (7 dígitos)</option>
-                                            <option value="PAGALO">Págalo.pe (6 dígitos)</option>
-                                        </select>
+                                            <SelectItem key="BN">Banco de la Nación (7 dígitos)</SelectItem>
+                                            <SelectItem key="PAGALO">Págalo.pe (6 dígitos)</SelectItem>
+                                        </Select>
                                     </div>
                                     <div className="md:col-span-2">
-                                        <label className="text-sm font-medium text-gray-700 mb-1 block">Concepto de Pago</label>
-                                        <select
-                                            className="w-full p-2 border rounded-md bg-gray-50"
-                                            value={manualVoucher.concepto_pago_id}
-                                            onChange={(e) => handleConceptoChange(e.target.value)}
+                                        <Select
+                                            label="Concepto de Pago"
+                                            placeholder="Seleccione un concepto"
+                                            selectedKeys={manualVoucher.concepto_pago_id ? [manualVoucher.concepto_pago_id.toString()] : []}
+                                            onSelectionChange={(keys) => {
+                                                const val = Array.from(keys)[0];
+                                                if (val) handleConceptoChange(val);
+                                            }}
                                         >
-                                            <option value="">Seleccione un concepto</option>
                                             {conceptosPago.map((c) => (
-                                                <option key={c.id} value={c.id}>
+                                                <SelectItem key={c.id.toString()}>
                                                     {c.nombre} ({c.cod_concepto}) - S/. {c.monto}
-                                                </option>
+                                                </SelectItem>
                                             ))}
-                                        </select>
+                                        </Select>
                                     </div>
                                     <Input
                                         label="Número de Voucher"

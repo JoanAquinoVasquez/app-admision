@@ -7,13 +7,15 @@ import {
     CartesianGrid,
     ResponsiveContainer,
 } from "recharts";
-import { Spinner } from "@heroui/react";
+import { Skeleton } from "@heroui/react";
+import DashboardCard from "../../components/Cards/DashboardCard";
 
 const HistogramaNotas = ({ histogramaNotas, loading }) => {
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center h-64">
-                <Spinner label="Cargando..." />
+            <div className="flex flex-col gap-3 p-4 h-[400px]">
+                <Skeleton className="h-8 w-3/4 rounded-lg" />
+                <Skeleton className="flex-1 w-full rounded-xl" />
             </div>
         );
     }
@@ -48,15 +50,12 @@ const HistogramaNotas = ({ histogramaNotas, loading }) => {
     };
 
     return (
-        <div className="p-1">
-            <h2 className="text-lg font-semibold">
+        <div style={{ width: "100%", height: 400 }}>
+            <h2 className="text-xl font-semibold mb-4 text-center">
                 Distribución de Puntajes Finales
             </h2>
-            <ResponsiveContainer width="100%" height={400}>
-                <BarChart
-                    data={data}
-                    margin={{ top: 20, right: 10, bottom: 10 }}
-                >
+            <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={data} margin={{ top: 20, right: 10, bottom: 10 }}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis
                         dataKey="rango"
@@ -79,7 +78,7 @@ const HistogramaNotas = ({ histogramaNotas, loading }) => {
                     <YAxis
                         tick={{ fontSize: 12 }}
                         label={{
-                            value: "Cantidad de postulantes",
+                            value: "Cantidad",
                             angle: -90,
                             position: "insideLeft",
                             offset: 20,

@@ -11,6 +11,7 @@ import {
     TableRow,
     Input,
     Button,
+    Skeleton,
     Spinner,
     Pagination,
     Card,
@@ -248,50 +249,60 @@ function InicioDocente() {
                             </div>
 
                             <div className="flex flex-col gap-3 flex-1 overflow-y-auto min-h-0">
-                                {loading ? <Spinner /> : programasFiltrados
-                                    .slice((pageProgramas - 1) * programasPorPagina, pageProgramas * programasPorPagina)
-                                    .map((prog) => {
-                                        const total = prog.con_nota + prog.sin_nota;
-                                        const porcentaje = total === 0 ? 0 : (prog.con_nota / total) * 100;
-                                        const isSelected = programaSeleccionado === prog.id_programa;
+                                {loading ? (
+                                    <>
+                                        <Skeleton className="h-24 w-full rounded-xl" />
+                                        <Skeleton className="h-24 w-full rounded-xl" />
+                                        <Skeleton className="h-24 w-full rounded-xl" />
+                                        <Skeleton className="h-24 w-full rounded-xl" />
+                                        <Skeleton className="h-24 w-full rounded-xl" />
+                                    </>
+                                ) : (
+                                    programasFiltrados
+                                        .slice((pageProgramas - 1) * programasPorPagina, pageProgramas * programasPorPagina)
+                                        .map((prog) => {
+                                            const total = prog.con_nota + prog.sin_nota;
+                                            const porcentaje = total === 0 ? 0 : (prog.con_nota / total) * 100;
+                                            const isSelected = programaSeleccionado === prog.id_programa;
 
-                                        return (
-                                            <div
-                                                key={prog.id_programa}
-                                                onClick={() => handleSeleccionarPrograma(prog.id_programa)}
-                                                className={`p-2 rounded-xl cursor-pointer transition-all border-l-6 ${isSelected
-                                                    ? "bg-blue-50 border-blue-600 shadow-md"
-                                                    : "bg-white border-transparent hover:bg-gray-100"
-                                                    }`}
-                                            >
-                                                <div>
-                                                    <Tooltip content={prog.nombre_grado}>
-                                                        <span className={`font-semibold text-md ${isSelected ? 'text-blue-700' : 'text-gray-700'}`}>
-                                                            {prog.nombre_grado.charAt(0).toUpperCase() + prog.nombre_grado.slice(1).toLowerCase()}
-                                                        </span>
-                                                    </Tooltip>
-                                                    <Tooltip content={prog.nombre_grado.charAt(0).toUpperCase() + prog.nombre_grado.slice(1).toLowerCase() + " en " + prog.nombre_programa}>
-                                                        <span className="text-md text-gray-500 ml-1">
-                                                            {"en " + prog.nombre_programa}
-                                                        </span>
-                                                    </Tooltip>
-                                                </div>
+                                            return (
+                                                <div
+                                                    key={prog.id_programa}
+                                                    onClick={() => handleSeleccionarPrograma(prog.id_programa)}
+                                                    className={`p-2 rounded-xl cursor-pointer transition-all border-l-6 ${isSelected
+                                                        ? "bg-blue-50 border-blue-600 shadow-md"
+                                                        : "bg-white border-transparent hover:bg-gray-100"
+                                                        }`}
+                                                >
+                                                    <div>
+                                                        <Tooltip content={prog.nombre_grado}>
+                                                            <span className={`font-semibold text-md ${isSelected ? 'text-blue-700' : 'text-gray-700'}`}>
+                                                                {prog.nombre_grado.charAt(0).toUpperCase() + prog.nombre_grado.slice(1).toLowerCase()}
+                                                            </span>
+                                                        </Tooltip>
+                                                        <Tooltip content={prog.nombre_grado.charAt(0).toUpperCase() + prog.nombre_grado.slice(1).toLowerCase() + " en " + prog.nombre_programa}>
+                                                            <span className="text-md text-gray-500 ml-1">
+                                                                {"en " + prog.nombre_programa}
+                                                            </span>
+                                                        </Tooltip>
+                                                    </div>
 
-                                                {/* Barra de Progreso Mini */}
-                                                <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
-                                                    <span>Progreso</span>
-                                                    <span>{prog.con_nota}/{total}</span>
+                                                    {/* Barra de Progreso Mini */}
+                                                    <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
+                                                        <span>Progreso</span>
+                                                        <span>{prog.con_nota}/{total}</span>
+                                                    </div>
+                                                    <Progress
+                                                        size="sm"
+                                                        aria-label="Barra de progreso"
+                                                        value={porcentaje}
+                                                        color={porcentaje === 100 ? "success" : "primary"}
+                                                        className="max-w-full"
+                                                    />
                                                 </div>
-                                                <Progress
-                                                    size="sm"
-                                                    aria-label="Barra de progreso"
-                                                    value={porcentaje}
-                                                    color={porcentaje === 100 ? "success" : "primary"}
-                                                    className="max-w-full"
-                                                />
-                                            </div>
-                                        );
-                                    })}
+                                            );
+                                        })
+                                )}
 
                                 {!loading && programasFiltrados.length === 0 && (
                                     <p className="text-center text-gray-400 text-sm py-4">No se encontraron programas</p>
@@ -349,8 +360,12 @@ function InicioDocente() {
 
                         <CardBody className="p-0 overflow-hidden flex flex-col">
                             {loadingPostulantes ? (
-                                <div className="flex justify-center items-center h-full">
-                                    <Spinner label="Cargando postulantes..." />
+                                <div className="flex flex-col gap-4 p-6 h-full">
+                                    <Skeleton className="h-10 w-full rounded-lg" />
+                                    <Skeleton className="h-16 w-full rounded-lg" />
+                                    <Skeleton className="h-16 w-full rounded-lg" />
+                                    <Skeleton className="h-16 w-full rounded-lg" />
+                                    <Skeleton className="h-16 w-full rounded-lg" />
                                 </div>
                             ) : !programaSeleccionado ? (
                                 <div className="flex flex-col items-center justify-center h-full text-gray-400">

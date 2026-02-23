@@ -1,6 +1,6 @@
 import React from "react";
-import { useState, useEffect, useMemo } from "react";
-import { Progress, Spinner } from "@heroui/react";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { Progress, Skeleton } from "@heroui/react";
 import {
     Table,
     TableHeader,
@@ -14,10 +14,10 @@ import {
     Dropdown,
     DropdownMenu,
     DropdownItem,
-    Pagination,
 } from "@heroui/react";
 import DashboardCard from "../../components/Cards/DashboardCard";
 import { admissionConfig } from "../../config/admission";
+import TablePagination from "./components/TablePagination";
 
 export const columns = [
     { name: "Grado y Programa", uid: "grado_programa", sortable: true },
@@ -107,7 +107,7 @@ const INITIAL_VISIBLE_COLUMNS = [
 
 export default function App({ resumenInscripcion, loading }) {
     // ✅ Aseguramos que `resumenInscripcion` tenga datos antes de mapear
-    const users = React.useMemo(() => {
+    const users = useMemo(() => {
         if (!resumenInscripcion || resumenInscripcion.length === 0) {
             return []; // Evita errores si aún no hay datos
         }
@@ -195,7 +195,7 @@ export default function App({ resumenInscripcion, loading }) {
         }
     }, [selectedKeys, filteredItems]);
 
-    const sortedItems = React.useMemo(() => {
+    const sortedItems = useMemo(() => {
         return [...filteredItems].sort((a, b) => {
             const valueA = a[sortDescriptor.column];
             const valueB = b[sortDescriptor.column];
@@ -210,14 +210,14 @@ export default function App({ resumenInscripcion, loading }) {
 
     const pages = Math.ceil(filteredItems.length / rowsPerPage);
 
-    const items = React.useMemo(() => {
+    const items = useMemo(() => {
         const start = (page - 1) * rowsPerPage;
         const end = start + rowsPerPage;
 
         return sortedItems.slice(start, end);
     }, [page, sortedItems, rowsPerPage]);
 
-    const renderCell = React.useCallback((user, columnKey) => {
+    const renderCell = useCallback((user, columnKey) => {
         const cellValue = user[columnKey];
 
         switch (columnKey) {
@@ -297,24 +297,24 @@ export default function App({ resumenInscripcion, loading }) {
         }
     }, []);
 
-    const onNextPage = React.useCallback(() => {
+    const onNextPage = useCallback(() => {
         if (page < pages) {
             setPage(page + 1);
         }
     }, [page, pages]);
 
-    const onPreviousPage = React.useCallback(() => {
+    const onPreviousPage = useCallback(() => {
         if (page > 1) {
             setPage(page - 1);
         }
     }, [page]);
 
-    const onRowsPerPageChange = React.useCallback((e) => {
+    const onRowsPerPageChange = useCallback((e) => {
         setRowsPerPage(Number(e.target.value));
         setPage(1);
     }, []);
 
-    const onSearchChange = React.useCallback((value) => {
+    const onSearchChange = useCallback((value) => {
         if (value) {
             setFilterValue(value);
             setPage(1);
@@ -323,12 +323,12 @@ export default function App({ resumenInscripcion, loading }) {
         }
     }, []);
 
-    const onClear = React.useCallback(() => {
+    const onClear = useCallback(() => {
         setFilterValue("");
         setPage(1);
     }, []);
 
-    const topContent = React.useMemo(() => {
+    const topContent = useMemo(() => {
         return (
             <div className="flex flex-col gap-4">
                 <div className="flex justify-between gap-3 items-end">
@@ -422,44 +422,18 @@ export default function App({ resumenInscripcion, loading }) {
         hasSearchFilter,
     ]);
 
-    const bottomContent = React.useMemo(() => {
+    const bottomContent = useMemo(() => {
         return (
-            <div className="py-2 px-2 flex justify-between items-center">
-                <span className="w-[30%] text-small text-default-400">
-                    {` ${filteredItems.length} programas filtrados`}
-                </span>
-                <Pagination
-                    isCompact
-                    showControls
-                    showShadow
-                    color="primary"
-                    page={page}
-                    total={pages}
-                    onChange={setPage}
-                />
-                <div className="hidden sm:flex w-[30%] justify-end gap-2">
-                    <Button
-                        aria-label="anterior"
-                        isDisabled={pages === 1}
-                        size="sm"
-                        variant="flat"
-                        onPress={onPreviousPage}
-                    >
-                        Anterior
-                    </Button>
-                    <Button
-                        aria-label="siguiente"
-                        isDisabled={pages === 1}
-                        size="sm"
-                        variant="flat"
-                        onPress={onNextPage}
-                    >
-                        Siguiente
-                    </Button>
-                </div>
-            </div>
+            <TablePagination
+                page={page}
+                pages={pages}
+                setPage={setPage}
+                filteredItemsLength={filteredItems.length}
+                selectedKeys={selectedKeys}
+                hasSelection={false}
+            />
         );
-    }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
+    }, [page, pages, filteredItems.length, setPage, selectedKeys]);
 
     return (
         <DashboardCard
@@ -514,9 +488,17 @@ export default function App({ resumenInscripcion, loading }) {
                     )}
                 </TableHeader>
                 <TableBody
-                    emptyContent={loading ? <Spinner label="Cargando..." /> : "No se encontró información"}
+                    emptyContent={loading ? <Skeleton className="h-20 w-full rounded-lg" /> : "No se encontró información"}
                     isLoading={loading}
-                    loadingContent={<Spinner label="Cargando..." />}
+                    loadingContent={
+                        <div className="w-full h-full flex flex-col gap-2 p-4 bg-white/50 backdrop-blur-sm z-50">
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                        </div>
+                    }
                     items={items}
                     className="space-y-1"
                 >

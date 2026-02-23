@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import useProgramaInscritos from "../../../data/dataProgramasInscritos";
-import Spinner from "../../../components/Spinner/Spinner";
+import { Skeleton } from "@heroui/react";
 import DashboardCard from "../../../components/Cards/DashboardCard";
 import { MdDashboard } from "react-icons/md";
 
@@ -15,7 +15,20 @@ const InscritosCard = () => {
             .catch(() => setLoading(false));
     }, [fetchProgramasInscritos]);
 
-    if (loading) return <Spinner />;
+    if (loading) {
+        return (
+            <DashboardCard
+                title="Inscritos por Grado"
+                icon={<MdDashboard className="text-blue-500" />}
+            >
+                <div className="flex flex-col gap-3 p-2">
+                    <Skeleton className="h-10 w-full rounded-lg" />
+                    <Skeleton className="h-10 w-full rounded-lg" />
+                    <Skeleton className="h-10 w-full rounded-lg" />
+                </div>
+            </DashboardCard>
+        );
+    }
 
     const conteoInscritos = (grado) =>
         programasInscritos

@@ -6,6 +6,7 @@ import useHistogramaNotas from "../../../data/Resultados/dataHistogramaNotas";
 import useIngresantesPrograma from "../../../data/Resultados/dataIngresantesPrograma";
 import useResumenEdad from "../../../data/Resultados/dataResumenEdad";
 import ResumenAdmision from "../../Resultados/ResumenAdmision";
+import { Card } from "@heroui/react";
 import HistogramaNotas from "../../Resultados/HistogramaNotas";
 
 export default function TabResultados({ }) {
@@ -17,37 +18,45 @@ export default function TabResultados({ }) {
     const isLoading = loadingIngresantes || loadingResumen || loadingEdad || loadingNotas;
 
     return (
-        <div className="space-y-2">
-            {/* Grupo 1: Resumen de admisión y tabla */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-2">
-                <div className="lg:col-span-4">
-                    <div className="bg-white shadow-md rounded-lg">
-                        <ResumenAdmision resumenGeneral={resumenGeneral} loading={isLoading} />
-                    </div>
-                </div>
-                <div className="lg:col-span-8">
-                    <div className="bg-white shadow-md rounded-lg p-3">
-                        <TableResultados
-                            ingresantesPrograma={ingresantesPrograma}
-                            loading={isLoading}
-                        />
-                    </div>
-                </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-2">
+            <div className="lg:col-span-4 min-h-[500px]">
+                <Card
+                    shadow="sm"
+                    className="p-1 rounded-2xl border border-white/40 h-full"
+                >
+                    <ResumenAdmision
+                        resumenGeneral={resumenGeneral}
+                        loading={isLoading}
+                    />
+                </Card>
             </div>
-
-            {/* Grupo 2: Gráficos por edad y notas */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {/* <div className="bg-white shadow-md rounded-lg p-4">
-                    <ResumenGrado resumenGeneral={resumenGeneral} />
-                </div> */}
-
-                <div className="bg-white shadow-md rounded-lg p-3">
-                    <GraficoEstadoPorEdad resumenEdad={resumenEdad} loading={isLoading} />
-                </div>
-
-                <div className="bg-white shadow-md rounded-lg p-3">
-                    <HistogramaNotas histogramaNotas={histogramaNotas} loading={isLoading} />
-                </div>
+            <div className="lg:col-span-8 min-h-[500px]">
+                <TableResultados
+                    ingresantesPrograma={ingresantesPrograma}
+                    loading={isLoading}
+                />
+            </div>
+            <div className="lg:col-span-6 min-h-[500px]">
+                <Card
+                    shadow="sm"
+                    className="p-4 rounded-2xl border border-white/40 h-full"
+                >
+                    <GraficoEstadoPorEdad
+                        resumenEdad={resumenEdad}
+                        loading={isLoading}
+                    />
+                </Card>
+            </div>
+            <div className="lg:col-span-6 min-h-[500px]">
+                <Card
+                    shadow="sm"
+                    className="p-4 rounded-2xl border border-white/40 h-full"
+                >
+                    <HistogramaNotas
+                        histogramaNotas={histogramaNotas}
+                        loading={isLoading}
+                    />
+                </Card>
             </div>
         </div>
     );

@@ -1,7 +1,7 @@
-import React from "react";
 import { useState, useCallback, useMemo, useEffect } from "react";
+import { useTableFilters } from "../../hooks/useTableFilters";
 import useGrado from "../../data/dataGrados";
-import Spinner from "../../components/Spinner/Spinner"; // Spinner
+import { Skeleton } from "@heroui/react";
 
 import MultiSelect from "../../components/Select/SelectMultiple";
 import UploadNotesModal from "./modals/UploadNotesModal";
@@ -22,7 +22,6 @@ import {
     Dropdown,
     DropdownMenu,
     DropdownItem,
-    Pagination,
 } from "@heroui/react";
 import useInscripcioNota from "../../data/Inscripcion/dataInscripcionNota";
 import Select from "../../components/Select/Select";
@@ -51,129 +50,17 @@ export function capitalize(s) {
     return s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : "";
 }
 
-export const PlusIcon = ({ size = 24, width, height, ...props }) => {
-    return (
-        <svg
-            aria-hidden="true"
-            fill="none"
-            focusable="false"
-            height={size || height}
-            role="presentation"
-            viewBox="0 0 24 24"
-            width={size || width}
-            {...props}
-        >
-            <g
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-            >
-                <path d="M6 12h12" />
-                <path d="M12 18V6" />
-            </g>
-        </svg>
-    );
-};
+import {
+    PlusIcon,
+    VerticalDotsIcon,
+    RefreshIcon,
+    SearchIcon,
+    ChevronDownIcon,
+} from "./components/Icons";
+import { useInscritosRenderCell } from "./components/useInscritosRenderCell";
+import TablePagination from "./components/TablePagination";
+import { statusColorMap } from "./utils";
 
-export const VerticalDotsIcon = ({ size = 24, width, height, ...props }) => {
-    return (
-        <svg
-            aria-hidden="true"
-            fill="none"
-            focusable="false"
-            height={size || height}
-            role="presentation"
-            viewBox="0 0 24 24"
-            width={size || width}
-            {...props}
-        >
-            <path
-                d="M12 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 12c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
-                fill="currentColor"
-            />
-        </svg>
-    );
-};
-
-export const RefreshIcon = (props) => (
-    <svg
-        aria-hidden="true"
-        fill="none"
-        focusable="false"
-        height="1em"
-        role="presentation"
-        viewBox="0 0 24 24"
-        width="1em"
-        {...props}
-    >
-        <path
-            d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"
-            fill="currentColor"
-        />
-    </svg>
-);
-
-export const SearchIcon = (props) => {
-    return (
-        <svg
-            aria-hidden="true"
-            fill="none"
-            focusable="false"
-            height="1em"
-            role="presentation"
-            viewBox="0 0 24 24"
-            width="1em"
-            {...props}
-        >
-            <path
-                d="M11.5 21C16.7467 21 21 16.7467 21 11.5C21 6.25329 16.7467 2 11.5 2C6.25329 2 2 6.25329 2 11.5C2 16.7467 6.25329 21 11.5 21Z"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-            />
-            <path
-                d="M22 22L20 20"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-            />
-        </svg>
-    );
-};
-
-export const ChevronDownIcon = ({ strokeWidth = 1.5, ...otherProps }) => {
-    return (
-        <svg
-            aria-hidden="true"
-            fill="none"
-            focusable="false"
-            height="1em"
-            role="presentation"
-            viewBox="0 0 24 24"
-            width="1em"
-            {...otherProps}
-        >
-            <path
-                d="m19.92 8.95-6.52 6.52c-.77.77-2.03.77-2.8 0L4.08 8.95"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeMiterlimit={10}
-                strokeWidth={strokeWidth}
-            />
-        </svg>
-    );
-};
-
-const statusColorMap = {
-    1: "success",
-    0: "danger",
-    2: "warning",
-};
 
 const INITIAL_VISIBLE_COLUMNS = [
     "id",
@@ -242,20 +129,37 @@ export default function App() {
             });
     }, [inscripcioNota]);
 
-    const [filterValue, setFilterValue] = useState("");
+    const {
+        filterValue,
+        statusFilter,
+        gradoFilter,
+        programaFilter,
+        page,
+        rowsPerPage,
+        sortDescriptor,
+        setFilterValue,
+        setStatusFilter,
+        setGradoFilter,
+        setProgramaFilter,
+        setPage,
+        setRowsPerPage,
+        setSortDescriptor,
+        sortedItems,
+        items,
+        pages,
+        onSearchChange,
+        onClear,
+        onRowsPerPageChange,
+        filteredItems,
+    } = useTableFilters(users, {
+        initialRowsPerPage: 10,
+        initialSortColumn: "id",
+    });
+
     const [selectedKeys, setSelectedKeys] = useState(new Set([]));
     const [visibleColumns, setVisibleColumns] = useState(
         new Set(INITIAL_VISIBLE_COLUMNS)
     );
-    const [statusFilter, setStatusFilter] = useState("all");
-    const [gradoFilter, setGradoFilter] = useState("all");
-    const [programaFilter, setProgramaFilter] = useState([]);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [sortDescriptor, setSortDescriptor] = useState({
-        column: "id",
-        direction: "ascending",
-    });
-    const [page, setPage] = useState(1);
 
 
 
@@ -265,56 +169,6 @@ export default function App() {
             : columns.filter((column) => visibleColumns.has(column.uid));
     }, [visibleColumns]);
 
-    const filteredItems = useMemo(() => {
-        let filteredUsers = [...users];
-
-        if (filterValue) {
-            const lowerCaseFilter = filterValue.toLowerCase();
-            filteredUsers = filteredUsers.filter((user) =>
-                Object.values(user).some((value) =>
-                    value?.toString().toLowerCase().includes(lowerCaseFilter)
-                )
-            );
-        }
-
-        if (statusFilter !== "all") {
-            filteredUsers = filteredUsers.filter((user) =>
-                statusFilter.has(user.estado.toString())
-            );
-        }
-
-        if (gradoFilter !== "all") {
-            filteredUsers = filteredUsers.filter(
-                (user) => user.grado_id === gradoFilter
-            );
-        }
-
-        if (programaFilter.length > 0) {
-            filteredUsers = filteredUsers.filter(
-                (user) => programaFilter.includes(user.programa_id) // Buscar dentro de un array
-            );
-        }
-
-        return filteredUsers;
-    }, [filterValue, statusFilter, users, gradoFilter, programaFilter]);
-
-    const sortedItems = useMemo(() => {
-        return [...filteredItems].sort((a, b) => {
-            const first = a[sortDescriptor.column];
-            const second = b[sortDescriptor.column];
-            const cmp = first < second ? -1 : first > second ? 1 : 0;
-            return sortDescriptor.direction === "descending" ? -cmp : cmp;
-        });
-    }, [sortDescriptor, filteredItems]);
-    const pages = Math.ceil(filteredItems.length / rowsPerPage);
-    const items = useMemo(() => {
-        const start = (page - 1) * rowsPerPage;
-        return sortedItems.slice(start, start + rowsPerPage);
-    }, [page, sortedItems, rowsPerPage]);
-
-    useEffect(() => {
-        setPage(1); // Reiniciar a la primera página cuando se aplica un filtro
-    }, [filterValue, statusFilter, sortedItems, gradoFilter]);
 
     const notaStats = useMemo(() => {
         const conNota = filteredItems.filter((item) => {
@@ -334,115 +188,58 @@ export default function App() {
         });
     }
 
+    const renderActions = useCallback((user) => (
+        <div className="relative flex justify-end items-center gap-2">
+            <Dropdown>
+                <DropdownTrigger>
+                    <Button
+                        isIconOnly
+                        size="sm"
+                        variant="light"
+                        aria-label="actions"
+                    >
+                        <VerticalDotsIcon className="text-default-300" />
+                    </Button>
+                </DropdownTrigger>
+                <DropdownMenu>
+                    <DropdownItem
+                        key="nota_entrevista"
+                        textValue="Registrar/Editar Nota Entrevista"
+                        onPress={() => {
+                            setIsNotaEntrevista(true);
+                            setSelectedNota(user.nota_entrevista || "");
+                            setValidarId(user.id);
+                            setGradoSelected(user.grado_id);
+                        }}
+                    >
+                        {user.nota_entrevista !== "-"
+                            ? "Editar nota de entrevista"
+                            : "Registrar nota de entrevista"}
+                    </DropdownItem>
+                </DropdownMenu>
+            </Dropdown>
+        </div>
+    ), [setIsNotaEntrevista, setSelectedNota, setValidarId, setGradoSelected]);
+
+    const baseRenderCell = useInscritosRenderCell({
+        renderActions
+    });
+
     const renderCell = useCallback((user, columnKey) => {
         const cellValue = user[columnKey];
 
-        switch (columnKey) {
-            case "id":
-                return (
-                    <div className="flex flex-col">
-                        <p className="text-sm text-default-400">{cellValue}</p>
-                        {/* <p className="text-bold text-tiny capitalize text-default-400">
-                            {user.nombre_completo}
-                        </p> */}
-                    </div>
-                );
-
-            case "nombre_completo":
-                return (
-                    <div className="flex flex-col">
-                        <p className="capitalize text-sm text-default-500">
-                            {cellValue}
-                        </p>
-                        {/* <p className="text-bold text-tiny capitalize text-default-400">
-                            {user.nombre_completo}
-                        </p> */}
-                    </div>
-                );
-            case "grado":
-                return (
-                    <div className="flex flex-col">
-                        <p className="text-sm text-default-400">{cellValue}</p>
-                        <p className="font-medium text-sm text-default-500">
-                            {user.programa}
-                        </p>
-                    </div>
-                );
-            case "doc_iden":
-                return (
-                    <div className="flex flex-col">
-                        <p className="text-sm text-default-400">
-                            {user.tipo_doc}
-                        </p>
-                        <p className="font-medium capitalize text-sm text-default-500">
-                            {cellValue}
-                        </p>
-                    </div>
-                );
-            case "nota_expediente":
-                return (
-                    <div className="flex flex-col">
-                        <p className="font-medium capitalize text-sm text-default-500">
-                            {cellValue}
-                        </p>
-                    </div>
-                );
-            case "nota_entrevista":
-                return (
-                    <div className="flex flex-col">
-                        <p className="font-medium capitalize text-sm text-default-500">
-                            {cellValue}
-                        </p>
-                    </div>
-                );
-            case "nota_examen":
-                return (
-                    <div className="flex flex-col">
-                        <p className="font-medium capitalize text-sm text-default-500">
-                            {cellValue}
-                        </p>
-                    </div>
-                );
-            case "actions":
-                return (
-                    <>
-                        <div className="relative flex justify-end items-center gap-2">
-                            <Dropdown>
-                                <DropdownTrigger>
-                                    <Button
-                                        isIconOnly
-                                        size="sm"
-                                        variant="light"
-                                        aria-label="actions"
-                                    >
-                                        <VerticalDotsIcon className="text-default-300" />
-                                    </Button>
-                                </DropdownTrigger>
-                                <DropdownMenu>
-                                    <DropdownItem
-                                        key="nota_entrevista"
-                                        textValue="Registrar/Editar Nota Entrevista"
-                                        onPress={() => {
-                                            setIsNotaEntrevista(true);
-                                            setSelectedNota(user.nota_entrevista || "");
-                                            setValidarId(user.id);
-                                            setGradoSelected(user.grado_id);
-                                        }}
-                                    >
-                                        {user.nota_entrevista !== "-"
-                                            ? "Editar nota de entrevista"
-                                            : "Registrar nota de entrevista"}
-                                    </DropdownItem>
-                                </DropdownMenu>
-                            </Dropdown>
-                        </div>
-                    </>
-                );
-
-            default:
-                return cellValue;
+        if (["nota_expediente", "nota_entrevista", "nota_examen"].includes(columnKey)) {
+            return (
+                <div className="flex flex-col">
+                    <p className="font-medium capitalize text-sm text-default-500">
+                        {cellValue}
+                    </p>
+                </div>
+            );
         }
-    }, []);
+
+        return baseRenderCell(user, columnKey);
+    }, [baseRenderCell]);
 
     // Filtrar programas cuando cambia el `grado_id` en el modal de edición
     useEffect(() => {
@@ -463,20 +260,7 @@ export default function App() {
         }
     }, [gradoFilter, filterByGrado]);
 
-    const onRowsPerPageChange = useCallback((e) => {
-        setRowsPerPage(Number(e.target.value));
-        setPage(1);
-    }, []);
 
-    const onSearchChange = useCallback((value) => {
-        setFilterValue(value || "");
-        setPage(1);
-    }, []);
-
-    const onClear = useCallback(() => {
-        setFilterValue("");
-        setPage(1);
-    }, []);
 
     const topContent = useMemo(() => {
         return (
@@ -696,39 +480,15 @@ export default function App() {
 
     const bottomContent = useMemo(
         () => (
-            <div className="py-2 px-2 flex justify-between items-center">
-                <Pagination
-                    isCompact
-                    showControls
-                    showShadow
-                    color="primary"
-                    page={page}
-                    total={pages}
-                    onChange={setPage}
-                />
-                <div className="hidden sm:flex w-[30%] justify-end gap-2">
-                    <Button
-                        isDisabled={page === 1}
-                        size="sm"
-                        variant="flat"
-                        onPress={() => setPage((prev) => Math.max(prev - 1, 1))}
-                    >
-                        Anterior
-                    </Button>
-                    <Button
-                        isDisabled={page === pages}
-                        size="sm"
-                        variant="flat"
-                        onPress={() =>
-                            setPage((prev) => Math.min(prev + 1, pages))
-                        }
-                    >
-                        Siguiente
-                    </Button>
-                </div>
-            </div>
+            <TablePagination
+                page={page}
+                pages={pages}
+                setPage={setPage}
+                filteredItemsLength={filteredItems.length}
+                customLabel={`${notaStats.conNota} de ${filteredItems.length} evaluados`}
+            />
         ),
-        [selectedKeys, filteredItems.length, page, pages]
+        [page, pages, filteredItems.length, notaStats.conNota, setPage]
     );
 
     return (
@@ -768,11 +528,25 @@ export default function App() {
                 )}
             </TableHeader>
             <TableBody
-                emptyContent={(dataLoading || exportLoading) ? <Spinner label="Cargando..." /> : "No se encontró información"}
+                emptyContent={dataLoading ? (
+                    <div className="flex flex-col gap-2 w-full p-2">
+                        <Skeleton className="h-10 w-full rounded-lg" />
+                        <Skeleton className="h-10 w-full rounded-lg" />
+                        <Skeleton className="h-10 w-full rounded-lg" />
+                    </div>
+                ) : "No se encontró información"}
                 items={items}
                 className="space-y-1" // Reducir espacio entre filas
-                isLoading={dataLoading || exportLoading}
-                loadingContent={<div className="w-full h-full flex justify-center items-center z-50 bg-content1/50 backdrop-blur-sm top-0 left-0 absolute"><Spinner label="Cargando..." /></div>}
+                isLoading={dataLoading}
+                loadingContent={
+                    <div className="w-full h-full flex flex-col gap-2 p-4 bg-white/50 backdrop-blur-sm z-50">
+                        <Skeleton className="h-10 w-full rounded-lg" />
+                        <Skeleton className="h-10 w-full rounded-lg" />
+                        <Skeleton className="h-10 w-full rounded-lg" />
+                        <Skeleton className="h-10 w-full rounded-lg" />
+                        <Skeleton className="h-10 w-full rounded-lg" />
+                    </div>
+                }
             >
                 {(item) => (
                     <TableRow

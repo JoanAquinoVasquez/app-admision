@@ -6,13 +6,13 @@ import {
     ModalHeader,
     ModalBody,
     ModalFooter,
-    form,
 } from "@heroui/react";
 import logoWithTextImage from "../../assets/Isotipos/isotipo_color_epg.webp";
 import { FormHeader } from "./components";
 import { toast } from "react-hot-toast";
 import Input from "../../components/Inputs/InputField";
-import axios from "axios";
+import axios from "../../axios";
+import { admissionConfig } from "../../config/admission";
 
 export default function Paso03ResumenEnvio({
     formData,
@@ -56,7 +56,7 @@ export default function Paso03ResumenEnvio({
         <div className="flex flex-col gap-6 px-2 sm:px-4">
             {/* Encabezado */}
             <FormHeader
-                title="Admisión 2025 - I"
+                title={`Admisión ${admissionConfig.cronograma.periodo}`}
                 subtitle="Escuela de Posgrado UNPRG"
                 logoSrc={logoWithTextImage}
             />

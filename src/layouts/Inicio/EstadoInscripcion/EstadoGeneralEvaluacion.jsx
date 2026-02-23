@@ -1,4 +1,4 @@
-import { Card, CircularProgress, Chip, Spinner } from "@heroui/react";
+import { Card, CircularProgress, Chip, Skeleton } from "@heroui/react";
 
 const EstadoGeneralEvaluacion = ({ docenteResumen, loading }) => {
     const totalEvaluados = docenteResumen?.reduce(
@@ -27,16 +27,21 @@ const EstadoGeneralEvaluacion = ({ docenteResumen, loading }) => {
                 aria-label="Total CV's Evaluados"
                 className="mt-6 rounded-2xl border border-gray-100 hover:shadow-md transition-all p-6 flex flex-col items-center justify-center gap-4 min-h-[300px]"
             >
-                <p className="text-lg font-semibold text-gray-700">
-                    📊 Total CV's Evaluados
-                </p>
+
 
                 {loading ? (
-                    <div className="flex items-center justify-center h-40">
-                        <Spinner label="Cargando resumen..." />
+                    <div className="flex flex-col items-center justify-center gap-4 w-full h-full">
+                        <Skeleton className="w-[160px] h-[160px] rounded-full" />
+                        <div className="flex gap-2 mt-2">
+                            <Skeleton className="h-8 w-24 rounded-lg" />
+                            <Skeleton className="h-8 w-32 rounded-lg" />
+                        </div>
                     </div>
                 ) : (
                     <>
+                        <p className="text-lg font-semibold text-gray-700">
+                            📊 Total CV's Evaluados
+                        </p>
                         <CircularProgress
                             color="primary"
                             value={avanceGeneral}

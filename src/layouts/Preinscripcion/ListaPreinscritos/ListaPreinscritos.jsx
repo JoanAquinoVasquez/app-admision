@@ -15,15 +15,16 @@ import {
     DropdownMenu,
     DropdownItem,
     Chip,
-    Pagination,
     Spinner as NextUISpinner,
     Modal,
     ModalContent,
     ModalHeader,
     ModalBody,
     useDisclosure,
+    Skeleton,
 } from "@heroui/react";
 import FormularioUnificado from "../FormPreinscripcion";
+import TablePagination from "../../../components/Table/components/TablePagination";
 import Select from "../../../components/Select/Select";
 import useGrado from "../../../data/dataGrados";
 import useProgramas from "../../../data/dataProgramas";
@@ -214,7 +215,7 @@ export default function App() {
         direction: "ascending",
     });
     const [page, setPage] = useState(1);
-    const [loading, setLoading] = useState(false); // Estado para controlar cargas de exportación
+    const [isExporting, setIsExporting] = useState(false); // Estado para controlar cargas de exportación
 
     // --- LÓGICA SIMPLIFICADA DE FILTROS ---
     const listaGrados = Array.isArray(grados) ? grados : [];
@@ -292,8 +293,8 @@ export default function App() {
     }, [filterValue, statusFilter, pagoFilter, sortedItems, gradoFilter]);
 
     const handleExportMultiple = async (type) => {
-        setLoading(true);
-        try {
+        setIsExporting(true);
+        const exportPromise = (async () => {
             let response;
             switch (type) {
                 case "Excel":
@@ -309,7 +310,6 @@ export default function App() {
                         `/reporte-preinscripcion?${params.toString()}`,
                         { responseType: "blob" }
                     );
-                    setLoading(false);
                     break;
                 case "Reporte Diario":
                     response = await axios.get(
@@ -318,20 +318,27 @@ export default function App() {
                             responseType: "blob",
                         }
                     );
-                    setLoading(false);
                     break;
                 case "Facultad Excel":
                     response = await axios.get(
                         "/reporte-preinscripcion-facultad-diario",
                         { responseType: "blob" }
                     );
-                    setLoading(false);
                     break;
                 default:
-                    setLoading(false);
-                    return;
+                    throw new Error("Tipo de exportación no válido");
             }
+            return response;
+        })();
 
+        toast.promise(exportPromise, {
+            loading: `Generando ${type.toLowerCase()}...`,
+            success: "Reporte generado con éxito",
+            error: "Error durante la exportación",
+        });
+
+        try {
+            const response = await exportPromise;
             const disposition = response.headers["content-disposition"];
             let fileName = `reporte_preinscripcion_${new Date().toLocaleDateString('es-PE').replace(/\//g, '-')}.xlsx`;
 
@@ -349,8 +356,11 @@ export default function App() {
             document.body.appendChild(link);
             link.click();
             link.remove();
+            window.URL.revokeObjectURL(fileURL);
         } catch (error) {
-            toast.error("Error durante la exportación");
+            // Managed by toast.promise
+        } finally {
+            setIsExporting(false);
         }
     };
 
@@ -648,6 +658,7 @@ export default function App() {
                                         name="exportar"
                                         color="primary"
                                         className="h-12 w-full"
+                                        isLoading={isExporting}
                                     >
                                         Exportar
                                     </Button>
@@ -685,12 +696,7 @@ export default function App() {
                             </Dropdown>
                         </div>
                     </div>
-                    {/* Total y filas por página */}
-                    <div className="flex flex-wrap justify-between items-center">
-                        <span className="w-[30%] text-small text-default-400">
-                            {`${filteredItems.length} postulantes`}
-                        </span>
-                    </div>
+                    {/* Total y filas por página eliminados aquí, se muestran en TablePagination */}
                 </div>
             </>
         );
@@ -712,40 +718,16 @@ export default function App() {
 
     const bottomContent = useMemo(
         () => (
-            <div className="py-2 px-2 flex justify-between items-center">
-                <span className="w-[30%] text-small text-default-400"></span>
-                <Pagination
-                    isCompact
-                    showControls
-                    showShadow
-                    color="primary"
-                    page={page}
-                    total={pages}
-                    onChange={setPage}
-                />
-                <div className="hidden sm:flex w-[30%] justify-end gap-2">
-                    {/* <Button
-                        isDisabled={page === 1}
-                        size="sm"
-                        variant="flat"
-                        onPress={() => setPage((prev) => Math.max(prev - 1, 1))}
-                    >
-                        Anterior
-                    </Button>
-                    <Button
-                        isDisabled={page === pages}
-                        size="sm"
-                        variant="flat"
-                        onPress={() =>
-                            setPage((prev) => Math.min(prev + 1, pages))
-                        }
-                    >
-                        Siguiente
-                    </Button> */}
-                </div>
-            </div>
+            <TablePagination
+                page={page}
+                pages={pages}
+                setPage={setPage}
+                filteredItemsLength={filteredItems.length}
+                selectedKeys={selectedKeys}
+                hasSelection={false}
+            />
         ),
-        [selectedKeys, filteredItems.length, page, pages]
+        [page, pages, setPage, filteredItems.length, selectedKeys]
     );
 
     return (
@@ -786,11 +768,27 @@ export default function App() {
                     )}
                 </TableHeader>
                 <TableBody
-                    emptyContent={dataLoading || loading ? <NextUISpinner label="Cargando..." /> : "No se encontró postulantes registrados"}
-                    items={loading ? [] : items} // Ocultar filas al exportar
+                    emptyContent={dataLoading ? (
+                        <div className="flex flex-col gap-2 w-full p-2">
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                        </div>
+                    ) : (
+                        "No se encontró postulantes registrados"
+                    )}
+                    items={items}
                     className="space-y-1"
-                    isLoading={dataLoading || loading}
-                    loadingContent={<NextUISpinner label="Cargando..." />}
+                    isLoading={dataLoading}
+                    loadingContent={
+                        <div className="w-full h-full flex flex-col gap-2 p-4 bg-white/50 backdrop-blur-sm z-50">
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                        </div>
+                    }
                 >
                     {(item) => (
                         <TableRow

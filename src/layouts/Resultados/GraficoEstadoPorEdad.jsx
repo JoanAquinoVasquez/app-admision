@@ -9,7 +9,8 @@ import {
     ResponsiveContainer,
     CartesianGrid,
 } from "recharts";
-import { Spinner } from "@heroui/react";
+import { Skeleton } from "@heroui/react";
+import DashboardCard from "../../components/Cards/DashboardCard";
 
 // Componente personalizado de Tooltip
 const CustomTooltip = ({ active, payload, label }) => {
@@ -46,8 +47,9 @@ const CustomTooltip = ({ active, payload, label }) => {
 const GraficoEstadoPorEdad = ({ resumenEdad, loading }) => {
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center h-64">
-                <Spinner label="Cargando..." />
+            <div className="flex flex-col gap-3 p-4 h-[400px]">
+                <Skeleton className="h-8 w-3/4 rounded-lg" />
+                <Skeleton className="flex-1 w-full rounded-xl" />
             </div>
         );
     }

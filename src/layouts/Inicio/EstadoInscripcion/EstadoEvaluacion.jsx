@@ -1,5 +1,5 @@
 import { MdPeople } from "react-icons/md";
-import { Spinner } from "@heroui/react";
+import { Skeleton } from "@heroui/react";
 import DocenteResumenGeneralCard from "../../../components/Cards/DocenteResumenCard";
 
 const EstadoEvaluacion = ({ estadoEvaluacion, loading }) => {
@@ -14,8 +14,9 @@ const EstadoEvaluacion = ({ estadoEvaluacion, loading }) => {
             </div>
 
             {loading ? (
-                <div className="flex items-center justify-center h-72 border border-gray-200 rounded-lg bg-white shadow-sm">
-                    <Spinner label="Cargando docentes..." />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 h-72">
+                    <Skeleton className="h-full w-full rounded-xl" />
+                    <Skeleton className="h-full w-full rounded-xl" />
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">

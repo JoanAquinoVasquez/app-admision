@@ -1,10 +1,10 @@
-import React from "react";
+import { lazy } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import NavbarDocente from "../../components/Navbar/NavbarDocente";
 import Notfound from "../../pages/NotFound/NotFound";
 import "./Dashboard.css";
 
-const InicioDocenteLazy = React.lazy(() => import("../Inicio/InicioDocente"));
+const InicioDocenteLazy = lazy(() => import("../Inicio/InicioDocente"));
 
 function Dashboard() {
     const location = useLocation();

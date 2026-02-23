@@ -1,11 +1,12 @@
 import { Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
-import { Spinner, Select, SelectItem } from "@heroui/react";
+import { Skeleton, Select, SelectItem } from "@heroui/react";
+import DashboardCard from "../../components/Cards/DashboardCard";
 import { useState, useEffect } from "react";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const ResumenAdmision = ({ resumenGeneral }) => {
+const ResumenAdmision = ({ resumenGeneral, loading }) => {
     const [gradoSeleccionado, setGradoSeleccionado] = useState(null);
     const [resumenes, setResumenes] = useState([]);
 
@@ -14,6 +15,16 @@ const ResumenAdmision = ({ resumenGeneral }) => {
             setResumenes(resumenGeneral);
         }
     }, [resumenGeneral]);
+
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center gap-4 p-4 h-[400px]">
+                <Skeleton className="h-6 w-3/4 rounded-lg" />
+                <Skeleton className="h-10 w-full rounded-lg" />
+                <Skeleton className="w-56 h-56 rounded-full" />
+            </div>
+        );
+    }
 
     const calcularResumen = () => {
         if (!gradoSeleccionado) {

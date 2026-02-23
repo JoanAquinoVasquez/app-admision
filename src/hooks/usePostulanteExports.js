@@ -19,11 +19,16 @@ const usePostulanteExports = () => {
     const handleExport = async (type, options = {}) => {
         const { selectedPrograms, gradoFilter, programaFilter } = options;
 
-        setLoading(true);
-        try {
-            let response;
-            let fileName = "archivo";
+        if (type === "CV" && !selectedPrograms?.length) {
+            toast.error("Por favor, selecciona al menos un programa.");
+            return;
+        }
 
+        setLoading(true);
+        let fileName = "archivo";
+
+        const exportPromise = (async () => {
+            let response;
             switch (type) {
                 case "CV":
                     if (!selectedPrograms?.length) {
@@ -137,10 +142,19 @@ const usePostulanteExports = () => {
                     break;
 
                 default:
-                    toast.error("Tipo de exportación no válido.");
-                    setLoading(false);
-                    return;
+                    throw new Error("Tipo de exportación no válido.");
             }
+            return response;
+        })();
+
+        toast.promise(exportPromise, {
+            loading: `Generando ${type.toLowerCase()}...`,
+            success: "Exportación completada exitosamente.",
+            error: (err) => `Error al exportar: ${err.message || "Error inesperado"}`,
+        });
+
+        try {
+            const response = await exportPromise;
 
             // Extraer filename desde headers si está disponible
             const disposition = response.headers["content-disposition"];
@@ -150,13 +164,8 @@ const usePostulanteExports = () => {
             if (extracted) fileName = decodeURIComponent(extracted);
 
             downloadBlob(response.data, fileName);
-            toast.success("Exportación completada exitosamente.");
         } catch (error) {
-            const msg =
-                error?.response?.data?.message ||
-                error?.message ||
-                "Error inesperado";
-            toast.error("Error al exportar: " + msg);
+            // Managed by toast.promise
         } finally {
             setLoading(false);
         }

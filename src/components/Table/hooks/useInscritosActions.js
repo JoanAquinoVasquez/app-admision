@@ -9,6 +9,7 @@ export function useInscritosActions(fetchInscripciones) {
     const [isEditarOpen, setIsEditarOpen] = useState(false);
     const [observacion, setObservacion] = useState("");
     const [loading, setLoading] = useState(false);
+    const [isExporting, setIsExporting] = useState(false);
 
     const handleValidar = useCallback(async (inscripcionId) => {
         setIsValidarOpen(false);
@@ -75,47 +76,55 @@ export function useInscritosActions(fetchInscripciones) {
     }, []);
 
     const handleExportMultiple = useCallback(async (type, gradoFilter, programaFilter) => {
-        setLoading(true);
+        let url = "";
+        let params = {};
+
+        switch (type) {
+            case "Excel":
+                url = "/reporte-inscripcion";
+                if (gradoFilter !== "all" && gradoFilter) {
+                    params.grado = gradoFilter;
+                }
+                if (programaFilter !== "all" && programaFilter) {
+                    params.programa = programaFilter;
+                }
+                break;
+
+            case "Reporte Diario":
+                url = "/reporte-inscripcion-diario";
+                break;
+
+            case "Facultad Excel":
+                url = "/reporte-inscripcion-facultad";
+                break;
+
+            case "Facultad PDF":
+                url = "/reporte-inscripcion-facultad-pdf";
+                break;
+
+            case "Top Programas":
+                url = "/reporte-programas-top";
+                break;
+
+            default:
+                toast.error("Tipo de exportación no válido");
+                return;
+        }
+
+        setIsExporting(true);
+        const exportPromise = axios.get(url, {
+            params,
+            responseType: "blob",
+        });
+
+        toast.promise(exportPromise, {
+            loading: `Generando ${type.toLowerCase()}...`,
+            success: "Reporte generado con éxito",
+            error: "Error durante la exportación",
+        });
+
         try {
-            let url = "";
-            let params = {};
-
-            switch (type) {
-                case "Excel":
-                    url = "/reporte-inscripcion";
-                    if (gradoFilter !== "all" && gradoFilter) {
-                        params.grado = gradoFilter;
-                    }
-                    if (programaFilter !== "all" && programaFilter) {
-                        params.programa = programaFilter;
-                    }
-                    break;
-
-                case "Reporte Diario":
-                    url = "/reporte-inscripcion-diario";
-                    break;
-
-                case "Facultad Excel":
-                    url = "/reporte-inscripcion-facultad";
-                    break;
-
-                case "Facultad PDF":
-                    url = "/reporte-inscripcion-facultad-pdf";
-                    break;
-
-                case "Top Programas":
-                    url = "/reporte-programas-top";
-                    break;
-
-                default:
-                    toast.error("Tipo de exportación no válido");
-                    return;
-            }
-
-            const response = await axios.get(url, {
-                params,
-                responseType: "blob",
-            });
+            const response = await exportPromise;
 
             const disposition = response.headers["content-disposition"];
             const filename =
@@ -132,9 +141,9 @@ export function useInscritosActions(fetchInscripciones) {
             link.remove();
             window.URL.revokeObjectURL(fileURL);
         } catch (error) {
-            toast.error("Error durante la exportación");
+            // Managed by toast.promise
         } finally {
-            setLoading(false);
+            setIsExporting(false);
         }
     }, []);
 
@@ -151,6 +160,7 @@ export function useInscritosActions(fetchInscripciones) {
         setObservacion,
         loading,
         setLoading,
+        isExporting,
         handleValidar,
         handleObservar,
         handleEditar,

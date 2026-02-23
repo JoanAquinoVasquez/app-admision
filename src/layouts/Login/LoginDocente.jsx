@@ -91,7 +91,7 @@ function LoginDocente() {
                     {/* Títulos */}
                     <div className="text-center mb-8">
                         <h2 className="text-2xl font-black text-slate-800">
-                            Portal Docente
+                            Iniciar Sesión
                         </h2>
                         <p className="text-slate-500 text-xs mt-1">
                             Ingrese sus credenciales para acceder al sistema
@@ -159,7 +159,7 @@ function LoginDocente() {
                             className="w-full h-12 text-md font-bold rounded-xl shadow-lg shadow-blue-100 transition-all active:scale-95"
                             isLoading={loading}
                         >
-                            {loading ? "Verificando..." : "Acceder al Portal"}
+                            {loading ? "Cargando..." : "Ingresar"}
                         </Button>
                     </form>
 

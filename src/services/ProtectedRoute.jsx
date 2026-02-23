@@ -1,17 +1,13 @@
 import { Navigate } from "react-router-dom";
 import { useUser } from "../services/UserContext";
 import NotAuthorizated from "../pages/NotAuthorizated/NotAuthorizated";
-import { Spinner } from "@heroui/react";
+import Spinner from "../components/Spinner/Spinner";
 
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     const { userData, logout, loading } = useUser();
 
     if (loading) {
-        return (
-            <div className="flex items-center justify-center h-screen w-screen bg-white">
-                <Spinner />
-            </div>
-        );
+        return <Spinner fullScreen={true} label="Cargando..." />;
     }
 
     if (!userData) {

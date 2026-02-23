@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import useGrado from "../../data/dataGrados";
 // import Spinner from "../../components/Spinner/Spinner"; // Spinner
 import { toast } from "react-hot-toast";
@@ -22,9 +22,7 @@ import {
     DropdownMenu,
     DropdownItem,
     Chip,
-    Pagination,
-    Spinner,
-    user,
+    Skeleton,
 } from "@heroui/react";
 import useInscripcionInhabilitada from "../../data/Inscripcion/dataInscripcionesInhabilitadas";
 import Select from "../../components/Select/Select";
@@ -36,83 +34,16 @@ import SelectGradoPrograma from "../Select/SelectGradoPrograma";
 import CambiarProgramaModal from "../Modals/CambiarProgramaModal";
 import useProgramasPosibles from "../../data/Inscripcion/dataProgramasPosibles";
 
-export function capitalize(s) {
-    return s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : "";
-}
-
-export const VerticalDotsIcon = ({ size = 24, width, height, ...props }) => {
-    return (
-        <svg
-            aria-hidden="true"
-            fill="none"
-            focusable="false"
-            height={size || height}
-            role="presentation"
-            viewBox="0 0 24 24"
-            width={size || width}
-            {...props}
-        >
-            <path
-                d="M12 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 12c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
-                fill="currentColor"
-            />
-        </svg>
-    );
-};
-
-export const SearchIcon = (props) => {
-    return (
-        <svg
-            aria-hidden="true"
-            fill="none"
-            focusable="false"
-            height="1em"
-            role="presentation"
-            viewBox="0 0 24 24"
-            width="1em"
-            {...props}
-        >
-            <path
-                d="M11.5 21C16.7467 21 21 16.7467 21 11.5C21 6.25329 16.7467 2 11.5 2C6.25329 2 2 6.25329 2 11.5C2 16.7467 6.25329 21 11.5 21Z"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-            />
-            <path
-                d="M22 22L20 20"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-            />
-        </svg>
-    );
-};
-
-export const ChevronDownIcon = ({ strokeWidth = 1.5, ...otherProps }) => {
-    return (
-        <svg
-            aria-hidden="true"
-            fill="none"
-            focusable="false"
-            height="1em"
-            role="presentation"
-            viewBox="0 0 24 24"
-            width="1em"
-            {...otherProps}
-        >
-            <path
-                d="m19.92 8.95-6.52 6.52c-.77.77-2.03.77-2.8 0L4.08 8.95"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeMiterlimit={10}
-                strokeWidth={strokeWidth}
-            />
-        </svg>
-    );
-};
+import {
+    VerticalDotsIcon,
+    SearchIcon,
+    ChevronDownIcon,
+} from "./components/Icons";
+import { useInscritosData } from "../../hooks/useInscritosData";
+import { useInscritosRenderCell } from "./components/useInscritosRenderCell";
+import { useTableFilters } from "../../hooks/useTableFilters";
+import TablePagination from "./components/TablePagination";
+import { capitalize } from "./utils";
 
 export const columns = [
     { name: "ID", uid: "id", sortable: true },
@@ -170,10 +101,14 @@ export default function App() {
 
     const { grados, fetchGrados } = useGrado();
     const [loading, setLoading] = useState(false); // local loading for actions
+    const [isExporting, setIsExporting] = useState(false);
     const { gradosPosibles, programasPosibles, fetchProgramasPosibles } =
         useProgramasPosibles(validarId || null);
-    const [selectedGrado, setSelectedGrado] = useState(null);
-    const [selectedPrograma, setSelectedPrograma] = useState(null);
+
+    // Estados para filtrado por grado y programa
+    const [grado_id, setGrado_id] = useState(null);
+    const [programa_id, setPrograma_id] = useState(null);
+    const { programasInhabilitados, refetch: refetchProgramas } = useProgramasInhabilitados();
 
     // Fetch programas posibles when modal opens
     useEffect(() => {
@@ -183,79 +118,54 @@ export default function App() {
     }, [isCambioOpen, validarId, fetchProgramasPosibles]);
 
     // ✅ Aseguramos que `inscripcionesInhabilitadas` tenga datos antes de mapear
-    const users = useMemo(() => {
-        if (
-            !Array.isArray(inscripcionesInhabilitadas) ||
-            inscripcionesInhabilitadas.length === 0
-        ) {
-            return []; // Retorna un array vacío si no hay datos
-        }
+    const users = useInscritosData(
+        inscripcionesInhabilitadas || [],
+        "estado",
+        (item) => true // No filtering by val_digital, just pass all
+    );
 
-        return inscripcionesInhabilitadas.map((item) => {
-            const formatoFechaHora = (fechaHora) => {
-                if (!fechaHora)
-                    return { fecha: "No disponible", hora: "No disponible" };
+    const {
+        filterValue,
+        statusFilter,
+        gradoFilter,
+        programaFilter,
+        page,
+        rowsPerPage,
+        sortDescriptor,
+        setFilterValue,
+        setStatusFilter,
+        setGradoFilter,
+        setProgramaFilter,
+        setPage,
+        setRowsPerPage,
+        setSortDescriptor,
+        sortedItems,
+        items,
+        pages,
+        onSearchChange,
+        onClear,
+        onRowsPerPageChange,
+        filteredItems,
+    } = useTableFilters(users, {
+        initialRowsPerPage: 10,
+        initialSortColumn: "id",
+    });
 
-                const dateObj = new Date(fechaHora);
-                if (isNaN(dateObj.getTime())) {
-                    return { fecha: "Inválida", hora: "Inválida" };
-                }
-                const fecha = dateObj.toLocaleDateString('es-PE', { year: 'numeric', month: '2-digit', day: '2-digit' });
-                const hora = dateObj.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                return { fecha, hora };
-            };
-
-            const { fecha, hora } = formatoFechaHora(item.created_at);
-
-            return {
-                id: item.id,
-                postulante_id: item.postulante?.id ?? "No disponible",
-                nombre_completo: [
-                    item.postulante?.ap_paterno ?? "",
-                    item.postulante?.ap_materno ?? "",
-                    item.postulante?.nombres ?? "",
-                ]
-                    .join(" ")
-                    .trim(),
-                grado: item.programa?.grado?.nombre ?? "No disponible",
-                grado_id: item.programa?.grado_id ?? "No disponible",
-                programa_id: item.programa_id ?? "No disponible",
-                celular: item.postulante?.celular ?? "No disponible",
-                programa: item.programa?.nombre ?? "No disponible",
-                doc_iden: item.postulante?.num_iden ?? "No disponible",
-                observacion: item.observacion ?? "No disponible",
-                tipo_doc: item.postulante?.tipo_doc ?? "No disponible",
-                fecha_inscripcion: { fecha, hora },
-                voucher: item.codigo ?? "No disponible",
-                estado: parseInt(item.estado) ?? "No disponible",
-            };
-        });
-    }, [inscripcionesInhabilitadas]);
-
-    const [programa_id, setPrograma_id] = useState(null);
-    const [grado_id, setGrado_id] = useState(null);
-
-    const [filterValue, setFilterValue] = useState("");
     const [selectedKeys, setSelectedKeys] = useState(new Set([]));
     const [visibleColumns, setVisibleColumns] = useState(
         new Set(INITIAL_VISIBLE_COLUMNS)
     );
-    const [statusFilter, setStatusFilter] = useState("all");
-    const [gradoFilter, setGradoFilter] = useState("all");
-    const [programaFilter, setProgramaFilter] = useState("all");
-    const { programasInhabilitados, refetch } = useProgramasInhabilitados();
-    const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [sortDescriptor, setSortDescriptor] = useState({
-        column: "id",
-        direction: "ascending",
-    });
-    const [page, setPage] = useState(1);
+
+    const headerColumns = useMemo(() => {
+        return visibleColumns === "all"
+            ? columns
+            : columns.filter((column) => visibleColumns.has(column.uid));
+    }, [visibleColumns]);
 
     // Filtrar programas en la tabla cuando cambia el grado seleccionado
     useEffect(() => {
         if (gradoFilter !== "all") {
             filterByGrado(gradoFilter);
-            setCurrentPage(1); // Reiniciar a la primera página cuando se aplica un filtro
         }
     }, [gradoFilter, filterByGrado]);
 
@@ -289,87 +199,34 @@ export default function App() {
         setCurrentPage(1);
     }, [programSearchValue]);
 
-    const headerColumns = useMemo(() => {
-        return visibleColumns === "all"
-            ? columns
-            : columns.filter((column) => visibleColumns.has(column.uid));
-    }, [visibleColumns]);
-
-    const filteredItems = useMemo(() => {
-        let filteredUsers = [...users];
-        if (filterValue) {
-            const lowerCaseFilter = filterValue.toLowerCase();
-            filteredUsers = filteredUsers.filter((user) =>
-                Object.values(user).some((value) =>
-                    value?.toString().toLowerCase().includes(lowerCaseFilter)
-                )
-            );
-        }
-        if (statusFilter !== "all") {
-            filteredUsers = filteredUsers.filter((user) =>
-                statusFilter.has(user.estado.toString())
-            );
-        }
-        if (grado_id !== null) {
-            filteredUsers = filteredUsers.filter(
-                (user) => user.grado_id == grado_id
-            );
-        }
-
-        if (programa_id !== null) {
-            filteredUsers = filteredUsers.filter(
-                (user) => user.programa_id == programa_id
-            );
-        }
-
-        return filteredUsers;
-    }, [filterValue, statusFilter, users, grado_id, programa_id]);
-
-    const sortedItems = useMemo(() => {
-        return [...filteredItems].sort((a, b) => {
-            const first = a[sortDescriptor.column];
-            const second = b[sortDescriptor.column];
-            const cmp = first < second ? -1 : first > second ? 1 : 0;
-            return sortDescriptor.direction === "descending" ? -cmp : cmp;
-        });
-    }, [sortDescriptor, filteredItems]);
-    const pages = Math.ceil(filteredItems.length / rowsPerPage);
-    const items = useMemo(() => {
-        const start = (page - 1) * rowsPerPage;
-        return sortedItems.slice(start, start + rowsPerPage);
-    }, [page, sortedItems, rowsPerPage]);
-    useEffect(() => {
-        setPage(1); // Reiniciar a la primera página cuando se aplica un filtro
-    }, [filterValue, statusFilter, sortedItems, grado_id, programa_id]);
-
     const handleExportMultiple = async (type) => {
-        setLoading(true);
-        try {
-            let response;
+        setIsExporting(true);
+        const exportPromise = (async () => {
+            let res;
             switch (type) {
                 case "Devolucion":
-                    response = await axios.get("/devolucion/reporte", {
-                        responseType: "blob",
-                    });
-                    setLoading(false);
+                    res = await axios.get("/devolucion/reporte", { responseType: "blob" });
                     break;
                 case "Reserva":
-                    response = await axios.get("/reservas/reporte", {
-                        responseType: "blob",
-                    });
-                    setLoading(false);
+                    res = await axios.get("/reservas/reporte", { responseType: "blob" });
                     break;
                 case "Voucher":
-                    response = await axios.get("/reservas/vouchers", {
-                        responseType: "blob",
-                    });
-                    setLoading(false);
+                    res = await axios.get("/reservas/vouchers", { responseType: "blob" });
                     break;
                 default:
-                    setLoading(false);
-                    return;
+                    throw new Error("Tipo de reporte no válido");
             }
+            return res;
+        })();
 
+        toast.promise(exportPromise, {
+            loading: `Generando reporte de ${type.toLowerCase()}...`,
+            success: "Reporte generado con éxito",
+            error: "Error durante la exportación",
+        });
+
+        try {
+            const response = await exportPromise;
             const disposition = response.headers["content-disposition"];
             const filename =
                 disposition &&
@@ -380,201 +237,120 @@ export default function App() {
             );
             const link = document.createElement("a");
             link.href = fileURL;
-            link.setAttribute("download", filename || defaultFilename);
+            link.setAttribute("download", filename || `reporte_${type.toLowerCase()}.xlsx`);
             document.body.appendChild(link);
             link.click();
             link.remove();
         } catch (error) {
-            toast.error("Error durante la exportación");
+            // Error managed by toast.promise
+        } finally {
+            setIsExporting(false);
         }
     };
-    const renderCell = useCallback((user, columnKey) => {
-        const cellValue = user[columnKey];
+    const renderStatus = (user) => (
+        <Chip
+            className="capitalize"
+            color={statusColorMap[user.estado]}
+            size="sm"
+            variant="flat"
+        >
+            {user.estado == 0
+                ? "Pendiente"
+                : user.estado == 3
+                    ? "Devolución"
+                    : "Reservado"}
+        </Chip>
+    );
 
-        switch (columnKey) {
-            case "id":
-                return (
-                    <div className="flex flex-col">
-                        <p className="text-sm text-default-400">{cellValue}</p>
-                        {/* <p className="text-bold text-tiny capitalize text-default-400">
-                            {user.nombre_completo}
-                        </p> */}
-                    </div>
-                );
-
-            case "nombre_completo":
-                return (
-                    <div className="flex flex-col">
-                        <p className="capitalize text-sm text-default-500">
-                            {cellValue}
-                        </p>
-                        {/* <p className="text-bold text-tiny capitalize text-default-400">
-                            {user.nombre_completo}
-                        </p> */}
-                    </div>
-                );
-            case "grado":
-                return (
-                    <div className="flex flex-col">
-                        <p className="text-sm text-default-400">{cellValue}</p>
-                        <p className="font-medium text-sm text-default-500">
-                            {user.programa}
-                        </p>
-                    </div>
-                );
-
-            case "fecha_inscripcion":
-                return (
-                    <div className="flex flex-col">
-                        <p className="font-medium capitalize text-sm text-default-500">
-                            {cellValue.hora}
-                        </p>
-                        <p className="text-sm text-default-400">
-                            {cellValue.fecha}
-                        </p>
-                    </div>
-                );
-            case "doc_iden":
-                return (
-                    <div className="flex flex-col">
-                        <p className="text-sm text-default-400">
-                            {user.tipo_doc}
-                        </p>
-                        <p className="font-medium capitalize text-sm text-default-500">
-                            {cellValue}
-                        </p>
-                    </div>
-                );
-
-            case "estado":
-                return (
-                    <Chip
-                        className="capitalize"
-                        color={statusColorMap[user.estado]}
+    const renderActions = (user) => (
+        <div className="relative flex justify-end items-center gap-2">
+            <Dropdown>
+                <DropdownTrigger>
+                    <Button
+                        isIconOnly
                         size="sm"
-                        variant="flat"
+                        variant="light"
+                        aria-label="accion"
                     >
-                        {user.estado === 0
-                            ? "Pendiente"
-                            : user.estado === 3
-                                ? "Devolución"
-                                : "Reservado"}
-                    </Chip>
-                );
-
-            case "actions":
-                return (
-                    <div className="relative flex justify-end items-center gap-2">
-                        <Dropdown>
-                            <DropdownTrigger>
-                                <Button
-                                    isIconOnly
-                                    size="sm"
-                                    variant="light"
-                                    aria-label="accion"
+                        <VerticalDotsIcon className="text-default-300" />
+                    </Button>
+                </DropdownTrigger>
+                <DropdownMenu>
+                    {user.estado == 0 && (
+                        <>
+                            {[
+                                {
+                                    key: "reserva",
+                                    label: "Reserva",
+                                    message:
+                                        "¿Confirma la reserva? Esta acción es irreversible.",
+                                },
+                                {
+                                    key: "devolucion",
+                                    label: "Devolución",
+                                    message:
+                                        "¿Confirma la devolución? Esta acción es irreversible.",
+                                },
+                                {
+                                    key: "cambio",
+                                    label: "Cambio de Programa",
+                                    message:
+                                        "¿Confirma el cambio de programa? Esta acción es irreversible.",
+                                },
+                            ].map(({ key, label, message }) => (
+                                <DropdownItem
+                                    key={key}
+                                    textValue={label}
+                                    onPress={() => {
+                                        setValidarId(user.id);
+                                        setMessage(message);
+                                        setIsValidarOpen(key === "reserva");
+                                        setIsDevolucionOpen(key === "devolucion");
+                                        setIsCambioOpen(key === "cambio");
+                                    }}
                                 >
-                                    <VerticalDotsIcon className="text-default-300" />
-                                </Button>
-                            </DropdownTrigger>
-                            <DropdownMenu>
-                                {user.estado === 0 && (
-                                    <>
-                                        {[
-                                            {
-                                                key: "reserva",
-                                                label: "Reserva",
-                                                message:
-                                                    "¿Confirma la reserva? Esta acción es irreversible.",
-                                            },
-                                            {
-                                                key: "devolucion",
-                                                label: "Devolución",
-                                                message:
-                                                    "¿Confirma la devolución? Esta acción es irreversible.",
-                                            },
-                                            {
-                                                key: "cambio",
-                                                label: "Cambio de Programa",
-                                                message:
-                                                    "¿Confirma el cambio de programa? Esta acción es irreversible.",
-                                            },
-                                        ].map(({ key, label, message }) => (
-                                            <DropdownItem
-                                                key={key}
-                                                textValue={label}
-                                                onPress={() => {
-                                                    setValidarId(user.id);
-                                                    setMessage(message);
-                                                    setIsValidarOpen(
-                                                        key === "reserva"
-                                                    );
-                                                    setIsDevolucionOpen(
-                                                        key === "devolucion"
-                                                    );
-                                                    setIsCambioOpen(
-                                                        key === "cambio"
-                                                    );
-                                                }}
-                                            >
-                                                {label}
-                                            </DropdownItem>
-                                        ))}
-                                    </>
-                                )}
+                                    {label}
+                                </DropdownItem>
+                            ))}
+                        </>
+                    )}
 
-                                {user.estado === 2 && (
-                                    <DropdownItem
-                                        textValue="Cancelar Reserva"
-                                        onPress={() => {
-                                            setValidarId(user.id);
-                                            setMessage(
-                                                "¿Desea cancelar la reserva?"
-                                            );
-                                            setIsValidarOpen(true);
-                                        }}
-                                    >
-                                        Cancelar Reserva
-                                    </DropdownItem>
-                                )}
+                    {user.estado == 2 && (
+                        <DropdownItem
+                            textValue="Cancelar Reserva"
+                            onPress={() => {
+                                setValidarId(user.id);
+                                setMessage("¿Desea cancelar la reserva?");
+                                setIsValidarOpen(true);
+                            }}
+                        >
+                            Cancelar Reserva
+                        </DropdownItem>
+                    )}
 
-                                {user.estado === 3 && (
-                                    <DropdownItem
-                                        textValue="Cancelar Devolución"
-                                        onPress={() => {
-                                            setValidarId(user.id);
-                                            setMessage(
-                                                "¿Desea cancelar la devolución?"
-                                            );
-                                            setIsDevolucionOpen(true);
-                                        }}
-                                    >
-                                        Cancelar Devolución
-                                    </DropdownItem>
-                                )}
-                            </DropdownMenu>
-                        </Dropdown>
-                    </div>
-                );
+                    {user.estado == 3 && (
+                        <DropdownItem
+                            textValue="Cancelar Devolución"
+                            onPress={() => {
+                                setValidarId(user.id);
+                                setMessage("¿Desea cancelar la devolución?");
+                                setIsDevolucionOpen(true);
+                            }}
+                        >
+                            Cancelar Devolución
+                        </DropdownItem>
+                    )}
+                </DropdownMenu>
+            </Dropdown>
+        </div>
+    );
 
-            default:
-                return cellValue;
-        }
-    }, []);
+    const renderCell = useInscritosRenderCell({
+        renderStatus,
+        renderActions,
+    });
 
-    const onRowsPerPageChange = useCallback((e) => {
-        setRowsPerPage(Number(e.target.value));
-        setPage(1);
-    }, []);
 
-    const onSearchChange = useCallback((value) => {
-        setFilterValue(value || "");
-        setPage(1);
-    }, []);
-
-    const onClear = useCallback(() => {
-        setFilterValue("");
-        setPage(1);
-    }, []);
 
     useEffect(() => {
         if (grado_id === null) {
@@ -609,7 +385,7 @@ export default function App() {
                 toast.success(response.data.message);
                 setIsModalOpen(false);
                 fetchProgramasPosibles();
-                refetch();
+                refetchProgramas();
                 fetchInscripcionesInhabilitadas();
             } else {
                 throw new Error("Respuesta inesperada del servidor.");
@@ -800,6 +576,7 @@ export default function App() {
                                         }
                                         color="primary"
                                         className="h-12 w-full sm:w-auto"
+                                        isLoading={isExporting}
                                     >
                                         Exportar
                                     </Button>
@@ -870,8 +647,14 @@ export default function App() {
                             <SelectGradoPrograma
                                 grados={grados ?? []}
                                 programas={programasInhabilitados ?? []}
-                                onChangeGrado={setGrado_id}
-                                onChangePrograma={setPrograma_id}
+                                onChangeGrado={(val) => {
+                                    setGrado_id(val);
+                                    setGradoFilter(val || "all");
+                                }}
+                                onChangePrograma={(val) => {
+                                    setPrograma_id(val);
+                                    setProgramaFilter(val || "all");
+                                }}
                             />
                         </div>
                     </div>
@@ -905,21 +688,16 @@ export default function App() {
 
     const bottomContent = useMemo(
         () => (
-            <div className="py-2 px-2 flex justify-between items-center">
-                <span className="w-[30%] text-small text-default-400"></span>
-                <Pagination
-                    isCompact
-                    showControls
-                    showShadow
-                    color="primary"
-                    page={page}
-                    total={pages}
-                    onChange={setPage}
-                />
-                <div className="hidden sm:flex w-[30%] justify-end gap-2"></div>
-            </div>
+            <TablePagination
+                page={page}
+                pages={pages}
+                setPage={setPage}
+                filteredItemsLength={filteredItems.length}
+                selectedKeys={selectedKeys}
+                hasSelection={false}
+            />
         ),
-        [selectedKeys, filteredItems.length, page, pages]
+        [page, pages, setPage, filteredItems.length, selectedKeys]
     );
 
     return (
@@ -950,8 +728,6 @@ export default function App() {
                 isOpen={isCambioOpen}
                 onClose={() => setIsCambioOpen(false)}
                 onConfirm={(id, gradoId, programaId) => {
-                    setSelectedGrado(gradoId);
-                    setSelectedPrograma(programaId);
                     handleObservarCambio(id, programaId);
                 }}
                 grados={grados ?? []}
@@ -1201,11 +977,19 @@ export default function App() {
                     )}
                 </TableHeader>
                 <TableBody
-                    emptyContent={(dataLoading || loading) ? <Spinner label="Cargando..." /> : "No se encontró inscripciones pendientes"}
+                    emptyContent={(dataLoading || loading) ? <Skeleton className="h-20 w-full rounded-lg" /> : "No se encontró inscripciones pendientes"}
                     items={items}
                     className="space-y-1" // Reducir espacio entre filas
                     isLoading={dataLoading || loading}
-                    loadingContent={<div className="w-full h-full flex justify-center items-center z-50 bg-content1/50 backdrop-blur-sm top-0 left-0 absolute"><Spinner label="Cargando..." /></div>}
+                    loadingContent={
+                        <div className="w-full h-full flex flex-col gap-2 p-4 bg-white/50 backdrop-blur-sm z-50">
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                        </div>
+                    }
                 >
                     {(item) => (
                         <TableRow

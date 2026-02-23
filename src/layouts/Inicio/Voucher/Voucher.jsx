@@ -1,7 +1,7 @@
 import { MdReceiptLong } from "react-icons/md";
 import DashboardCard from "../../../components/Cards/DashboardCard";
 import CountUp from "react-countup";
-import { Spinner } from "@heroui/react";
+import { Skeleton } from "@heroui/react";
 import { admissionConfig } from "../../../config/admission";
 
 const TotalVouchers = ({ resumenVouchers, loading }) => {
@@ -28,11 +28,23 @@ const TotalVouchers = ({ resumenVouchers, loading }) => {
             icon={<MdReceiptLong className="text-purple-500 text-lg" />}
         >
             {loading ? (
-                <div className="flex justify-center items-center h-48">
-                    <Spinner color="primary" size="md" label="Cargando..." />
+                <div className="flex flex-col justify-center h-[165px] w-full px-4 gap-4">
+                    <div className="grid grid-cols-3 gap-4 pb-2">
+                        <Skeleton className="h-12 w-full rounded-lg" />
+                        <Skeleton className="h-12 w-full rounded-lg" />
+                        <Skeleton className="h-12 w-full rounded-lg" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-200">
+                        <Skeleton className="h-8 w-full rounded-lg" />
+                        <Skeleton className="h-8 w-full rounded-lg" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-200">
+                        <Skeleton className="h-8 w-full rounded-lg" />
+                        <Skeleton className="h-8 w-full rounded-lg" />
+                    </div>
                 </div>
             ) : (
-                <>
+                <div className="flex-1 flex flex-col justify-around">
                     <div className="grid grid-cols-1">
                         {/* Total de Pagos */}
                         <div className="grid grid-cols-3 space-x-0 pb-2">
@@ -164,7 +176,7 @@ const TotalVouchers = ({ resumenVouchers, loading }) => {
                             </div>
                         </div>
                     </div>
-                </>
+                </div>
             )}
         </DashboardCard>
     );

@@ -16,7 +16,7 @@ import {
     DropdownMenu,
     Button,
     Checkbox,
-    Spinner,
+    Skeleton,
 } from "@heroui/react";
 import { FaFilter } from "react-icons/fa";
 import { MdSummarize } from "react-icons/md";
@@ -176,135 +176,131 @@ export default function GraphicSummaryInscritos({ inscripciones, loading }) {
         });
     }, [groupedData, selectedGrados]);
 
+    const actions = (
+        <div className="flex gap-1">
+            <Dropdown placement="bottom-end" shouldBlockScroll={false}>
+                <DropdownTrigger>
+                    <Button isIconOnly variant="light" size="sm" data-testid="filter-button">
+                        <FaFilter className="text-default-500" />
+                    </Button>
+                </DropdownTrigger>
+                <DropdownMenu aria-label="Acumulado Selection">
+                    <DropdownItem key="diario" textValue="diario">
+                        <label className="flex items-center cursor-pointer">
+                            <Checkbox
+                                isSelected={!showAccumulated}
+                                onValueChange={() => setShowAccumulated(false)}
+                            />
+                            <p className="text-sm text-gray-500 ml-2">Diario</p>
+                        </label>
+                    </DropdownItem>
+                    <DropdownItem key="acumulado" textValue="acumulado">
+                        <label className="flex items-center cursor-pointer">
+                            <Checkbox
+                                isSelected={showAccumulated}
+                                onValueChange={() => setShowAccumulated(true)}
+                            />
+                            <p className="text-sm text-gray-500 ml-2">Acumulado</p>
+                        </label>
+                    </DropdownItem>
+                </DropdownMenu>
+            </Dropdown>
+            <Dropdown placement="bottom-end" shouldBlockScroll={false}>
+                <DropdownTrigger>
+                    <Button isIconOnly variant="light" size="sm" data-testid="grado-filter-button">
+                        <FaFilter className="text-default-500" />
+                    </Button>
+                </DropdownTrigger>
+                <DropdownMenu
+                    aria-label="Grado Selection"
+                    selectionMode="multiple"
+                    selectedKeys={selectedGrados}
+                    onSelectionChange={setSelectedGrados}
+                >
+                    {grados.map((grado) => (
+                        <DropdownItem
+                            key={grado}
+                            data-testid={`grado-${grado}-option`}
+                            textValue={grado}
+                            className="focus:outline-none"
+                            onChange={() => handleProgramChange(grado)}
+                        >
+                            {capitalize(grado)}
+                        </DropdownItem>
+                    ))}
+                </DropdownMenu>
+            </Dropdown>
+        </div>
+    );
+
     return (
         <DashboardCard
-            title={
-                showAccumulated
-                    ? "Inscripciones Acumuladas"
-                    : "Inscripciones por Día"
-            }
+            title={showAccumulated ? "Inscripciones Acumuladas" : "Inscripciones por Día"}
             icon={<MdSummarize className="text-green-500" />}
+            actions={actions}
+            className="p-1 h-full flex flex-col"
         >
-            <div className="bg-white flex" style={{ height: "max-content" }}>
-                <div className="rounded-lg px-0 w-full">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end space-y-2 sm:space-y-4 sm:space-x-4">
-                        <div className="flex items-center justify-end space-x-4">
-                            {" "}
-                            {/* Añado el espacio entre los botones */}
-                            <Dropdown>
-                                <DropdownTrigger>
-                                    <Button data-testid="filter-button">
-                                        <FaFilter />
-                                    </Button>
-                                </DropdownTrigger>
-                                <DropdownMenu aria-label="Acumulado Selection">
-                                    <DropdownItem key="diario" textValue="diario">
-                                        <label className="flex items-center cursor-pointer">
-                                            <Checkbox
-                                                isSelected={!showAccumulated}
-                                                onValueChange={() =>
-                                                    setShowAccumulated(false)
-                                                }
-                                            />
-                                            <p className="text-sm text-gray-500 ml-2">
-                                                Diario
-                                            </p>
-                                        </label>
-                                    </DropdownItem>
-                                    <DropdownItem key="acumulado" textValue="acumulado">
-                                        <label className="flex items-center cursor-pointer">
-                                            <Checkbox
-                                                isSelected={showAccumulated}
-                                                onValueChange={() =>
-                                                    setShowAccumulated(true)
-                                                }
-                                            />
-                                            <p className="text-sm text-gray-500 ml-2">
-                                                Acumulado
-                                            </p>
-                                        </label>
-                                    </DropdownItem>
-                                </DropdownMenu>
-                            </Dropdown>
-                            <Dropdown className="mr-2">
-                                <DropdownTrigger>
-                                    <Button data-testid="grado-filter-button">
-                                        <FaFilter />
-                                    </Button>
-                                </DropdownTrigger>
-
-                                <DropdownMenu
-                                    aria-label="Grado Selection"
-                                    selectionMode="multiple"
-                                    selectedKeys={selectedGrados}
-                                    onSelectionChange={setSelectedGrados}
-                                >
-                                    {grados.map((grado) => (
-                                        <DropdownItem
-                                            key={grado}
-                                            data-testid={`grado-${grado}-option`}
-                                            textValue={grado}
-                                            className="focus:outline-none"
-                                            onChange={() =>
-                                                handleProgramChange(grado)
-                                            }
-                                        >
-                                            {capitalize(grado)}
-                                        </DropdownItem>
-                                    ))}
-                                </DropdownMenu>
-                            </Dropdown>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center justify-between w-auto h-auto ml-[-40px]">
-                        {loading ? (
-                            <div className="flex items-center justify-center ml-[60px] w-full h-[400px]">
-                                <Spinner color="primary" label="Cargando gráfico..." />
-                            </div>
-                        ) : inscripciones.length === 0 ? (
-                            <div className="flex items-center justify-center ml-[60px] w-full h-[400px]">
-                                <p className="text-gray-500">No hay datos disponibles</p>
-                            </div>
-                        ) : (
-                            <ResponsiveContainer width="100%" height={400}>
-                                <LineChart
-                                    data={filteredData}
-                                    margin={{
-                                        top: 20,
-                                        right: 30,
-                                        left: 20,
-                                        bottom: 5,
-                                    }}
-                                >
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis dataKey="date" />
-                                    <YAxis allowDecimals={false} />
-                                    <Tooltip />
-                                    <Legend />
-                                    <Line
-                                        type="monotone"
-                                        dataKey="conteo_total"
-                                        stroke="#0000FF"
-                                        activeDot={{ r: 8 }}
-                                    />
-                                    {[...selectedGrados].map((grado, index) => (
-                                        <Line
-                                            key={grado}
-                                            type="monotone"
-                                            dataKey={grado}
-                                            stroke={
-                                                COLORS[index % COLORS.length]
-                                            }
-                                            activeDot={{ r: 8 }}
-                                        />
-                                    ))}
-                                </LineChart>
-                            </ResponsiveContainer>
-                        )}
-                    </div>
+            {loading ? (
+                <div className="p-4 flex-1">
+                    <Skeleton className="w-full h-full rounded-xl" />
                 </div>
-            </div>
+            ) : (
+                <div className="w-full flex-1 min-h-0">
+                    {inscripciones.length === 0 ? (
+                        <div className="flex items-center justify-center h-full">
+                            <p className="text-gray-500">No hay datos disponibles</p>
+                        </div>
+                    ) : (
+                        <ResponsiveContainer width="100%" height="100%">
+                            <LineChart
+                                data={filteredData}
+                                margin={{
+                                    top: 10,
+                                    right: 10,
+                                    left: -20,
+                                    bottom: 0,
+                                }}
+                            >
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                                <XAxis
+                                    dataKey="date"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fontSize: 11, fill: '#94a3b8' }}
+                                    dy={10}
+                                />
+                                <YAxis
+                                    allowDecimals={false}
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fontSize: 11, fill: '#94a3b8' }}
+                                />
+                                <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                                <Legend iconType="circle" />
+                                <Line
+                                    type="monotone"
+                                    dataKey="conteo_total"
+                                    stroke="#22c55e"
+                                    strokeWidth={3}
+                                    dot={{ r: 4, fill: '#22c55e', strokeWidth: 2, stroke: '#fff' }}
+                                    activeDot={{ r: 6, strokeWidth: 0 }}
+                                />
+                                {[...selectedGrados].map((grado, index) => (
+                                    <Line
+                                        key={grado}
+                                        type="monotone"
+                                        dataKey={grado}
+                                        stroke={COLORS[index % COLORS.length]}
+                                        strokeWidth={2}
+                                        dot={{ r: 3, fill: COLORS[index % COLORS.length], strokeWidth: 2, stroke: '#fff' }}
+                                        activeDot={{ r: 5, strokeWidth: 0 }}
+                                    />
+                                ))}
+                            </LineChart>
+                        </ResponsiveContainer>
+                    )}
+                </div>
+            )}
         </DashboardCard>
     );
 }

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Tabs, Tab, Spinner } from "@heroui/react";
+import { Tabs, Tab } from "@heroui/react";
+import { Skeleton } from "@heroui/react";
 
 // Tabs
 import React, { Suspense } from "react";
@@ -87,11 +88,7 @@ function Inicio() {
                     isDisabled={isTabDisabled("preinscritos")}
                 >
                     {visitedTabs.has("preinscritos") && (
-                        <Suspense fallback={
-                            <div className="flex w-full h-[50vh] items-center justify-center">
-                                <Spinner size="lg" label="Cargando..." />
-                            </div>
-                        }>
+                        <Suspense fallback={<Skeleton className="w-full h-[600px] rounded-xl" />}>
                             <TabPreinscritos />
                         </Suspense>
                     )}
@@ -103,11 +100,7 @@ function Inicio() {
                     isDisabled={isTabDisabled("inscritos")}
                 >
                     {visitedTabs.has("inscritos") && (
-                        <Suspense fallback={
-                            <div className="flex w-full h-[50vh] items-center justify-center">
-                                <Spinner size="lg" label="Cargando..." />
-                            </div>
-                        }>
+                        <Suspense fallback={<Skeleton className="w-full h-[600px] rounded-xl" />}>
                             <TabInscripcion />
                         </Suspense>
                     )}
@@ -119,11 +112,7 @@ function Inicio() {
                     isDisabled={isTabDisabled("evaluacion")}
                 >
                     {visitedTabs.has("evaluacion") && (
-                        <Suspense fallback={
-                            <div className="flex w-full h-[50vh] items-center justify-center">
-                                <Spinner size="lg" label="Cargando..." />
-                            </div>
-                        }>
+                        <Suspense fallback={<Skeleton className="w-full h-[600px] rounded-xl" />}>
                             <TabEvaluacion />
                         </Suspense>
                     )}
@@ -135,11 +124,7 @@ function Inicio() {
                     isDisabled={isTabDisabled("resultados")}
                 >
                     {visitedTabs.has("resultados") && (
-                        <Suspense fallback={
-                            <div className="flex w-full h-[50vh] items-center justify-center">
-                                <Spinner size="lg" label="Cargando..." />
-                            </div>
-                        }>
+                        <Suspense fallback={<Skeleton className="w-full h-[600px] rounded-xl" />}>
                             <TabResultados />
                         </Suspense>
                     )}

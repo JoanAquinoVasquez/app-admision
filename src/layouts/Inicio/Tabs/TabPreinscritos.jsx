@@ -26,7 +26,7 @@ export default function TabPreinscripcion() {
                     <MdDashboard className="mr-2" />
                     Descripción General - Preinscritos por Grado
                 </p>
-                <div className="mt-1">
+                <div className="mt-0">
                     <GraphicDetail
                         programasPreinscritos={programasPreinscritos ?? []}
                         loading={loadingDetail}

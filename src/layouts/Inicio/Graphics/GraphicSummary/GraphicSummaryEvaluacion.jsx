@@ -16,7 +16,7 @@ import {
     DropdownMenu,
     Button,
     Checkbox,
-    Spinner,
+    Skeleton,
 } from "@heroui/react";
 import { FaFilter } from "react-icons/fa";
 import { MdSummarize } from "react-icons/md";
@@ -152,196 +152,181 @@ export default function GraphicSummaryEvaluacion({ notasDiariasCV, loading }) {
 
     const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff7300", "#0088fe", "#00c49f", "#ffbb28", "#ff8042"];
 
+    const actions = (
+        <div className="flex gap-1">
+            <Dropdown placement="bottom-end" shouldBlockScroll={false}>
+                <DropdownTrigger>
+                    <Button isIconOnly variant="light" size="sm" aria-label="filter-tipo">
+                        <FaFilter className="text-default-500" />
+                    </Button>
+                </DropdownTrigger>
+                <DropdownMenu aria-label="Modo de vista">
+                    <DropdownItem key="diario" textValue="Diario">
+                        <label className="flex items-center cursor-pointer">
+                            <Checkbox
+                                isSelected={!showAccumulated}
+                                onValueChange={() => setShowAccumulated(false)}
+                            />
+                            <span className="text-sm text-gray-500 ml-2">Diario</span>
+                        </label>
+                    </DropdownItem>
+                    <DropdownItem key="acumulado" textValue="Acumulado">
+                        <label className="flex items-center cursor-pointer">
+                            <Checkbox
+                                isSelected={showAccumulated}
+                                onValueChange={() => setShowAccumulated(true)}
+                            />
+                            <span className="text-sm text-gray-500 ml-2">Acumulado</span>
+                        </label>
+                    </DropdownItem>
+                </DropdownMenu>
+            </Dropdown>
+
+            <Dropdown placement="bottom-end" shouldBlockScroll={false}>
+                <DropdownTrigger>
+                    <Button isIconOnly variant="light" size="sm" aria-label="filter-grado">
+                        <FaFilter className="text-default-500" />
+                    </Button>
+                </DropdownTrigger>
+                <DropdownMenu
+                    aria-label="Filtrar por grado"
+                    selectionMode="multiple"
+                    selectedKeys={selectedGrados}
+                    onSelectionChange={setSelectedGrados}
+                >
+                    {grados.map((grado) => (
+                        <DropdownItem
+                            key={grado}
+                            textValue={grado}
+                            data-testid={`grado-${grado}-option`}
+                        >
+                            {capitalize(grado)}
+                        </DropdownItem>
+                    ))}
+                </DropdownMenu>
+            </Dropdown>
+            <Dropdown placement="bottom-end" shouldBlockScroll={false}>
+                <DropdownTrigger>
+                    <Button isIconOnly variant="light" size="sm" aria-label="filter-docente">
+                        <FaFilter className="text-default-500" />
+                    </Button>
+                </DropdownTrigger>
+                <DropdownMenu
+                    aria-label="Filtrar por docente"
+                    selectionMode="multiple"
+                    onSelectionChange={setSelectedDocentes}
+                >
+                    {docentes.map((docente) => (
+                        <DropdownItem
+                            key={docente}
+                            textValue={docente}
+                            data-testid={`docente-${docente}-option`}
+                        >
+                            {docente}
+                        </DropdownItem>
+                    ))}
+                </DropdownMenu>
+            </Dropdown>
+        </div>
+    );
+
     return (
         <DashboardCard
             title={showAccumulated ? "Notas Acumuladas" : "Notas por Día"}
             icon={<MdSummarize className="text-green-500" />}
+            actions={actions}
+            className="p-1 h-full flex flex-col"
         >
-            <div className="bg-white flex" style={{ height: "max-content" }}>
-                <div className="rounded-lg px-0 w-full">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end space-y-2 sm:space-y-4 sm:space-x-4">
-                        <div className="flex items-center justify-end space-x-4">
-                            <Dropdown>
-                                <DropdownTrigger>
-                                    <Button aria-label="filter-tipo">
-                                        <FaFilter />
-                                    </Button>
-                                </DropdownTrigger>
-                                <DropdownMenu aria-label="Modo de vista">
-                                    <DropdownItem key="diario" textValue="Diario">
-                                        <label className="flex items-center cursor-pointer">
-                                            <Checkbox
-                                                isSelected={!showAccumulated}
-                                                onValueChange={() =>
-                                                    setShowAccumulated(false)
-                                                }
-                                            />
-                                            <span className="text-sm text-gray-500 ml-2">
-                                                Diario
-                                            </span>
-                                        </label>
-                                    </DropdownItem>
-                                    <DropdownItem key="acumulado" textValue="Acumulado">
-                                        <label className="flex items-center cursor-pointer">
-                                            <Checkbox
-                                                isSelected={showAccumulated}
-                                                onValueChange={() =>
-                                                    setShowAccumulated(true)
-                                                }
-                                            />
-                                            <span className="text-sm text-gray-500 ml-2">
-                                                Acumulado
-                                            </span>
-                                        </label>
-                                    </DropdownItem>
-                                </DropdownMenu>
-                            </Dropdown>
-
-                            <Dropdown className="mr-2">
-                                <DropdownTrigger>
-                                    <Button aria-label="filter-grado">
-                                        <FaFilter />
-                                    </Button>
-                                </DropdownTrigger>
-                                <DropdownMenu
-                                    aria-label="Filtrar por grado"
-                                    selectionMode="multiple"
-                                    selectedKeys={selectedGrados}
-                                    onSelectionChange={setSelectedGrados}
-                                >
-                                    {grados.map((grado) => (
-                                        <DropdownItem
-                                            key={grado}
-                                            textValue={grado}
-                                            data-testid={`grado-${grado}-option`}
-                                        >
-                                            {capitalize(grado)}
-                                        </DropdownItem>
-                                    ))}
-                                </DropdownMenu>
-                            </Dropdown>
-                            <Dropdown className="mr-2">
-                                <DropdownTrigger>
-                                    <Button aria-label="filter-docente">
-                                        <FaFilter />
-                                    </Button>
-                                </DropdownTrigger>
-                                <DropdownMenu
-                                    aria-label="Filtrar por docente"
-                                    selectionMode="multiple"
-                                    onSelectionChange={setSelectedDocentes}
-                                >
-                                    {docentes.map((docente) => (
-                                        <DropdownItem
-                                            key={docente}
-                                            textValue={docente}
-                                            data-testid={`docente-${docente}-option`}
-                                        >
-                                            {docente}
-                                        </DropdownItem>
-                                    ))}
-                                </DropdownMenu>
-                            </Dropdown>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center justify-between w-auto h-auto ml-[-40px]">
-                        {loading ? (
-                            <div className="flex items-center justify-center ml-[60px] w-full h-[400px]">
-                                <Spinner label="Cargando gráfico..." />
-                            </div>
-                        ) : notasDiariasCV.length === 0 ? (
-                            <div className="flex items-center justify-center ml-[60px] w-full h-[400px]">
-                                <p className="text-gray-500">No hay datos disponibles</p>
-                            </div>
-                        ) : (
-                            <ResponsiveContainer width="100%" height={400}>
-                                <LineChart
-                                    data={filteredData}
-                                    margin={{
-                                        top: 20,
-                                        right: 30,
-                                        left: 20,
-                                        bottom: 5,
-                                    }}
-                                >
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis
-                                        dataKey="date"
-                                        tickFormatter={(str) => {
-                                            const date = new Date(str);
-                                            const day = date
-                                                .getDate()
-                                                .toString()
-                                                .padStart(2, "0");
-                                            const month = (date.getMonth() + 1)
-                                                .toString()
-                                                .padStart(2, "0");
-                                            return `${day}/${month}`;
-                                        }}
-                                    />
-
-                                    <YAxis allowDecimals={false} />
-                                    <Tooltip
-                                        labelFormatter={(str) => {
-                                            const date = new Date(str);
-                                            const day = date
-                                                .getDate()
-                                                .toString()
-                                                .padStart(2, "0");
-                                            const month = (date.getMonth() + 1)
-                                                .toString()
-                                                .padStart(2, "0");
-                                            return `${day}/${month}`;
-                                        }}
-                                    />
-
-                                    <Legend />
-                                    <Line
-                                        type="monotone"
-                                        dataKey="conteo"
-                                        stroke="#0000FF"
-                                        activeDot={{ r: 8 }}
-                                    />
-                                    {(selectedGrados.size === 0
-                                        ? []
-                                        : [...selectedGrados]
-                                    ).map((grado, index) => (
-                                        <Line
-                                            key={grado}
-                                            type="monotone"
-                                            dataKey={grado}
-                                            stroke={
-                                                COLORS[index % COLORS.length]
-                                            }
-                                            activeDot={{ r: 8 }}
-                                        />
-                                    ))}
-                                    {(selectedDocentes.size === 0
-                                        ? []
-                                        : [...selectedDocentes]
-                                    ).map((docente, index) => (
-                                        <Line
-                                            key={`docente-${docente}`}
-                                            type="monotone"
-                                            dataKey={docente}
-                                            stroke={
-                                                COLORS[
-                                                (index +
-                                                    selectedGrados.size) %
-                                                COLORS.length
-                                                ]
-                                            }
-                                            strokeDasharray="5 5"
-                                            activeDot={{ r: 8 }}
-                                        />
-                                    ))}
-                                </LineChart>
-                            </ResponsiveContainer>
-                        )}
-                    </div>
+            {loading ? (
+                <div className="p-4 flex-1">
+                    <Skeleton className="w-full h-full rounded-xl" />
                 </div>
-            </div>
+            ) : (
+                <div className="w-full flex-1 min-h-0">
+                    {notasDiariasCV.length === 0 ? (
+                        <div className="flex items-center justify-center h-full">
+                            <p className="text-gray-500">No hay datos disponibles</p>
+                        </div>
+                    ) : (
+                        <ResponsiveContainer width="100%" height="100%">
+                            <LineChart
+                                data={filteredData}
+                                margin={{
+                                    top: 10,
+                                    right: 10,
+                                    left: -20,
+                                    bottom: 0,
+                                }}
+                            >
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                                <XAxis
+                                    dataKey="date"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fontSize: 11, fill: '#94a3b8' }}
+                                    dy={10}
+                                    tickFormatter={(str) => {
+                                        const date = new Date(str);
+                                        const day = date.getDate().toString().padStart(2, "0");
+                                        const month = (date.getMonth() + 1).toString().padStart(2, "0");
+                                        return `${day}/${month}`;
+                                    }}
+                                />
+
+                                <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8' }} />
+                                <Tooltip
+                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                    labelFormatter={(str) => {
+                                        const date = new Date(str);
+                                        const day = date.getDate().toString().padStart(2, "0");
+                                        const month = (date.getMonth() + 1).toString().padStart(2, "0");
+                                        return `${day}/${month}`;
+                                    }}
+                                />
+
+                                <Legend iconType="circle" />
+                                <Line
+                                    type="monotone"
+                                    dataKey="conteo"
+                                    stroke="#3b82f6"
+                                    strokeWidth={3}
+                                    dot={{ r: 4, fill: '#3b82f6', strokeWidth: 2, stroke: '#fff' }}
+                                    activeDot={{ r: 6, strokeWidth: 0 }}
+                                />
+                                {(selectedGrados.size === 0
+                                    ? []
+                                    : [...selectedGrados]
+                                ).map((grado, index) => (
+                                    <Line
+                                        key={grado}
+                                        type="monotone"
+                                        dataKey={grado}
+                                        stroke={COLORS[index % COLORS.length]}
+                                        strokeWidth={2}
+                                        dot={{ r: 3, fill: COLORS[index % COLORS.length], strokeWidth: 2, stroke: '#fff' }}
+                                        activeDot={{ r: 5, strokeWidth: 0 }}
+                                    />
+                                ))}
+                                {(selectedDocentes.size === 0
+                                    ? []
+                                    : [...selectedDocentes]
+                                ).map((docente, index) => (
+                                    <Line
+                                        key={`docente-${docente}`}
+                                        type="monotone"
+                                        dataKey={docente}
+                                        stroke={COLORS[(index + selectedGrados.size) % COLORS.length]}
+                                        strokeDasharray="5 5"
+                                        strokeWidth={2}
+                                        dot={{ r: 3, fill: COLORS[(index + selectedGrados.size) % COLORS.length], strokeWidth: 2, stroke: '#fff' }}
+                                        activeDot={{ r: 5, strokeWidth: 0 }}
+                                    />
+                                ))}
+                            </LineChart>
+                        </ResponsiveContainer>
+                    )}
+                </div>
+            )}
         </DashboardCard>
     );
 }

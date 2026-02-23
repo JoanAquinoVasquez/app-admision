@@ -4,10 +4,11 @@ import {
     CardHeader,
     CardBody,
     Tooltip,
-    Spinner,
+    Skeleton,
 } from "@heroui/react";
 import PropTypes from "prop-types";
 import CountUp from "react-countup";
+import { admissionConfig } from "../../../../config/admission";
 
 // CardComponent
 const CardComponent = ({
@@ -29,33 +30,46 @@ const CardComponent = ({
             placement="top"
             content={<div className="px-1 py-2">{tooltipDetails}</div>}
         >
-            <Card
-                className={`w-[180px] sm:w-[210px] md:w-[210px] lg:w-[240px] xl:w-[270px] ${bgColor} relative overflow-hidden rounded-lg shadow-md py-0`}
-            >
-                <div
-                    className={`absolute top-3 right-4 ${iconBgColor} p-1.5 rounded-md`}
+            <div className="w-full h-full block">
+                <Card
+                    className={`w-full h-full min-h-[160px] relative overflow-hidden rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300 border border-white/40 group`}
+                    style={{
+                        background: `linear-gradient(135deg, ${bgColor.replace('bg-[', '').replace(']', '')} 0%, white 100%)`
+                    }}
                 >
-                    <Icon size={18} color="#ffffff" />
-                </div>
-                <CardHeader className="pb-0 pt-2 px-2 flex-col items-start">
-                    <p
-                        className={`text-xs sm:text-sm md:text-sm lg:text-sm xl:text-base uppercase font-bold ${textColor}`}
+                    {/* Elemento decorativo de fondo */}
+                    <div
+                        className={`absolute -right-6 -bottom-6 w-32 h-32 rounded-full opacity-10 blur-2xl group-hover:scale-150 transition-transform duration-500`}
+                        style={{ backgroundColor: iconBgColor.replace('bg-[', '').replace(']', '') }}
+                    />
+
+                    <div
+                        className={`absolute top-4 right-4 ${iconBgColor} p-3 rounded-2xl shadow-sm opacity-90 backdrop-blur-sm`}
                     >
-                        {title}
-                    </p>
-                </CardHeader>
-                <CardBody className="py-1 px-3 items-center">
-                    <h2 className="text-base font-bold sm:text-lg md:text-lg lg:text-xl xl:text-2xl text-black">
-                        <CountUp
-                            start={0}
-                            end={formattedAmount}
-                            duration={2}
-                            separator=","
-                            prefix={isAmountCurrency ? "S/." : ""}
-                        />
-                    </h2>
-                </CardBody>
-            </Card>
+                        <Icon size={26} color="#ffffff" />
+                    </div>
+
+                    <CardHeader className="pb-0 pt-4 px-7 flex-col items-start z-10 relative">
+                        <p
+                            className={`text-xs sm:text-sm md:text-sm lg:text-sm xl:text-[13px] uppercase font-extrabold tracking-widest opacity-80 ${textColor}`}
+                        >
+                            {title}
+                        </p>
+                    </CardHeader>
+
+                    <CardBody className="py-2 px-7 pb-4 flex flex-row items-center justify-center sm:justify-start z-10 relative">
+                        <h2 className={`text-xl font-black sm:text-5xl md:text-3xl lg:text-5xl tracking-tighter drop-shadow-sm ${textColor}`}>
+                            <CountUp
+                                start={0}
+                                end={formattedAmount}
+                                duration={2.5}
+                                separator=","
+                                prefix={isAmountCurrency ? "S/." : ""}
+                            />
+                        </h2>
+                    </CardBody>
+                </Card>
+            </div>
         </Tooltip>
     );
 };
@@ -81,11 +95,13 @@ const PreInscritosCard = ({ programasPreinscritos, loading }) => {
         TOTAL = 0,
     } = programasPreinscritos || {};
 
+    const periodo = `Periodo ${admissionConfig.cronograma.periodo}`;
+
     const cardData = [
         {
             title: "Total de Preinscritos",
             amount: TOTAL.toString(),
-            period: "Periodo 2025 - I",
+            period: periodo,
             bgColor: "bg-[#fff3e6]",
             iconBgColor: "bg-[#ff9c1a]",
             textColor: "text-[#ff9c1a]",
@@ -94,7 +110,7 @@ const PreInscritosCard = ({ programasPreinscritos, loading }) => {
         {
             title: "Maestría",
             amount: MAESTRIA.toString(),
-            period: "Periodo 2025 - I",
+            period: periodo,
             bgColor: "bg-[#e5f3ff]",
             iconBgColor: "bg-[#3399ff]",
             textColor: "text-[#3399ff]",
@@ -103,7 +119,7 @@ const PreInscritosCard = ({ programasPreinscritos, loading }) => {
         {
             title: "Doctorado",
             amount: DOCTORADO.toString(),
-            period: "Periodo 2025 - I",
+            period: periodo,
             bgColor: "bg-[#f1fbfd]",
             iconBgColor: "bg-[#23c2d3]",
             textColor: "text-[#23c2d3]",
@@ -112,7 +128,7 @@ const PreInscritosCard = ({ programasPreinscritos, loading }) => {
         {
             title: "Segunda Especialidad",
             amount: SEGUNDA_ESPECIALIDAD.toString(),
-            period: "Periodo 2025 - I",
+            period: periodo,
             bgColor: "bg-[#f4f4fb]",
             iconBgColor: "bg-[#7d76cf]",
             textColor: "text-[#7d76cf]",
@@ -121,13 +137,15 @@ const PreInscritosCard = ({ programasPreinscritos, loading }) => {
     ];
 
     return (
-        <div className="bg-light flex flex-wrap justify-around pt-0 pb-2">
+        <div className="w-full pt-2 pb-4">
             {loading ? (
-                <div className="flex justify-center items-center h-40 w-full bg-white rounded-lg shadow-md ">
-                    <Spinner color="primary" size="md" label="Cargando resumen..." />
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 w-full">
+                    {[1, 2, 3, 4].map((i) => (
+                        <Skeleton key={i} className="w-full h-[160px] rounded-xl" />
+                    ))}
                 </div>
             ) : (
-                <div className="cards-docentes flex flex-wrap justify-center gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 w-full">
                     {cardData.map((card, index) => (
                         <CardComponent key={index} {...card} />
                     ))}

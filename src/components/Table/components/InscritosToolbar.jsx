@@ -8,7 +8,7 @@ import {
     DropdownItem,
 } from "@heroui/react";
 import Select from "../../Select/Select";
-import { SearchIcon, ChevronDownIcon } from "./Icons";
+import { SearchIcon, ChevronDownIcon, PlusIcon } from "./Icons";
 import { capitalize, statusOptions } from "../utils";
 
 export default function InscritosToolbar({
@@ -28,12 +28,19 @@ export default function InscritosToolbar({
     programaFilter,
     handleExportMultiple,
     filteredItemsLength,
+    simpleExport = false,
+    exportLabel = "Exportar",
+    onExport,
+    customStatusOptions,
+    isExporting = false,
 }) {
+    // ... (rest of the file until the export button) ...
+
     return (
-        <div className="flex flex-col gap-2">
-            {/* 🔎 Fila 1: Búsqueda y Filtros Principales */}
+        <div className="flex flex-col gap-2 mb-4">
+            {/* ... Fila 1 ... */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4 w-full">
-                {/* 🔍 Input de búsqueda */}
+                {/* ... Input Search ... */}
                 <div className="col-span-1 md:col-span-4">
                     <Input
                         isClearable
@@ -49,7 +56,7 @@ export default function InscritosToolbar({
                     />
                 </div>
 
-                {/* 🧩 Filtros Estado y Columnas */}
+                {/* ... Dropdowns Estado/Columnas ... */}
                 <div className="col-span-1 md:col-span-1 flex flex-col sm:flex-row gap-2 justify-end w-full">
                     <Dropdown>
                         <DropdownTrigger className="w-full sm:w-auto">
@@ -69,7 +76,7 @@ export default function InscritosToolbar({
                             selectionMode="multiple"
                             onSelectionChange={setStatusFilter}
                         >
-                            {statusOptions.map((status) => (
+                            {(customStatusOptions || statusOptions).map((status) => (
                                 <DropdownItem
                                     key={status.uid}
                                     textValue={status.name}
@@ -161,62 +168,73 @@ export default function InscritosToolbar({
                     />
                 </div>
                 <div className="w-full md:w-auto md:ml-auto">
-                    <Dropdown>
-                        <DropdownTrigger asChild>
-                            <Button
-                                aria-label="exportar reportes"
-                                endContent={<ChevronDownIcon className="text-small" />}
-                                color="primary"
-                                className="h-12 w-full md:w-auto"
-                            >
-                                Exportar Reportes
-                            </Button>
-                        </DropdownTrigger>
-                        <DropdownMenu>
-                            <DropdownItem
-                                textValue="reporte_general_excel"
-                                key={"reporte_general_excel"}
-                                onPress={() => handleExportMultiple("Excel", gradoFilter, programaFilter)}
-                            >
-                                Reporte General en Excel
-                            </DropdownItem>
-                            <DropdownItem
-                                textValue="reporte_diario_excel"
-                                key={"reporte_diario_excel"}
-                                onPress={() => handleExportMultiple("Reporte Diario")}
-                            >
-                                Reporte Diario en Excel
-                            </DropdownItem>
-                            <DropdownItem
-                                textValue="reporte_diario_facultad_excel"
-                                key={"reporte_diario_facultad_excel"}
-                                onPress={() => handleExportMultiple("Facultad Excel")}
-                            >
-                                Reporte Diario por Facultad en Excel
-                            </DropdownItem>
-                            <DropdownItem
-                                textValue="reporte_diario_facultad_pdf"
-                                key={"reporte_diario_facultad_pdf"}
-                                onPress={() => handleExportMultiple("Facultad PDF")}
-                            >
-                                Reporte por Facultad en PDF
-                            </DropdownItem>
-                            <DropdownItem
-                                textValue="top_programas"
-                                key={"top_programas"}
-                                onPress={() => handleExportMultiple("Top Programas")}
-                            >
-                                Reporte Top Programas
-                            </DropdownItem>
-                        </DropdownMenu>
-                    </Dropdown>
+                    {simpleExport ? (
+                        <Button
+                            color="primary"
+                            onPress={onExport}
+                            endContent={!isExporting && <PlusIcon />}
+                            className="h-12 w-full md:w-auto"
+                            isLoading={isExporting}
+                        >
+                            {exportLabel}
+                        </Button>
+                    ) : (
+                        <Dropdown>
+                            <DropdownTrigger asChild>
+                                <Button
+                                    aria-label="exportar reportes"
+                                    endContent={
+                                        <ChevronDownIcon className="text-small" />
+                                    }
+                                    color="primary"
+                                    className="h-12 w-full md:w-auto"
+                                    isLoading={isExporting}
+                                >
+                                    Exportar Reportes
+                                </Button>
+                            </DropdownTrigger>
+                            <DropdownMenu>
+                                <DropdownItem
+                                    textValue="reporte_general_excel"
+                                    key={"reporte_general_excel"}
+                                    onPress={() => handleExportMultiple("Excel", gradoFilter, programaFilter)}
+                                >
+                                    Reporte General en Excel
+                                </DropdownItem>
+                                <DropdownItem
+                                    textValue="reporte_diario_excel"
+                                    key={"reporte_diario_excel"}
+                                    onPress={() => handleExportMultiple("Reporte Diario")}
+                                >
+                                    Reporte Diario en Excel
+                                </DropdownItem>
+                                <DropdownItem
+                                    textValue="reporte_diario_facultad_excel"
+                                    key={"reporte_diario_facultad_excel"}
+                                    onPress={() => handleExportMultiple("Facultad Excel")}
+                                >
+                                    Reporte Diario por Facultad en Excel
+                                </DropdownItem>
+                                <DropdownItem
+                                    textValue="reporte_diario_facultad_pdf"
+                                    key={"reporte_diario_facultad_pdf"}
+                                    onPress={() => handleExportMultiple("Facultad PDF")}
+                                >
+                                    Reporte por Facultad en PDF
+                                </DropdownItem>
+                                <DropdownItem
+                                    textValue="top_programas"
+                                    key={"top_programas"}
+                                    onPress={() => handleExportMultiple("Top Programas")}
+                                >
+                                    Reporte Top Programas
+                                </DropdownItem>
+                            </DropdownMenu>
+                        </Dropdown>
+                    )}
                 </div>
             </div>
 
-            {/* 📊 Resumen de resultados */}
-            <div className="flex justify-between items-center text-default-400 text-sm mt-0">
-                <span>{`${filteredItemsLength} postulantes`}</span>
-            </div>
         </div>
     );
 }

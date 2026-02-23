@@ -1,5 +1,4 @@
-import React from "react";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import {
     Table,
     TableHeader,
@@ -13,9 +12,9 @@ import {
     Dropdown,
     DropdownMenu,
     DropdownItem,
-    Pagination,
     User,
     Spinner as NextUISpinner,
+    Skeleton,
 } from "@heroui/react";
 import useBitacora from "../../data/dataBitacora";
 import Spinner from "../../components/Spinner/Spinner";
@@ -23,6 +22,8 @@ import DashboardCard from "../../components/Cards/DashboardCard";
 import { FileDown } from "lucide-react";
 import { toast } from "react-hot-toast";
 import axios from "../../axios";
+import TablePagination from "../../components/Table/components/TablePagination";
+import { admissionConfig } from "../../config/admission";
 
 export const columns = [
     { name: "ID", uid: "id", sortable: true },
@@ -201,12 +202,10 @@ const INITIAL_VISIBLE_COLUMNS = [
 export default function App() {
     const { bitacora, loading: dataLoading } = useBitacora();
     const [exportLoading, setExportLoading] = useState(false);
-    const [date, setDate] = React.useState(null);
-
-    const loading = dataLoading || exportLoading;
+    const [date, setDate] = useState(null);
 
     // ✅ Transformar datos de bitácora con formato de fecha/hora
-    const users = React.useMemo(() => {
+    const users = useMemo(() => {
         if (!bitacora || bitacora.length === 0) {
             return [];
         }
@@ -355,24 +354,24 @@ export default function App() {
         });
     }, [bitacora]);
 
-    const [filterValue, setFilterValue] = React.useState("");
-    const [selectedKeys, setSelectedKeys] = React.useState(new Set([]));
-    const [visibleColumns, setVisibleColumns] = React.useState(
+    const [filterValue, setFilterValue] = useState("");
+    const [selectedKeys, setSelectedKeys] = useState(new Set([]));
+    const [visibleColumns, setVisibleColumns] = useState(
         new Set(INITIAL_VISIBLE_COLUMNS)
     );
-    const [statusFilter, setStatusFilter] = React.useState(
+    const [statusFilter, setStatusFilter] = useState(
         new Set(statusOptions.map((s) => s.uid))
     );
-    const [rowsPerPage, setRowsPerPage] = React.useState(10);
-    const [sortDescriptor, setSortDescriptor] = React.useState({
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [sortDescriptor, setSortDescriptor] = useState({
         column: "id",
         direction: "descending",
     });
-    const [page, setPage] = React.useState(1);
+    const [page, setPage] = useState(1);
 
     const hasSearchFilter = Boolean(filterValue);
 
-    const headerColumns = React.useMemo(() => {
+    const headerColumns = useMemo(() => {
         if (visibleColumns === "all") return columns;
 
         return columns.filter((column) =>
@@ -380,7 +379,7 @@ export default function App() {
         );
     }, [visibleColumns]);
 
-    const filteredItems = React.useMemo(() => {
+    const filteredItems = useMemo(() => {
         let filteredUsers = [...users];
         if (filterValue) {
             const lowerCaseFilter = filterValue.toLowerCase();
@@ -407,7 +406,7 @@ export default function App() {
         return filteredUsers;
     }, [users, filterValue, statusFilter]);
 
-    const sortedItems = React.useMemo(() => {
+    const sortedItems = useMemo(() => {
         return [...filteredItems].sort((a, b) => {
             const valueA = a[sortDescriptor.column];
             const valueB = b[sortDescriptor.column];
@@ -422,14 +421,14 @@ export default function App() {
 
     const pages = Math.ceil(filteredItems.length / rowsPerPage);
 
-    const items = React.useMemo(() => {
+    const items = useMemo(() => {
         const start = (page - 1) * rowsPerPage;
         const end = start + rowsPerPage;
 
         return sortedItems.slice(start, end);
     }, [page, sortedItems, rowsPerPage]);
 
-    const renderCell = React.useCallback((user, columnKey) => {
+    const renderCell = useCallback((user, columnKey) => {
         const cellValue = user[columnKey];
 
         switch (columnKey) {
@@ -520,24 +519,24 @@ export default function App() {
         }
     }, []);
 
-    const onNextPage = React.useCallback(() => {
+    const onNextPage = useCallback(() => {
         if (page < pages) {
             setPage(page + 1);
         }
     }, [page, pages]);
 
-    const onPreviousPage = React.useCallback(() => {
+    const onPreviousPage = useCallback(() => {
         if (page > 1) {
             setPage(page - 1);
         }
     }, [page]);
 
-    const onRowsPerPageChange = React.useCallback((e) => {
+    const onRowsPerPageChange = useCallback((e) => {
         setRowsPerPage(Number(e.target.value));
         setPage(1);
     }, []);
 
-    const onSearchChange = React.useCallback((value) => {
+    const onSearchChange = useCallback((value) => {
         if (value) {
             setFilterValue(value);
             setPage(1);
@@ -546,17 +545,25 @@ export default function App() {
         }
     }, []);
 
-    const onClear = React.useCallback(() => {
+    const onClear = useCallback(() => {
         setFilterValue("");
         setPage(1);
     }, []);
 
     const exportBitacora = async () => {
         setExportLoading(true);
+        const exportPromise = axios.get(`/bitacora-export`, {
+            responseType: "blob",
+        });
+
+        toast.promise(exportPromise, {
+            loading: "Generando reporte de bitácora...",
+            success: "Reporte generado con éxito",
+            error: (err) => err.response?.data?.message || err.message || "Error al exportar",
+        });
+
         try {
-            const response = await axios.get(`/bitacora-export`, {
-                responseType: "blob", // importante
-            });
+            const response = await exportPromise;
 
             // Crear un enlace para forzar descarga
             const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -577,17 +584,13 @@ export default function App() {
             link.click();
             link.remove();
         } catch (error) {
-            const errorMessage =
-                error.response?.data?.message ||
-                error.message ||
-                "Error al exportar";
-            toast.error(errorMessage);
+            // Error managed by toast.promise
         } finally {
             setExportLoading(false);
         }
     };
 
-    const topContent = React.useMemo(() => {
+    const topContent = useMemo(() => {
         return (
             <div className="flex flex-col gap-4">
                 <div className="flex justify-between gap-3 items-end">
@@ -607,7 +610,8 @@ export default function App() {
                             color="primary"
                             size="md"
                             variant="flat"
-                            startContent={<FileDown className="h-5 w-5" />}
+                            isLoading={exportLoading}
+                            startContent={!exportLoading && <FileDown className="h-5 w-5" />}
                             className="flex items-center gap-2 rounded-xl"
                         >
                             Exportar
@@ -679,9 +683,8 @@ export default function App() {
                     </div>
                 </div>
                 <div className="flex justify-between items-center">
-                    <span className="text-default-400 text-small">
-                        Total {filteredItems.length} registros
-                    </span>
+                    {/* Total registros eliminados aquí, se muestran en TablePagination */}
+                    <span className="text-default-400 text-small"></span>
                     <label className="flex items-center text-default-400 text-small">
                         Filas por página
                         <select
@@ -706,48 +709,22 @@ export default function App() {
         hasSearchFilter,
     ]);
 
-    const bottomContent = React.useMemo(() => {
+    const bottomContent = useMemo(() => {
         return (
-            <div className="py-2 px-2 flex justify-between items-center">
-                <span className="w-[30%] text-small text-default-400">
-                    {selectedKeys === "all"
-                        ? "All items selected"
-                        : `${selectedKeys.size} de ${filteredItems.length} seleccionados`}
-                </span>
-                <Pagination
-                    isCompact
-                    showControls
-                    showShadow
-                    color="primary"
-                    page={page}
-                    total={pages}
-                    onChange={setPage}
-                />
-                <div className="hidden sm:flex w-[30%] justify-end gap-2">
-                    <Button
-                        isDisabled={pages === 1}
-                        size="sm"
-                        variant="flat"
-                        onPress={onPreviousPage}
-                    >
-                        Anterior
-                    </Button>
-                    <Button
-                        isDisabled={pages === 1}
-                        size="sm"
-                        variant="flat"
-                        onPress={onNextPage}
-                    >
-                        Siguiente
-                    </Button>
-                </div>
-            </div>
+            <TablePagination
+                page={page}
+                pages={pages}
+                setPage={setPage}
+                filteredItemsLength={filteredItems.length}
+                selectedKeys={selectedKeys}
+                hasSelection={false}
+            />
         );
-    }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
+    }, [page, pages, setPage, filteredItems.length, selectedKeys]);
 
     return (
         <DashboardCard
-            title="Bitácora Proceso Admisión 2025 - I"
+            title={`Bitácora Proceso Admisión ${admissionConfig.cronograma.periodo}`}
             icon={<ChevronDownIcon className="text-green-500" />}
             className="p-2 m-0" // Reducir padding y márgenes del DashboardCard
         >
@@ -787,13 +764,23 @@ export default function App() {
                     ))}
                 </TableHeader>
                 <TableBody
-                    emptyContent={(dataLoading || exportLoading) ? <div className="flex justify-center items-center p-10"><NextUISpinner label={exportLoading ? "Exportando..." : "Cargando..."} /></div> : "No se encontró información"}
+                    emptyContent={dataLoading ? (
+                        <div className="flex flex-col gap-2 w-full p-2">
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                        </div>
+                    ) : "No se encontró información"}
                     items={items}
                     className="space-y-1 sm:space-y-2 lg:space-y-3" // Reducir espacio entre filas en pantallas pequeñas
-                    isLoading={dataLoading || exportLoading}
+                    isLoading={dataLoading}
                     loadingContent={
-                        <div className="w-full h-full flex justify-center items-center z-50 bg-content1/50 backdrop-blur-sm top-0 left-0 absolute">
-                            <NextUISpinner label={exportLoading ? "Exportando..." : "Cargando..."} />
+                        <div className="w-full h-full flex flex-col gap-2 p-4 bg-white/50 backdrop-blur-sm z-50">
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
                         </div>
                     }
                 >

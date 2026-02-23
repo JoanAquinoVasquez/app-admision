@@ -1,5 +1,5 @@
-import React from "react";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useTableFilters } from "../../hooks/useTableFilters";
 import {
     Table,
     TableHeader,
@@ -13,9 +13,12 @@ import {
     Dropdown,
     DropdownMenu,
     DropdownItem,
-    Pagination,
-    Spinner,
+    Skeleton,
 } from "@heroui/react";
+import DashboardCard from "../Cards/DashboardCard";
+import axios from "../../axios";
+import { toast } from "react-hot-toast";
+import { FileDown } from "lucide-react";
 
 export const columns = [
     { name: "Grado y Programa", uid: "grado_programa", sortable: true },
@@ -35,59 +38,8 @@ export function capitalize(s) {
     return s || ""; // No forzar minúsculas, respetar nombres de DB
 }
 
-export const SearchIcon = (props) => {
-    return (
-        <svg
-            aria-hidden="true"
-            fill="none"
-            focusable="false"
-            height="1em"
-            role="presentation"
-            viewBox="0 0 24 24"
-            width="1em"
-            {...props}
-        >
-            <path
-                d="M11.5 21C16.7467 21 21 16.7467 21 11.5C21 6.25329 16.7467 2 11.5 2C6.25329 2 2 6.25329 2 11.5C2 16.7467 6.25329 21 11.5 21Z"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-            />
-            <path
-                d="M22 22L20 20"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-            />
-        </svg>
-    );
-};
-
-export const ChevronDownIcon = ({ strokeWidth = 1.5, ...otherProps }) => {
-    return (
-        <svg
-            aria-hidden="true"
-            fill="none"
-            focusable="false"
-            height="1em"
-            role="presentation"
-            viewBox="0 0 24 24"
-            width="1em"
-            {...otherProps}
-        >
-            <path
-                d="m19.92 8.95-6.52 6.52c-.77.77-2.03.77-2.8 0L4.08 8.95"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeMiterlimit={10}
-                strokeWidth={strokeWidth}
-            />
-        </svg>
-    );
-};
+import { SearchIcon, ChevronDownIcon } from "../../components/Table/components/Icons";
+import TablePagination from "./components/TablePagination";
 
 const INITIAL_VISIBLE_COLUMNS = [
     "grado_programa",
@@ -100,9 +52,21 @@ const INITIAL_VISIBLE_COLUMNS = [
     "recaudación",
 ];
 
-export default function App({ resumenPreInscripcion, loading, grados = [] }) {
+const customPreInscritosFilter = (data, { gradoFilter }) => {
+    if (gradoFilter && gradoFilter !== "all" && gradoFilter.size > 0) {
+        return data.filter((user) => {
+            return Array.from(gradoFilter).some(gradoNombre =>
+                user.grado_programa.toLowerCase().includes(gradoNombre.toLowerCase())
+            );
+        });
+    }
+    return data;
+};
+
+export default function App({ resumenPreInscripcion, loading: dataLoading, grados = [] }) {
+    const [isExporting, setIsExporting] = useState(false);
     // ✅ Aseguramos que `resumenPreInscripcion` tenga datos antes de mapear
-    const users = React.useMemo(() => {
+    const users = useMemo(() => {
         if (!resumenPreInscripcion || resumenPreInscripcion.length === 0) {
             return []; // Evita errores si aún no hay datos
         }
@@ -117,22 +81,79 @@ export default function App({ resumenPreInscripcion, loading, grados = [] }) {
         }));
     }, [resumenPreInscripcion]);
 
-    const [filterValue, setFilterValue] = useState("");
-    const [gradoFilter, setGradoFilter] = useState("all");
+    const {
+        filterValue,
+        statusFilter,
+        gradoFilter,
+        programaFilter,
+        page,
+        rowsPerPage,
+        sortDescriptor,
+        setFilterValue,
+        setStatusFilter,
+        setGradoFilter,
+        setProgramaFilter,
+        setPage,
+        setRowsPerPage,
+        setSortDescriptor,
+        sortedItems,
+        items,
+        pages,
+        onSearchChange,
+        onClear,
+        onRowsPerPageChange,
+        filteredItems,
+    } = useTableFilters(users, {
+        initialRowsPerPage: 5,
+        initialSortColumn: "preinscritos",
+        initialSortDirection: "descending",
+        customFilter: customPreInscritosFilter
+    });
+
+    const handleExport = async () => {
+        setIsExporting(true);
+        const exportPromise = axios.get("/reporte-preinscripcion", {
+            responseType: "blob",
+        });
+
+        toast.promise(exportPromise, {
+            loading: "Generando reporte de preinscritos...",
+            success: "Reporte generado con éxito",
+            error: "Error al exportar reporte",
+        });
+
+        try {
+            const response = await exportPromise;
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement("a");
+            link.href = url;
+
+            const contentDisposition = response.headers["content-disposition"];
+            let fileName = `reporte_preinscritos_${new Date().toLocaleDateString('es-PE').replace(/\//g, '-')}.xlsx`;
+
+            if (contentDisposition) {
+                const match = contentDisposition.match(/filename="?([^"]+)"?/);
+                if (match?.[1]) fileName = match[1];
+            }
+
+            link.setAttribute("download", fileName);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            // Managed by toast.promise
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
     const [selectedKeys, setSelectedKeys] = useState(new Set([]));
     const [visibleColumns, setVisibleColumns] = useState(
         new Set(INITIAL_VISIBLE_COLUMNS)
     );
 
     const [selectedPostulantes, setSelectedPostulantes] = useState([]);
-    const [statusFilter, setStatusFilter] = useState("all");
-    const [rowsPerPage, setRowsPerPage] = useState(5);
-    const [sortDescriptor, setSortDescriptor] = useState({
-        column: "preinscritos",
-        direction: "descending",
-    });
-    const [page, setPage] = useState(1);
-    const hasSearchFilter = Boolean(filterValue);
 
     const headerColumns = useMemo(() => {
         if (visibleColumns === "all") return columns;
@@ -141,29 +162,6 @@ export default function App({ resumenPreInscripcion, loading, grados = [] }) {
             Array.from(visibleColumns).includes(column.uid)
         );
     }, [visibleColumns]);
-
-    const filteredItems = useMemo(() => {
-        let filteredUsers = [...users];
-        if (filterValue) {
-            const lowerCaseFilter = filterValue.toLowerCase();
-            filteredUsers = filteredUsers.filter((user) =>
-                Object.values(user).some((value) =>
-                    value?.toString().toLowerCase().includes(lowerCaseFilter)
-                )
-            );
-        }
-
-        if (gradoFilter !== "all" && gradoFilter.size > 0) {
-            filteredUsers = filteredUsers.filter((user) => {
-                // Buscamos si alguno de los grados seleccionados está contenido en el texto "grado_programa"
-                return Array.from(gradoFilter).some(gradoNombre =>
-                    user.grado_programa.toLowerCase().includes(gradoNombre.toLowerCase())
-                );
-            });
-        }
-
-        return filteredUsers;
-    }, [filterValue, statusFilter, users, gradoFilter]);
 
     useEffect(() => {
         if (selectedKeys === "all") {
@@ -184,29 +182,8 @@ export default function App({ resumenPreInscripcion, loading, grados = [] }) {
         }
     }, [selectedKeys, filteredItems]);
 
-    const sortedItems = React.useMemo(() => {
-        return [...filteredItems].sort((a, b) => {
-            const valueA = a[sortDescriptor.column];
-            const valueB = b[sortDescriptor.column];
 
-            if (valueA < valueB)
-                return sortDescriptor.direction === "ascending" ? -1 : 1;
-            if (valueA > valueB)
-                return sortDescriptor.direction === "ascending" ? 1 : -1;
-            return 0;
-        });
-    }, [filteredItems, sortDescriptor]);
-
-    const pages = Math.max(1, Math.ceil(filteredItems.length / rowsPerPage));
-
-    const items = React.useMemo(() => {
-        const start = (page - 1) * rowsPerPage;
-        const end = start + rowsPerPage;
-
-        return sortedItems.slice(start, end);
-    }, [page, sortedItems, rowsPerPage]);
-
-    const renderCell = React.useCallback((user, columnKey) => {
+    const renderCell = useCallback((user, columnKey) => {
         const cellValue = user[columnKey];
 
         switch (columnKey) {
@@ -261,26 +238,9 @@ export default function App({ resumenPreInscripcion, loading, grados = [] }) {
         }
     }, []);
 
-    const onRowsPerPageChange = React.useCallback((e) => {
-        setRowsPerPage(Number(e.target.value));
-        setPage(1);
-    }, []);
 
-    const onSearchChange = React.useCallback((value) => {
-        if (value) {
-            setFilterValue(value);
-            setPage(1);
-        } else {
-            setFilterValue("");
-        }
-    }, []);
 
-    const onClear = React.useCallback(() => {
-        setFilterValue("");
-        setPage(1);
-    }, []);
-
-    const topContent = React.useMemo(() => {
+    const topContent = useMemo(() => {
         return (
             <div
                 className="flex flex-col gap-4"
@@ -289,14 +249,25 @@ export default function App({ resumenPreInscripcion, loading, grados = [] }) {
                 <div className="flex justify-between gap-3 items-end">
                     <Input
                         isClearable
-                        className="w-full sm:max-w-[70%]"
+                        className="w-full sm:max-w-[44%]"
                         placeholder="Buscar ..."
                         startContent={<SearchIcon />}
                         value={filterValue}
-                        onClear={() => onClear()}
+                        onClear={onClear}
                         onValueChange={onSearchChange}
                     />
                     <div className="flex gap-3">
+                        <Button
+                            onPress={handleExport}
+                            color="primary"
+                            size="md"
+                            variant="flat"
+                            isLoading={isExporting}
+                            startContent={!isExporting && <FileDown className="h-5 w-5" />}
+                            className="flex items-center gap-2 rounded-xl"
+                        >
+                            Exportar
+                        </Button>
                         {/* Dropdown Grado */}
                         <Dropdown>
                             <DropdownTrigger className="w-full sm:w-auto md:flex lg:flex xl:flex">
@@ -374,36 +345,28 @@ export default function App({ resumenPreInscripcion, loading, grados = [] }) {
         gradoFilter,
         statusFilter,
         visibleColumns,
-        onRowsPerPageChange,
-        users.length,
         onSearchChange,
-        hasSearchFilter,
+        onClear,
         grados, // ✅ IMPORTANTE: Re-generar barra de herramientas cuando carguen los grados
     ]);
 
-    const bottomContent = React.useMemo(() => {
+    const bottomContent = useMemo(() => {
         return (
-            <div className="py-0 px-2 flex justify-between items-center">
-                <span className="w-[30%] text-small text-default-400">
-                    {` ${filteredItems.length} programas filtrados`}
-                </span>
-                <Pagination
-                    isCompact
-                    showControls
-                    showShadow
-                    color="primary"
-                    page={page}
-                    total={pages}
-                    onChange={setPage}
-                />
-                <div className="hidden sm:flex w-[30%] justify-end gap-2"></div>
-            </div>
+            <TablePagination
+                page={page}
+                pages={pages}
+                setPage={setPage}
+                filteredItemsLength={filteredItems.length}
+                selectedKeys={selectedKeys}
+                hasSelection={false}
+            />
         );
-    }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
+    }, [page, pages, filteredItems.length, setPage, selectedKeys]);
 
     return (
-        <div className="bg-white rounded-lg shadow-md p-3">
-            <p className="mt-0 mb-2 text-default-800">Resumen Preinscripción</p>
+        <DashboardCard
+            title="Resumen Preinscripción"
+        >
             <Table
                 aria-label="preinscritos_resumen_table"
                 layout="fixed" // Usa fixed para que se respeten los anchos definidos
@@ -412,7 +375,7 @@ export default function App({ resumenPreInscripcion, loading, grados = [] }) {
                 bottomContentPlacement="outside"
                 classNames={{
                     wrapper:
-                        "max-h-[317px] min-h-[317px] overflow-auto w-full p-2 m-0",
+                        "flex-1 overflow-auto w-full p-2 m-0",
                 }}
                 selectedKeys={selectedKeys}
                 sortDescriptor={sortDescriptor}
@@ -452,10 +415,24 @@ export default function App({ resumenPreInscripcion, loading, grados = [] }) {
                     )}
                 </TableHeader>
                 <TableBody
-                    emptyContent={loading ? <Spinner label="Cargando..." /> : "No se encontró información"}
-                    isLoading={loading}
-                    loadingContent={<div className="w-full h-full flex justify-center items-center z-50 bg-content1/50 backdrop-blur-sm top-0 left-0 absolute"><Spinner label="Cargando..." /></div>}
+                    emptyContent={dataLoading ? (
+                        <div className="flex flex-col gap-2 w-full p-2">
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                        </div>
+                    ) : "No se encontró información"}
                     items={items}
+                    isLoading={dataLoading}
+                    loadingContent={
+                        <div className="w-full h-full flex flex-col gap-2 p-4 bg-white/50 backdrop-blur-sm z-50">
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                        </div>
+                    }
                     className="space-y-1"
                 >
                     {(item) => (
@@ -472,6 +449,6 @@ export default function App({ resumenPreInscripcion, loading, grados = [] }) {
                     )}
                 </TableBody>
             </Table>
-        </div>
+        </DashboardCard>
     );
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
     Modal,
     ModalContent,
@@ -23,7 +23,6 @@ export default function ObserveInscripcionModal({
     useEffect(() => {
         if (isOpen) {
             setObservacion(initialObservation || "");
-            console.log("initialObservation", initialObservation);
         }
     }, [isOpen, initialObservation]);
 
@@ -53,9 +52,9 @@ export default function ObserveInscripcionModal({
                     <Button color="danger" variant="light" onPress={onClose} isDisabled={isLoading}>
                         Cancelar
                     </Button>
-                    <Button 
-                        color="primary" 
-                        onPress={handleConfirm} 
+                    <Button
+                        color="primary"
+                        onPress={handleConfirm}
                         isDisabled={!observacion.trim() || isLoading}
                         isLoading={isLoading}
                     >
