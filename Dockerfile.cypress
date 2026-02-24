@@ -1,0 +1,13 @@
+FROM cypress/included:14.5.4
+
+# Install PHP for Cypress tasks (tinker)
+RUN apt-get update && apt-get install -y \
+    php-cli \
+    php-mysql \
+    php-mbstring \
+    php-xml \
+    php-bcmath \
+    php-curl \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app

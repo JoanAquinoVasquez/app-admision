@@ -8,12 +8,13 @@ export default defineConfig({
     base: '/admision-epg/', // Ruta base para producción
     server: {
         port: 5173,
-        // host: "0.0.0.0",
-        open: false,
+        strictPort: true,
         watch: {
-            usePolling: true,
-            interval: 100,
+            usePolling: true, // Crucial para WSL2/Linux filesystem performance
             ignored: ['**/node_modules/**', '**/.git/**'],
+        },
+        hmr: {
+            overlay: true,
         },
     },
     build: {

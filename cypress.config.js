@@ -62,7 +62,7 @@ export default defineConfig({
           `;
           const cmd = `php artisan tinker --execute="${phpCode.replace(/\n/g, '')}"`;
           try {
-            const output = execSync(cmd, { cwd: path.join(process.cwd(), "..", "api") });
+            const output = execSync(cmd, { cwd: "/api" });
             return output.toString();
           } catch (e) {
             throw new Error(e.message);
@@ -89,7 +89,7 @@ export default defineConfig({
           `;
           const cmd = `php artisan tinker --execute="${phpCode.replace(/\n/g, ' ')}"`;
           try {
-            const output = execSync(cmd, { cwd: path.join(process.cwd(), "..", "api") });
+            const output = execSync(cmd, { cwd: "/api" });
             return output.toString();
           } catch (e) {
             throw new Error(e.message);
@@ -103,7 +103,7 @@ export default defineConfig({
           `;
           const cmd = `php artisan tinker --execute="${phpCode.replace(/\\n/g, ' ')}"`;
           try {
-            const output = execSync(cmd, { cwd: path.join(process.cwd(), "..", "api") });
+            const output = execSync(cmd, { cwd: "/api" });
             return output.toString();
           } catch (e) {
             throw new Error(e.message);
@@ -122,7 +122,7 @@ export default defineConfig({
           `;
           const cmd = `php artisan tinker --execute="${phpCode.replace(/\n/g, '')}"`;
           try {
-            const output = execSync(cmd, { cwd: path.join(process.cwd(), "..", "api") });
+            const output = execSync(cmd, { cwd: "/api" });
             return output.toString();
           } catch (e) {
             throw new Error(e.message);
@@ -172,7 +172,7 @@ export default defineConfig({
           `;
           const cmd = `php artisan tinker --execute="${phpCode.replace(/\n/g, '')}"`;
           try {
-            const output = execSync(cmd, { cwd: path.join(process.cwd(), "..", "api") });
+            const output = execSync(cmd, { cwd: "/api" });
             return output.toString();
           } catch (e) {
             throw new Error(e.message);
@@ -289,7 +289,7 @@ export default defineConfig({
 
           const cmd = `php artisan tinker --execute="include 'create_test_inscripcion.php';"`;
           try {
-            const output = execSync(cmd, { cwd: path.join(process.cwd(), "..", "api") });
+            const output = execSync(cmd, { cwd: "/api" });
             return output.toString();
           } catch (e) {
             throw new Error(e.message);
@@ -317,7 +317,7 @@ export default defineConfig({
           fs.writeFileSync(scriptPath, phpCode);
           const cmd = `php artisan tinker --execute="include '${scriptName}';"`;
           try {
-            const output = execSync(cmd, { cwd: path.join(process.cwd(), "..", "api") });
+            const output = execSync(cmd, { cwd: "/api" });
             if (fs.existsSync(scriptPath)) fs.unlinkSync(scriptPath);
             return output.toString();
           } catch (e) {
@@ -334,7 +334,7 @@ export default defineConfig({
 
           const cmd = `php artisan tinker --execute="include '${scriptName}';"`;
           try {
-            const output = execSync(cmd, { cwd: path.join(process.cwd(), "..", "api") });
+            const output = execSync(cmd, { cwd: "/api" });
             // Clean up
             fs.unlinkSync(scriptPath);
             return output.toString();
