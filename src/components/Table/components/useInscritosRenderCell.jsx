@@ -104,7 +104,7 @@ export const useInscritosRenderCell = ({
                     <div className="flex flex-col">
                         {cellValue ? (
                             <a
-                                href={`/${cellValue}`}
+                                href={cellValue}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-blue-500 underline"
@@ -169,7 +169,7 @@ export const useInscritosRenderCell = ({
                 }
                 return (
                     <div className="relative flex justify-end items-center gap-2">
-                        <Dropdown>
+                        <Dropdown shouldBlockScroll={false}>
                             <DropdownTrigger>
                                 <Button
                                     aria-label="Actions"

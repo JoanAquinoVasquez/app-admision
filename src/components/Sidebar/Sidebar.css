@@ -2,10 +2,10 @@
     padding-left: 16px; /* Ajusta según el ancho del sidebar colapsado */
 }
 
-li {
+.sidebar li {
     display: flex;
     align-items: center;
-    height: 42px;
+    min-height: 42px;
     transition: padding-left 0.4s;
 }
 

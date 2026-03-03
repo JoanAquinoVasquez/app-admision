@@ -14,12 +14,15 @@ export default function ModalConfirm({
     onConfirm,
     message,
     children,
+    isDismissable = false,
 }) {
     // Verificar si el mensaje contiene "cambio"
     const isCambio = message.includes("cambio");
 
     return (
         <Modal
+            shouldBlockScroll={false}
+            isDismissable={isDismissable}
             isOpen={isOpen}
             onClose={onClose}
             size={children ? "2xl" : "md"} // Cambiar a 'lg' si hay contenido adicional

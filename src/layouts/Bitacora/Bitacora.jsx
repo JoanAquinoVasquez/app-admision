@@ -23,6 +23,7 @@ import { FileDown } from "lucide-react";
 import { toast } from "react-hot-toast";
 import axios from "../../axios";
 import TablePagination from "../../components/Table/components/TablePagination";
+import Breadcrumb from "../../components/Breadcrumb/Breadcrumb";
 import { admissionConfig } from "../../config/admission";
 
 export const columns = [
@@ -594,108 +595,107 @@ export default function App() {
         return (
             <div className="flex flex-col gap-4">
                 <div className="flex justify-between gap-3 items-end">
-                    <Input
-                        isClearable
-                        className="w-full sm:max-w-[44%]"
-                        placeholder="Buscar por nombre..."
-                        startContent={<SearchIcon />}
-                        value={filterValue}
-                        onClear={() => onClear()}
-                        onValueChange={onSearchChange}
-                    />
+                    {dataLoading ? (
+                        <Skeleton className="w-full sm:max-w-[44%] h-12 rounded-lg" />
+                    ) : (
+                        <Input
+                            isClearable
+                            className="w-full sm:max-w-[44%]"
+                            placeholder="Buscar por nombre..."
+                            startContent={<SearchIcon />}
+                            value={filterValue}
+                            onClear={() => onClear()}
+                            onValueChange={onSearchChange}
+                        />
+                    )}
 
                     <div className="flex gap-3">
-                        <Button
-                            onPress={exportBitacora}
-                            color="primary"
-                            size="md"
-                            variant="flat"
-                            isLoading={exportLoading}
-                            startContent={!exportLoading && <FileDown className="h-5 w-5" />}
-                            className="flex items-center gap-2 rounded-xl"
-                        >
-                            Exportar
-                        </Button>
-                        <Dropdown>
-                            <DropdownTrigger className="hidden sm:flex">
+                        {dataLoading ? (
+                            <>
+                                <Skeleton className="h-10 w-full sm:w-[150px] rounded-lg" />
+                                <Skeleton className="h-10 w-full sm:w-[120px] rounded-lg hidden sm:flex" />
+                                <Skeleton className="h-10 w-full sm:w-[120px] rounded-lg hidden sm:flex" />
+                            </>
+                        ) : (
+                            <>
                                 <Button
-                                    endContent={
-                                        <ChevronDownIcon className="text-small" />
-                                    }
+                                    onPress={exportBitacora}
+                                    color="primary"
+                                    size="md"
                                     variant="flat"
-                                    aria-label="descripcion-filter"
+                                    isLoading={exportLoading}
+                                    startContent={!exportLoading && <FileDown className="h-5 w-5" />}
+                                    className="flex items-center gap-2 rounded-xl"
                                 >
-                                    Descripción
+                                    Exportar
                                 </Button>
-                            </DropdownTrigger>
-                            <DropdownMenu
-                                disallowEmptySelection
-                                aria-label="Table Columns"
-                                closeOnSelect={false}
-                                selectedKeys={statusFilter}
-                                selectionMode="multiple"
-                                onSelectionChange={setStatusFilter}
-                            >
-                                {statusOptions.map((status) => (
-                                    <DropdownItem
-                                        key={status.uid}
-                                        textValue={status.name}
-                                        aria-label={status.uid}
+                                <Dropdown shouldBlockScroll={false}>
+                                    <DropdownTrigger className="hidden sm:flex">
+                                        <Button
+                                            endContent={
+                                                <ChevronDownIcon className="text-small" />
+                                            }
+                                            variant="flat"
+                                            aria-label="descripcion-filter"
+                                        >
+                                            Descripción
+                                        </Button>
+                                    </DropdownTrigger>
+                                    <DropdownMenu
+                                        disallowEmptySelection
+                                        aria-label="Table Columns"
+                                        closeOnSelect={false}
+                                        selectedKeys={statusFilter}
+                                        selectionMode="multiple"
+                                        onSelectionChange={setStatusFilter}
                                     >
-                                        {status.name}
-                                    </DropdownItem>
-                                ))}
-                            </DropdownMenu>
-                        </Dropdown>
-                        <Dropdown>
-                            <DropdownTrigger className="hidden sm:flex">
-                                <Button
-                                    endContent={
-                                        <ChevronDownIcon className="text-small" />
-                                    }
-                                    variant="flat"
-                                >
-                                    Columnas
-                                </Button>
-                            </DropdownTrigger>
-                            <DropdownMenu
-                                disallowEmptySelection
-                                aria-label="Table Columns"
-                                closeOnSelect={false}
-                                selectedKeys={visibleColumns}
-                                selectionMode="multiple"
-                                onSelectionChange={setVisibleColumns}
-                            >
-                                {columns.map((column) => (
-                                    <DropdownItem
-                                        key={column.uid}
-                                        textValue={column.name}
-                                        className="capitalize"
+                                        {statusOptions.map((status) => (
+                                            <DropdownItem
+                                                key={status.uid}
+                                                textValue={status.name}
+                                                aria-label={status.uid}
+                                            >
+                                                {status.name}
+                                            </DropdownItem>
+                                        ))}
+                                    </DropdownMenu>
+                                </Dropdown>
+                                <Dropdown shouldBlockScroll={false}>
+                                    <DropdownTrigger className="hidden sm:flex">
+                                        <Button
+                                            endContent={
+                                                <ChevronDownIcon className="text-small" />
+                                            }
+                                            variant="flat"
+                                        >
+                                            Columnas
+                                        </Button>
+                                    </DropdownTrigger>
+                                    <DropdownMenu
+                                        disallowEmptySelection
+                                        aria-label="Table Columns"
+                                        closeOnSelect={false}
+                                        selectedKeys={visibleColumns}
+                                        selectionMode="multiple"
+                                        onSelectionChange={setVisibleColumns}
                                     >
-                                        {capitalize(column.name)}
-                                    </DropdownItem>
-                                ))}
-                            </DropdownMenu>
-                        </Dropdown>
-                        {/* <Button color="primary" endContent={<PlusIcon />}>
-                            Nuevo
-                        </Button> */}
+                                        {columns.map((column) => (
+                                            <DropdownItem
+                                                key={column.uid}
+                                                textValue={column.name}
+                                                className="capitalize"
+                                            >
+                                                {capitalize(column.name)}
+                                            </DropdownItem>
+                                        ))}
+                                    </DropdownMenu>
+                                </Dropdown>
+                                {/* <Button color="primary" endContent={<PlusIcon />}>
+                                    Nuevo
+                                </Button> */}
+                            </>
+                        )}
                     </div>
-                </div>
-                <div className="flex justify-between items-center">
-                    {/* Total registros eliminados aquí, se muestran en TablePagination */}
-                    <span className="text-default-400 text-small"></span>
-                    <label className="flex items-center text-default-400 text-small">
-                        Filas por página
-                        <select
-                            className="bg-transparent outline-none text-default-400 text-small"
-                            onChange={onRowsPerPageChange}
-                        >
-                            <option value="10">10</option>
-                            <option value="5">5</option>
-                            <option value="15">15</option>
-                        </select>
-                    </label>
                 </div>
             </div>
         );
@@ -707,6 +707,8 @@ export default function App() {
         users.length,
         onSearchChange,
         hasSearchFilter,
+        dataLoading,
+        exportLoading,
     ]);
 
     const bottomContent = useMemo(() => {
@@ -723,12 +725,14 @@ export default function App() {
     }, [page, pages, setPage, filteredItems.length, selectedKeys]);
 
     return (
-        <DashboardCard
-            title={`Bitácora Proceso Admisión ${admissionConfig.cronograma.periodo}`}
-            icon={<ChevronDownIcon className="text-green-500" />}
-            className="p-2 m-0" // Reducir padding y márgenes del DashboardCard
-        >
-            {/* El spinner de exportación ahora se maneja dentro de la tabla */}
+        <div className="flex flex-col gap-4 max-w-full">
+            <Breadcrumb
+                paths={[
+                    { name: "Registros" },
+                    { name: "Ver Bitácora", href: "/bitacora" }
+                ]}
+            />
+
             <Table
                 aria-label="Tabla de bitácora"
                 layout="auto"
@@ -737,7 +741,7 @@ export default function App() {
                 bottomContentPlacement="outside"
                 classNames={{
                     wrapper:
-                        "max-h-[550px] overflow-auto w-full p-2 m-0 sm:p-4 lg:p-6", // Añadir más padding para pantallas más grandes
+                        "max-h-[1000px] overflow-auto w-full p-2 m-0 sm:p-4 lg:p-6", // Añadir más padding para pantallas más grandes
                 }}
                 selectedKeys={selectedKeys}
                 sortDescriptor={sortDescriptor}
@@ -769,20 +773,12 @@ export default function App() {
                             <Skeleton className="h-10 w-full rounded-lg" />
                             <Skeleton className="h-10 w-full rounded-lg" />
                             <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
                         </div>
                     ) : "No se encontró información"}
-                    items={items}
+                    items={dataLoading ? [] : items}
                     className="space-y-1 sm:space-y-2 lg:space-y-3" // Reducir espacio entre filas en pantallas pequeñas
-                    isLoading={dataLoading}
-                    loadingContent={
-                        <div className="w-full h-full flex flex-col gap-2 p-4 bg-white/50 backdrop-blur-sm z-50">
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                        </div>
-                    }
                 >
                     {(item) => (
                         <TableRow
@@ -798,6 +794,7 @@ export default function App() {
                     )}
                 </TableBody>
             </Table>
-        </DashboardCard>
+
+        </div>
     );
 }

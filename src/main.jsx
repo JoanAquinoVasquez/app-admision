@@ -1,6 +1,6 @@
 import ReactDOM from "react-dom/client";
 import { StrictMode, lazy, Suspense, useEffect } from "react";
-import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Outlet, useLocation } from "react-router-dom";
 import { HeroUIProvider } from "@heroui/react";
 import "./index.css";
 import "./bootstrap";
@@ -31,6 +31,14 @@ import { DocenteProvider } from "./services/UserContextDocente.jsx";
 import { UserProvider } from "./services/UserContext.jsx";
 
 const rootElement = document.getElementById("root");
+
+const MainFooter = () => {
+    const { pathname } = useLocation();
+    const isDashboard = pathname.startsWith('/auth') || pathname.startsWith('/docente');
+    if (isDashboard) return null;
+    return <Footer />;
+};
+
 const App = () => {
 
     return (
@@ -97,7 +105,7 @@ const App = () => {
                                         <Route
                                             path="/docente/*"
                                             element={
-                                                <Suspense fallback={<Spinner />}>
+                                                <Suspense fallback={<Spinner label="Cargando..." />}>
                                                     <ProtectedRouteDocente>
                                                         <DashboardDocente />
                                                     </ProtectedRouteDocente>
@@ -111,7 +119,7 @@ const App = () => {
                                 </Routes>
                             </Suspense>
                         </main>
-                        <Footer />
+                        <MainFooter />
                     </div>
                 </BrowserRouter>
             </HeroUIProvider>

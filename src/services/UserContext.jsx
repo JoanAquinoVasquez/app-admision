@@ -9,16 +9,26 @@ export const UserProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
-    const checkAuth = async () => {
+    const [hasChecked, setHasChecked] = useState(false);
+
+    const checkAuth = async (force = false) => {
+        // Si ya chequeamos y no estamos forzando, no volvemos a preguntar
+        if (hasChecked && !force && userData) return true;
+
+        // Evitar múltiples llamadas simultáneas solo si ya hemos chequeado una vez
+        if (hasChecked && loading && !force) return false;
+
+        setLoading(true);
         try {
-            const { data } = await axios.get("/check-auth", {
+            const { data: response } = await axios.get("/check-auth", {
                 withCredentials: true,
             });
 
             // The API returns { success: true, data: { authenticated: true, ... } }
-            const authData = data.data || data;
+            // So 'response' is { success: true, message: "...", data: { authenticated: true, ... } }
+            const authData = response.data;
 
-            if (authData.authenticated) {
+            if (authData && authData.authenticated) {
                 // Handle both 'roles' array and single 'role' string
                 let roles = authData.roles || [];
                 if (!roles.length && authData.role) {
@@ -29,18 +39,26 @@ export const UserProvider = ({ children }) => {
                     ...authData.user,
                     roles: roles,
                 });
+                setHasChecked(true);
+                return true;
             } else {
                 setUserData(null);
+                setHasChecked(true);
+                return false;
             }
         } catch (error) {
             setUserData(null);
+            setHasChecked(true);
+            return false;
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        checkAuth();
+        if (!hasChecked) {
+            checkAuth();
+        }
     }, []);
 
     const logout = async (message = "Sesión cerrada correctamente") => {
@@ -49,6 +67,8 @@ export const UserProvider = ({ children }) => {
         } catch (error) {
             console.error("Error cerrando sesión:", error);
         } finally {
+            setHasChecked(false);
+            setUserData(null);
             navigate("/login", {
                 state: message ? { logoutMessage: message } : {},
             });

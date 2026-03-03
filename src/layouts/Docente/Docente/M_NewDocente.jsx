@@ -55,7 +55,7 @@ const M_NewDocente = ({ isOpen, onClose, onSave }) => {
             email,
             password,
         });
-        onClose(); // Cierra el modal después de guardar
+        // La responsabilidad de cerrar el modal ahora recae en el onSave del padre si es exitoso
     };
 
     // Función para validar que solo se ingresen letras en nombres y apellidos

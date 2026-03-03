@@ -236,16 +236,16 @@ export default function GraphicSummaryInscritos({ inscripciones, loading }) {
     return (
         <DashboardCard
             title={showAccumulated ? "Inscripciones Acumuladas" : "Inscripciones por Día"}
-            icon={<MdSummarize className="text-green-500" />}
+            icon={<MdSummarize className="text-blue-500" />}
             actions={actions}
             className="p-1 h-full flex flex-col"
         >
             {loading ? (
-                <div className="p-4 flex-1">
+                <div className="p-4 flex-1 min-h-[300px] sm:min-h-0">
                     <Skeleton className="w-full h-full rounded-xl" />
                 </div>
             ) : (
-                <div className="w-full flex-1 min-h-0">
+                <div className="w-full flex-1 min-h-[300px] sm:min-h-0">
                     {inscripciones.length === 0 ? (
                         <div className="flex items-center justify-center h-full">
                             <p className="text-gray-500">No hay datos disponibles</p>
@@ -280,9 +280,9 @@ export default function GraphicSummaryInscritos({ inscripciones, loading }) {
                                 <Line
                                     type="monotone"
                                     dataKey="conteo_total"
-                                    stroke="#22c55e"
+                                    stroke="#2563eb"
                                     strokeWidth={3}
-                                    dot={{ r: 4, fill: '#22c55e', strokeWidth: 2, stroke: '#fff' }}
+                                    dot={{ r: 4, fill: '#2563eb', strokeWidth: 2, stroke: '#fff' }}
                                     activeDot={{ r: 6, strokeWidth: 0 }}
                                 />
                                 {[...selectedGrados].map((grado, index) => (
@@ -292,8 +292,8 @@ export default function GraphicSummaryInscritos({ inscripciones, loading }) {
                                         dataKey={grado}
                                         stroke={COLORS[index % COLORS.length]}
                                         strokeWidth={2}
-                                        dot={{ r: 3, fill: COLORS[index % COLORS.length], strokeWidth: 2, stroke: '#fff' }}
-                                        activeDot={{ r: 5, strokeWidth: 0 }}
+                                        dot={{ r: 4, fill: COLORS[index % COLORS.length], strokeWidth: 2, stroke: '#fff' }}
+                                        activeDot={{ r: 6, strokeWidth: 0 }}
                                     />
                                 ))}
                             </LineChart>

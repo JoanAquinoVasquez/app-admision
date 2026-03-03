@@ -19,6 +19,7 @@ import {
 import DashboardCard from "../../components/Cards/DashboardCard";
 import { SearchIcon, ChevronDownIcon } from "../../components/Table/components/Icons";
 import TablePagination from "./components/TablePagination";
+import MultiSelect from "../../components/Select/SelectMultiple";
 import axios from "../../axios";
 import { toast } from "react-hot-toast";
 import { FileDown } from "lucide-react";
@@ -31,9 +32,9 @@ export const columns = [
 ];
 
 export const statusOptions = [
-    { name: "DOCTORADO", uid: "DOC" },
-    { name: "MAESTRÍA", uid: "MAE" },
-    { name: "SEGUNDA ESPECIALIDAD", uid: "SEG" },
+    { name: "Doctorado", uid: "Doctorado" },
+    { name: "Maestria", uid: "Maestria" },
+    { name: "Segunda Especialidad Profesional", uid: "Segunda Especialidad Profesional" },
 ];
 
 export function capitalize(s) {
@@ -76,6 +77,7 @@ export default function TableResultados({ ingresantesPrograma, grados, loading: 
         setFilterValue,
         setGradoFilter,
         setPage,
+        setRowsPerPage,
         setSortDescriptor,
         items,
         pages,
@@ -86,6 +88,9 @@ export default function TableResultados({ ingresantesPrograma, grados, loading: 
         initialRowsPerPage: 5,
         initialSortColumn: "ingresantes_total",
         initialSortDirection: "descending",
+        // Los 3 grados activos por defecto; desmarcar uno filtra la tabla
+        initialGradoFilter: new Set(["Doctorado", "Maestria", "Segunda Especialidad Profesional"]),
+        totalGradoOptions: statusOptions.length,
     });
 
     const handleExport = async () => {
@@ -189,91 +194,129 @@ export default function TableResultados({ ingresantesPrograma, grados, loading: 
     const topContent = useMemo(() => {
         return (
             <div className="flex flex-col gap-4">
-                <div className="flex justify-between gap-3 items-end">
-                    <Input
-                        isClearable
-                        className="w-full sm:max-w-[44%]"
-                        placeholder="Buscar por nombre..."
-                        startContent={<SearchIcon />}
-                        value={filterValue}
-                        onClear={onClear}
-                        onValueChange={onSearchChange}
-                    />
-                    <div className="flex gap-3">
-                        <Button
-                            onPress={handleExport}
-                            color="primary"
-                            size="md"
-                            variant="flat"
-                            isLoading={isExporting}
-                            startContent={!isExporting && <FileDown className="h-5 w-5" />}
-                            className="flex items-center gap-2 rounded-xl"
-                        >
-                            Exportar
-                        </Button>
-                        {/* Dropdown Grado */}
-                        <Dropdown>
-                            <DropdownTrigger className="w-full sm:w-auto md:flex lg:flex xl:flex">
-                                <Button
-                                    endContent={
-                                        <ChevronDownIcon className="text-small" />
-                                    }
-                                    variant="flat"
-                                    className="h-10 w-full"
-                                >
-                                    Grado
-                                </Button>
-                            </DropdownTrigger>
-                            <DropdownMenu
-                                disallowEmptySelection
-                                aria-label="Table Columns"
-                                closeOnSelect={false}
-                                selectedKeys={gradoFilter}
-                                selectionMode="multiple"
-                                onSelectionChange={setGradoFilter}
+                {/* Top Row: Actions Only */}
+                <div className="flex justify-end items-center gap-2 w-full px-1">
+                    {dataLoading ? (
+                        <>
+                            <Skeleton className="w-full sm:w-28 h-10 rounded-lg" />
+                            <Skeleton className="w-full sm:w-24 h-10 rounded-lg" />
+                            <Skeleton className="hidden sm:flex w-24 h-10 rounded-lg" />
+                        </>
+                    ) : (
+                        <>
+                            <Button
+                                onPress={handleExport}
+                                color="primary"
+                                size="md"
+                                variant="flat"
+                                isLoading={isExporting}
+                                startContent={!isExporting && <FileDown className="h-5 w-5" />}
+                                className="flex items-center gap-2 rounded-xl h-10 px-4 font-semibold"
                             >
-                                {statusOptions.map((status) => (
-                                    <DropdownItem
-                                        key={status.uid}
-                                        textValue={status.name}
-                                        className="capitalize"
-                                    >
-                                        {capitalize(status.name)}
-                                    </DropdownItem>
-                                ))}
-                            </DropdownMenu>
-                        </Dropdown>
+                                Exportar
+                            </Button>
 
-                        <Dropdown>
-                            <DropdownTrigger className="hidden sm:flex">
-                                <Button
-                                    endContent={
-                                        <ChevronDownIcon className="text-small" />
-                                    }
-                                    variant="flat"
-                                >
-                                    Columnas
-                                </Button>
-                            </DropdownTrigger>
-                            <DropdownMenu
-                                disallowEmptySelection
-                                aria-label="Table Columns"
-                                closeOnSelect={false}
-                                selectedKeys={visibleColumns}
-                                selectionMode="multiple"
-                                onSelectionChange={setVisibleColumns}
-                            >
-                                {columns.map((column) => (
-                                    <DropdownItem
-                                        key={column.uid}
-                                        textValue={column.name}
-                                        className="capitalize"
+                            <Dropdown shouldBlockScroll={false}>
+                                <DropdownTrigger className="hidden sm:flex">
+                                    <Button
+                                        endContent={
+                                            <ChevronDownIcon className="text-small" />
+                                        }
+                                        variant="flat"
+                                        className="h-10 px-4 font-semibold"
                                     >
-                                        {capitalize(column.name)}
-                                    </DropdownItem>
-                                ))}
-                            </DropdownMenu>
-                        </Dropdown>
+                                        Columnas
+                                    </Button>
+                                </DropdownTrigger>
+                                <DropdownMenu
+                                    disallowEmptySelection
+                                    aria-label="Table Columns"
+                                    closeOnSelect={false}
+                                    selectedKeys={visibleColumns}
+                                    selectionMode="multiple"
+                                    onSelectionChange={setVisibleColumns}
+                                >
+                                    {columns.map((column) => (
+                                        <DropdownItem
+                                            key={column.uid}
+                                            textValue={column.name}
+                                            className="capitalize"
+                                        >
+                                            {capitalize(column.name)}
+                                        </DropdownItem>
+                                    ))}
+                                </DropdownMenu>
+                            </Dropdown>
+                        </>
+                    )}
+                </div>
+
+                {/* Filter Section: Optimized Distribution */}
+                <div className="flex flex-col gap-3 bg-slate-50/50 p-4 rounded-2xl border border-slate-100 shadow-sm">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
+                        {dataLoading ? (
+                            <>
+                                <Skeleton className="w-full h-14 rounded-lg" />
+                                <Skeleton className="w-full h-14 rounded-lg" />
+                            </>
+                        ) : (
+                            <>
+                                {/* Search Field */}
+                                <Input
+                                    isClearable
+                                    variant="bordered"
+                                    label="Buscar programa"
+                                    placeholder="Nombre..."
+                                    startContent={<SearchIcon className="text-slate-400" />}
+                                    value={filterValue}
+                                    onClear={onClear}
+                                    onValueChange={onSearchChange}
+                                    classNames={{
+                                        inputWrapper: "bg-white border-slate-200 hover:border-blue-400 focus-within:border-blue-500 transition-colors shadow-sm",
+                                    }}
+                                />
+
+                                {/* MultiSelect Degree */}
+                                <MultiSelect
+                                    label="Filtrar por Grado"
+                                    placeholder="Seleccione uno o varios"
+                                    defaultItems={statusOptions.map((item) => ({
+                                        key: item.uid,
+                                        textValue: item.name,
+                                        ...item,
+                                    }))}
+                                    selectedKeys={gradoFilter}
+                                    onSelectionChange={setGradoFilter}
+                                />
+                            </>
+                        )}
+                    </div>
+                </div>
+
+                {/* Stats and Results Info */}
+                <div className="flex justify-between items-center px-2 py-1 bg-blue-50/50 rounded-lg">
+                    <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                        <span className="text-blue-700 text-[11px] font-bold uppercase tracking-wider">
+                            {`${filteredItems.length} programas`}
+                        </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <span className="text-slate-500 text-[11px] font-medium">Filas:</span>
+                        <select
+                            value={rowsPerPage}
+                            onChange={(e) => {
+                                setRowsPerPage(Number(e.target.value));
+                                setPage(1);
+                            }}
+                            className="bg-white border border-slate-200 rounded px-1.5 py-0.5 text-[11px] text-slate-600 outline-none hover:border-blue-300 transition-colors shadow-sm"
+                        >
+                            <option value="5">5</option>
+                            <option value="10">10</option>
+                            <option value="30">30</option>
+                            <option value="50">50</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -285,7 +328,13 @@ export default function TableResultados({ ingresantesPrograma, grados, loading: 
         onSearchChange,
         onClear,
         setGradoFilter,
-        setVisibleColumns
+        setVisibleColumns,
+        dataLoading,
+        isExporting,
+        filteredItems.length,
+        rowsPerPage,
+        setRowsPerPage,
+        setPage,
     ]);
 
     const bottomContent = useMemo(() => {
@@ -303,7 +352,7 @@ export default function TableResultados({ ingresantesPrograma, grados, loading: 
 
     return (
         <DashboardCard
-            title={`Resumen Resultados Proc. Admisión ${admissionConfig.cronograma.periodo}`}
+            title={`Resumen Resultados`}
         >
             <Table
                 aria-label="Example table"
@@ -346,24 +395,18 @@ export default function TableResultados({ ingresantesPrograma, grados, loading: 
                     )}
                 </TableHeader>
                 <TableBody
-                    emptyContent={dataLoading ? (
-                        <div className="flex flex-col gap-2 w-full p-2">
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                        </div>
-                    ) : "No se encontró información"}
-                    items={items}
-                    isLoading={dataLoading}
-                    loadingContent={
-                        <div className="w-full h-full flex flex-col gap-2 p-4 bg-white/50 backdrop-blur-sm z-50">
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                        </div>
+                    emptyContent={
+                        dataLoading ? (
+                            <div className="flex flex-col gap-2 w-full p-2">
+                                <Skeleton className="h-10 w-full rounded-lg" />
+                                <Skeleton className="h-10 w-full rounded-lg" />
+                                <Skeleton className="h-10 w-full rounded-lg" />
+                                <Skeleton className="h-10 w-full rounded-lg" />
+                                <Skeleton className="h-10 w-full rounded-lg" />
+                            </div>
+                        ) : "No se encontró información"
                     }
+                    items={dataLoading ? [] : items}
                     className="space-y-1"
                 >
                     {(item) => (

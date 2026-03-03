@@ -43,26 +43,34 @@ const GradeModal = ({
         }
 
         setLoading(true);
-        try {
-            const response = await axios.post("/guardar-nota-entrevista", {
-                inscripcion_id: validarId,
-                nota_entrevista: nota,
-            });
-            toast.success("Nota guardada correctamente.");
-            onSuccess();
-            onClose();
-        } catch (error) {
-            toast.error(
+        const promise = axios.post("/guardar-nota-entrevista", {
+            inscripcion_id: validarId,
+            nota_entrevista: nota,
+        });
+
+        toast.promise(promise, {
+            loading: "Guardando nota...",
+            success: (response) => {
+                onSuccess();
+                onClose();
+                return response.data.message || "Nota guardada correctamente.";
+            },
+            error: (error) =>
                 error.response?.data?.message ||
                 "Hubo un problema al guardar la nota."
-            );
+        });
+
+        try {
+            await promise;
+        } catch (error) {
+            // Error managed by toast.promise
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose}>
+        <Modal isOpen={isOpen} onClose={onClose} shouldBlockScroll={false}>
             <ModalContent>
                 <ModalHeader>Registrar Nota</ModalHeader>
                 <ModalBody>

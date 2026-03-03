@@ -145,22 +145,26 @@ export default function App() {
         }
 
         setIsExporting(true);
+        const exportPromise = axios.post("postulante-carnet", {
+            ids: ids,
+        });
+
+        toast.promise(exportPromise, {
+            loading: "Generando carnets...",
+            success: "Carnets generados correctamente",
+            error: "Error al generar carnets",
+        });
+
         try {
-            const response = await axios.post("postulante-carnet", {
-                ids: ids,
-            });
+            const response = await exportPromise;
 
             if (response.headers["content-type"].includes("text/html")) {
-                toast.success("Carnets exportados correctamente");
                 const newWindow = window.open();
                 newWindow.document.write(response.data);
                 newWindow.document.close();
-            } else {
-                toast.success("Carnets exportados correctamente");
             }
         } catch (error) {
             console.error(error);
-            toast.error("Error al exportar carnets");
         } finally {
             setIsExporting(false);
         }
@@ -186,23 +190,26 @@ export default function App() {
 
     const handleExportCarnet = async (inscripcionId) => {
         setLoading(true);
-        try {
-            const response = await axios.post("postulante-carnet", {
-                ids: [inscripcionId], // Enviar como un array
-            });
+        const exportPromise = axios.post("postulante-carnet", {
+            ids: [inscripcionId],
+        });
 
-            // Verifica si la respuesta es una vista o un archivo
+        toast.promise(exportPromise, {
+            loading: "Generando carnet...",
+            success: "Carnet generado correctamente",
+            error: "Error al generar carnet",
+        });
+
+        try {
+            const response = await exportPromise;
+
             if (response.headers["content-type"].includes("text/html")) {
-                toast.success("Carnet exportado correctamente");
                 const newWindow = window.open();
                 newWindow.document.write(response.data);
                 newWindow.document.close();
-            } else {
-                toast.success("Carnet exportado correctamente");
             }
         } catch (error) {
             console.error(error);
-            toast.error("Error al exportar carnet");
         } finally {
             setLoading(false);
         }
@@ -421,6 +428,7 @@ export default function App() {
                 onExport={handleExportCarnetMasivo}
                 customStatusOptions={customStatusOptions}
                 isExporting={isExporting}
+                isLoading={dataLoading}
             />
         );
     }, [
@@ -515,20 +523,12 @@ export default function App() {
                             <Skeleton className="h-10 w-full rounded-lg" />
                             <Skeleton className="h-10 w-full rounded-lg" />
                             <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
                         </div>
                     ) : "No se encontró información"}
-                    items={items}
+                    items={dataLoading ? [] : items}
                     className="space-y-1" // Reducir espacio entre filas
-                    isLoading={dataLoading}
-                    loadingContent={
-                        <div className="w-full h-full flex flex-col gap-2 p-4 bg-white/50 backdrop-blur-sm z-50">
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                        </div>
-                    }
                 >
                     {(item) => (
                         <TableRow

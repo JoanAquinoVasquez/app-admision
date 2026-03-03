@@ -134,7 +134,7 @@ export default function App() {
     // Render Cell Logic
     const renderActions = useCallback((user) => (
         <div className="relative flex justify-end items-center gap-2">
-            <Dropdown>
+            <Dropdown shouldBlockScroll={false}>
                 <DropdownTrigger>
                     <Button aria-label="Actions" isIconOnly size="sm" variant="light">
                         <VerticalDotsIcon className="text-default-300" />
@@ -259,6 +259,7 @@ export default function App() {
                 handleExportMultiple={handleExportMultiple}
                 filteredItemsLength={filteredItems.length}
                 isExporting={isExporting}
+                isLoading={dataLoading}
             />
 
             <Table

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import propTypes from "prop-types";
 import { toast } from "react-hot-toast";
 import {
@@ -16,10 +16,18 @@ const RenderManyFilesUpload = ({
     allowedFileTypes,
     tamicono,
     tamletra,
+    reset = false,
 }) => {
     const [fileNames, setFileNames] = useState([]);
     const [fileUploaded, setFileUploaded] = useState(false);
     const [isDragOver, setIsDragOver] = useState(false);
+
+    useEffect(() => {
+        if (reset) {
+            setFileNames([]);
+            setFileUploaded(false);
+        }
+    }, [reset]);
 
     const handleFileChange = (files) => {
         if (!files.length)
@@ -144,8 +152,8 @@ const RenderManyFilesUpload = ({
                 border: isDragOver
                     ? "2px dashed #0070f3"
                     : fileUploaded
-                    ? "2px dashed #0070f3"
-                    : "2px dashed #ccc",
+                        ? "2px dashed #0070f3"
+                        : "2px dashed #ccc",
                 borderRadius: "8px",
                 padding: "7px",
                 alignItems: "center",

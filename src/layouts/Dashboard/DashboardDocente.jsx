@@ -1,6 +1,7 @@
 import { lazy } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import NavbarDocente from "../../components/Navbar/NavbarDocente";
+import Footer from "../../components/Footer/Footer";
 import Notfound from "../../pages/NotFound/NotFound";
 import "./Dashboard.css";
 
@@ -28,11 +29,11 @@ function Dashboard() {
             {" "}
             {/* Flex para mantener el sidebar y contenido juntos */}
             {/* <SidebarMenu /> */}
-            <div className="flex-1 overflow-x-auto">
+            <div className="flex-1 overflow-auto bg-[#fafafb] h-full flex flex-col relative w-full pt-0">
                 {" "}
                 {/* Contenedor del contenido con scroll horizontal */}
                 <NavbarDocente />
-                <div className="px-4 sm:px-6 md:px-8 contenido-cambiante">
+                <div className="px-4 sm:px-6 md:px-8 shrink-0 flex-1 min-w-0 mb-4 contenido-cambiante">
                     {/* Padding adaptable */}
                     <Routes>
                         {routes.map((route, index) => (
@@ -44,6 +45,9 @@ function Dashboard() {
                         ))}
                         <Route path="*" element={<InicioDocenteLazy />} />
                     </Routes>
+                </div>
+                <div className="mt-auto shrink-0 w-full">
+                    <Footer />
                 </div>
             </div>
         </div>

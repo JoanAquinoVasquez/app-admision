@@ -9,7 +9,7 @@ import fs from "fs";
 
 export default defineConfig({
   e2e: {
-    baseUrl: "http://localhost:5173/admision-epg",
+    baseUrl: "http://127.0.0.1:5173/admision-epg",
 
     async setupNodeEvents(on, config) {
       await addCucumberPreprocessorPlugin(on, config);
@@ -62,7 +62,12 @@ export default defineConfig({
           `;
           const cmd = `php artisan tinker --execute="${phpCode.replace(/\n/g, '')}"`;
           try {
-            const output = execSync(cmd, { cwd: "/api" });
+            const output = execSync(cmd, {
+              cwd: path.resolve(process.cwd(), "..", "api"),
+              shell: true,
+              windowsHide: true,
+              encoding: "utf8"
+            });
             return output.toString();
           } catch (e) {
             throw new Error(e.message);
@@ -89,7 +94,12 @@ export default defineConfig({
           `;
           const cmd = `php artisan tinker --execute="${phpCode.replace(/\n/g, ' ')}"`;
           try {
-            const output = execSync(cmd, { cwd: "/api" });
+            const output = execSync(cmd, {
+              cwd: path.resolve(process.cwd(), "..", "api"),
+              shell: true,
+              windowsHide: true,
+              encoding: "utf8"
+            });
             return output.toString();
           } catch (e) {
             throw new Error(e.message);
@@ -103,7 +113,12 @@ export default defineConfig({
           `;
           const cmd = `php artisan tinker --execute="${phpCode.replace(/\\n/g, ' ')}"`;
           try {
-            const output = execSync(cmd, { cwd: "/api" });
+            const output = execSync(cmd, {
+              cwd: path.resolve(process.cwd(), "..", "api"),
+              shell: true,
+              windowsHide: true,
+              encoding: "utf8"
+            });
             return output.toString();
           } catch (e) {
             throw new Error(e.message);
@@ -119,16 +134,23 @@ export default defineConfig({
             $role = App\\Models\\Role::where('slug', '${role}')->first();
             if ($role) $user->roles()->syncWithoutDetaching([$role->id]);
             echo 'Usuario configurado: ' . $email;
-          `;
-          const cmd = `php artisan tinker --execute="${phpCode.replace(/\n/g, '')}"`;
+          `.replace(/\s+/g, ' ').trim();
           try {
-            const output = execSync(cmd, { cwd: "/api" });
-            return output.toString();
+            const output = execSync(`php artisan tinker --execute="${phpCode}"`, {
+              cwd: path.resolve(process.cwd(), "..", "api"),
+              shell: true,
+              windowsHide: true,
+              encoding: 'utf8'
+            });
+
+            return output;
           } catch (e) {
-            throw new Error(e.message);
+            // Si falla, imprimimos el error de Laravel para debuguear
+            console.error("Error de PHP:", e.stderr || e.stdout);
+            throw new Error(`Fallo en Artisan: ${e.message}`);
           }
         },
-        createPreInscripcion({ num_iden, nombres, ap_paterno, ap_materno, email, grado, programa }) {
+        createPreInscripcion({ num_iden, nombres, ap_paterno, ap_materno, email, grado, programa, distrito_id }) {
           const phpCode = `
             try {
                 $num_iden = '${num_iden}';
@@ -147,8 +169,7 @@ export default defineConfig({
                     'estado' => 1,
                     'vacantes' => 100
                 ]);
-                $distrito = \\App\\Models\\Distrito::first();
-                $distrito_id = $distrito ? $distrito->id : '140101';
+                $distrito_id = '${distrito_id}' ?: ($distrito ? $distrito->id : '1241');
                 \\App\\Models\\PreInscripcion::updateOrCreate(['num_iden' => $num_iden], [
                     'nombres' => '${nombres}',
                     'ap_paterno' => '${ap_paterno}',
@@ -172,7 +193,12 @@ export default defineConfig({
           `;
           const cmd = `php artisan tinker --execute="${phpCode.replace(/\n/g, '')}"`;
           try {
-            const output = execSync(cmd, { cwd: "/api" });
+            const output = execSync(cmd, {
+              cwd: path.resolve(process.cwd(), "..", "api"),
+              shell: true,
+              windowsHide: true,
+              encoding: "utf8"
+            });
             return output.toString();
           } catch (e) {
             throw new Error(e.message);
@@ -289,7 +315,12 @@ export default defineConfig({
 
           const cmd = `php artisan tinker --execute="include 'create_test_inscripcion.php';"`;
           try {
-            const output = execSync(cmd, { cwd: "/api" });
+            const output = execSync(cmd, {
+              cwd: path.resolve(process.cwd(), "..", "api"),
+              shell: true,
+              windowsHide: true,
+              encoding: "utf8"
+            });
             return output.toString();
           } catch (e) {
             throw new Error(e.message);
@@ -317,7 +348,12 @@ export default defineConfig({
           fs.writeFileSync(scriptPath, phpCode);
           const cmd = `php artisan tinker --execute="include '${scriptName}';"`;
           try {
-            const output = execSync(cmd, { cwd: "/api" });
+            const output = execSync(cmd, {
+              cwd: path.resolve(process.cwd(), "..", "api"),
+              shell: true,
+              windowsHide: true,
+              encoding: "utf8"
+            });
             if (fs.existsSync(scriptPath)) fs.unlinkSync(scriptPath);
             return output.toString();
           } catch (e) {
@@ -334,7 +370,12 @@ export default defineConfig({
 
           const cmd = `php artisan tinker --execute="include '${scriptName}';"`;
           try {
-            const output = execSync(cmd, { cwd: "/api" });
+            const output = execSync(cmd, {
+              cwd: path.resolve(process.cwd(), "..", "api"),
+              shell: true,
+              windowsHide: true,
+              encoding: "utf8"
+            });
             // Clean up
             fs.unlinkSync(scriptPath);
             return output.toString();
@@ -386,6 +427,9 @@ export default defineConfig({
     screenshotOnRunFailure: true,
     viewportHeight: 1080,
     viewportWidth: 1920,
+    // Optimizaciones fundamentales de memoria para Windows/Electron/Node22
+    numTestsKeptInMemory: 1,
+    experimentalMemoryManagement: true,
   },
 
   component: {

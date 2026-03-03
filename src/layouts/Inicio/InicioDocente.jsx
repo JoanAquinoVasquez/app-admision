@@ -203,7 +203,7 @@ function InicioDocente() {
             {/* Overlay de carga para exportación */}
             {loadingExport && (
                 <div className="fixed inset-0 flex flex-col items-center justify-center bg-black/50 z-50 backdrop-blur-sm">
-                    <Spinner size="lg" color="white" />
+                    <Spinner size="lg" color="white" aria-label="Generando reporte" />
                     <p className="text-white mt-4 font-semibold">Generando reporte...</p>
                 </div>
             )}

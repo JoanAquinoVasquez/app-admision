@@ -238,11 +238,11 @@ export default function GraphicSummaryEvaluacion({ notasDiariasCV, loading }) {
             className="p-1 h-full flex flex-col"
         >
             {loading ? (
-                <div className="p-4 flex-1">
+                <div className="p-4 flex-1 min-h-[300px] sm:min-h-0">
                     <Skeleton className="w-full h-full rounded-xl" />
                 </div>
             ) : (
-                <div className="w-full flex-1 min-h-0">
+                <div className="w-full flex-1 min-h-[300px] sm:min-h-0">
                     {notasDiariasCV.length === 0 ? (
                         <div className="flex items-center justify-center h-full">
                             <p className="text-gray-500">No hay datos disponibles</p>

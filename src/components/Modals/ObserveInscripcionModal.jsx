@@ -31,7 +31,7 @@ export default function ObserveInscripcionModal({
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose}>
+        <Modal shouldBlockScroll={false} isDismissable={false} isOpen={isOpen} onClose={onClose}>
             <ModalContent>
                 <ModalHeader>Observar Inscripción</ModalHeader>
                 <ModalBody>

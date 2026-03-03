@@ -1,263 +1,214 @@
-import { useState, useEffect, useRef } from "react";
-import { createPortal } from "react-dom";
-import { FaTimes, FaChevronDown } from "react-icons/fa";
+import { useRef, useState, useCallback, useEffect } from "react";
+import SelectInput from "./components/SelectInput";
+import SelectDropdown from "./components/SelectDropdown";
+import useSelectState from "./hooks/useSelectState";
+import useSelectFilter from "./hooks/useSelectFilter";
+import useClickOutside from "./hooks/useClickOutside";
+import { formatDisplayValue } from "./utils/formatDisplay";
 
+/**
+ * Select – componente unificado con búsqueda integrada y texto completo.
+ *
+ * Principios aplicados:
+ *  - SRP: cada hook / subcomponente tiene una única responsabilidad.
+ *  - OCP: agregar comportamiento (ej. grupos, íconos) sin tocar este archivo.
+ *  - DIP: depende de abstracciones (hooks), no de implementaciones concretas.
+ *  - ISP: props mínimas y específicas para cada subcomponente.
+ *
+ * Props:
+ *  @param {string}   label           - Etiqueta flotante del campo
+ *  @param {string}   className       - Clases extra del wrapper
+ *  @param {Array}    defaultItems    - [{ key: string, textValue: string }]
+ *  @param {string}   selectedKey     - Key seleccionado actualmente (controlled)
+ *  @param {Function} onSelectionChange - (key: string|null) => void
+ *  @param {boolean}  isRequired      - Marca el campo como requerido
+ *  @param {boolean}  disabled        - Deshabilita el componente
+ *  @param {string}   idPrefix        - Prefijo para el id/name del input (evita duplicados)
+ *  @param {boolean}  loading         - Indica si se está cargando información
+ */
 const Select = ({
     label,
     className = "",
     defaultItems = [],
-    value,
     selectedKey,
     onSelectionChange,
     isRequired = false,
-    disabled = false, // Prop disabled para habilitar/deshabilitar el componente
-    idPrefix = "", // Prefijo único para evitar conflictos de ID
+    disabled = false,
+    idPrefix = "",
+    loading = false,
 }) => {
-    const [searchValue, setSearchValue] = useState(""); // Inicializa con vacío
-    const [filteredOptions, setFilteredOptions] = useState(defaultItems);
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [isFocused, setIsFocused] = useState(false);
-    const [coords, setCoords] = useState({ top: 0, left: 0, width: 0, placement: 'bottom' });
+    const containerRef = useRef(null);
     const dropdownRef = useRef(null);
-    const selectRef = useRef(null);
-    const [isItemSelected, setIsItemSelected] = useState(false);
+    const inputRef = useRef(null);
 
-    // Actualiza el filtro de opciones cuando los elementos predeterminados cambian
-    useEffect(() => {
-        setFilteredOptions(defaultItems);
-    }, [defaultItems]);
+    // Estado de posición del dropdown (calculado dinámicamente)
+    const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
 
-    // Actualiza el valor de búsqueda cuando cambia el `selectedKey`
-    useEffect(() => {
-        if (selectedKey) {
-            const selectedItem = defaultItems.find(
-                (item) => item.key === selectedKey
-            );
-            if (selectedItem) {
-                setSearchValue(selectedItem.textValue);
-                setIsItemSelected(true);
-            }
+    // ── Hook: estado de selección y apertura ──────────────────────────────────
+    const {
+        displayValue,
+        setDisplayValue,
+        isOpen,
+        open,
+        close,
+        toggle,
+        selectOption,
+        clearSelection,
+    } = useSelectState(defaultItems, selectedKey, onSelectionChange);
+
+    // ── Hook: filtrado de opciones por búsqueda ───────────────────────────────
+    const { filteredItems, searchQuery, setSearchQuery, resetFilter } =
+        useSelectFilter(defaultItems);
+
+    // ── Hook: cerrar al clic fuera ────────────────────────────────────────────
+    useClickOutside(containerRef, dropdownRef, isOpen, close);
+
+    // ── Cálculo de coordenadas del dropdown ───────────────────────────────────
+    const recalcCoords = useCallback(() => {
+        if (!containerRef.current) return;
+        const rect = containerRef.current.getBoundingClientRect();
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const dropdownMaxHeight = 260;
+
+        if (spaceBelow < dropdownMaxHeight) {
+            // No hay espacio abajo → mostrar arriba
+            setCoords({
+                bottom: window.innerHeight - rect.top,
+                left: rect.left,
+                width: rect.width,
+                top: undefined,
+            });
         } else {
-            setSearchValue("");
-            setIsItemSelected(false);
+            setCoords({
+                top: rect.bottom + 4,
+                left: rect.left,
+                width: rect.width,
+                bottom: undefined,
+            });
         }
-    }, [selectedKey, defaultItems]);
+    }, []);
 
-    // Calcular posición del dropdown
-    // Calcular posición del dropdown
-    const updateCoords = () => {
-        if (selectRef.current) {
-            const rect = selectRef.current.getBoundingClientRect();
-            const spaceBelow = window.innerHeight - rect.bottom;
-            const dropdownHeight = 200; // Altura máxima estimada
-
-            // Si hay menos espacio abajo que la altura del dropdown, mostrar arriba
-            if (spaceBelow < dropdownHeight) {
-                setCoords({
-                    bottom: window.innerHeight - rect.top, // Anclar al borde superior del input
-                    left: rect.left,
-                    width: rect.width,
-                    placement: 'top'
-                });
-            } else {
-                setCoords({
-                    top: rect.bottom,
-                    left: rect.left,
-                    width: rect.width,
-                    placement: 'bottom'
-                });
-            }
-        }
-    };
-
-    // Función para manejar clics fuera del componente y cerrar el desplegable
+    // ── Actualización de coords en scroll / resize ────────────────────────────
     useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (
-                selectRef.current &&
-                !selectRef.current.contains(event.target) &&
-                dropdownRef.current &&
-                !dropdownRef.current.contains(event.target)
-            ) {
-                setIsDropdownOpen(false);
-                setIsItemSelected(false);
-            }
+        if (!isOpen) return;
+        const handleScrollOrResize = (e) => {
+            // Ignorar el propio scroll interno de la lista desplegable
+            if (dropdownRef.current && dropdownRef.current.contains(e.target)) return;
+            recalcCoords();
         };
 
-        const handleScrollOrResize = () => {
-            if (isDropdownOpen) updateCoords();
-        };
-
-        document.addEventListener("mousedown", handleClickOutside);
+        // El parámetro 'true' (useCapture) permite interceptar eventos de scroll en contenedores overflow.
         window.addEventListener("scroll", handleScrollOrResize, true);
         window.addEventListener("resize", handleScrollOrResize);
 
         return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
             window.removeEventListener("scroll", handleScrollOrResize, true);
             window.removeEventListener("resize", handleScrollOrResize);
         };
-    }, [isDropdownOpen]);
+    }, [isOpen, recalcCoords]);
 
-    // Actualiza el valor de búsqueda cuando el usuario escribe algo
+    // ── Handlers ──────────────────────────────────────────────────────────────
+    const handleFocus = () => {
+        if (disabled) return;
+        recalcCoords();
+        open();
+        // Al abrir, si hay un valor de searchQuery previo del usuario, lo mantenemos
+        // pero si el campo muestra un item seleccionado, vaciamos para buscar
+        if (selectedKey && !searchQuery) {
+            setDisplayValue("");
+        }
+    };
+
     const handleInputChange = (e) => {
-        const value = e.target.value;
-        setSearchValue(value);
-        setFilteredOptions(
-            defaultItems.filter((item) =>
-                item.textValue.toLowerCase().includes(value.toLowerCase())
-            )
-        );
-        updateCoords();
-        setIsDropdownOpen(true);
-        if (value === "") {
-            setIsItemSelected(false); // Restablecer la selección si el campo está vacío
+        const newValue = e.target.value;
+        setDisplayValue(newValue);   // lo que ve el usuario mientras escribe
+        setSearchQuery(newValue);    // filtra las opciones
+        if (!isOpen) {
+            recalcCoords();
+            open();
         }
     };
 
-    // Selecciona una opción del desplegable
-    const handleSelectOption = (option, event) => {
-        if (event) {
-            event.stopPropagation();
-            // No preventDefault here to allow focus handling if needed, 
-            // but stopPropagation is key for modals
+    const handleKeyDown = (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            if (filteredItems.length > 0 && isOpen) {
+                handleSelect(filteredItems[0]);
+            }
         }
-        setSearchValue(option.textValue);
-        setIsDropdownOpen(false);
-        setIsItemSelected(true);
-        if (onSelectionChange) onSelectionChange(option.key);
+        if (e.key === "Escape") {
+            close();
+            restoreDisplayValue();
+            resetFilter();
+        }
     };
 
-    // Limpia la selección
-    const handleClear = (e) => {
-        if (e) e.stopPropagation();
-        setSearchValue("");
-        setFilteredOptions(defaultItems);
-        setIsDropdownOpen(false);
-        setIsItemSelected(false);
-        if (onSelectionChange) onSelectionChange(null);
+    // ── Prevenir clausuras obsoletas en onBlur (setTimeout 150ms) ──
+    const latestProps = useRef({ selectedKey, defaultItems });
+    useEffect(() => {
+        latestProps.current = { selectedKey, defaultItems };
+    }, [selectedKey, defaultItems]);
+
+    // Restaura el displayValue al item seleccionado (o vacío si no hay ninguno)
+    const restoreDisplayValue = useCallback(() => {
+        const { selectedKey: currentKey, defaultItems: currentItems } = latestProps.current;
+        if (currentKey !== null && currentKey !== undefined && currentKey !== "") {
+            // Usamos == para tolerar tipos mixtos número/string
+            const found = currentItems.find((i) => i.key == currentKey);
+            setDisplayValue(found ? formatDisplayValue(found.textValue) : "");
+        } else {
+            setDisplayValue("");
+        }
+        resetFilter();
+    }, [setDisplayValue, resetFilter]);
+
+    const handleSelect = (item) => {
+        resetFilter();
+        selectOption(item);   // setDisplayValue + close + callback
+    };
+
+    const handleClear = () => {
+        resetFilter();
+        clearSelection();
+        recalcCoords();
+        open();
+        if (inputRef.current) inputRef.current.focus();
+    };
+
+    const handleToggle = () => {
+        recalcCoords();
+        toggle();
     };
 
     return (
-        <div ref={selectRef} className={`relative w-full ${className}`}>
-            <div
-                className={`relative rounded-lg bg-gray-100 shadow-sm ${disabled ? "bg-gray-200 cursor-not-allowed" : ""
-                    }`}
-            >
-                {label && (
-                    <label
-                        htmlFor={label.replace(/\s+/g, "-").toLowerCase()}
-                        className={`absolute left-3 transition-all duration-300 ${isFocused || searchValue
-                            ? "text-xs text-gray-700 top-1"
-                            : "text-gray-700 top-1/2 transform -translate-y-1/2 text-sm"
-                            }`}
-                    >
-                        {label}{" "}
-                        {isRequired && <span className="text-red-500">*</span>}
-                    </label>
-                )}
-                <input
-                    type="text"
-                    id={
-                        label
-                            ? `${idPrefix}${label.replace(/\s+/g, "-").toLowerCase()}`
-                            : `${idPrefix}select-input`
-                    } // Añadido id con prefijo
-                    name={
-                        label
-                            ? `${idPrefix}${label.replace(/\s+/g, "-").toLowerCase()}`
-                            : `${idPrefix}select`
-                    } // Añadido name con prefijo
-                    value={searchValue}
-                    onChange={handleInputChange}
-                    required={isRequired}
-                    onFocus={() => {
-                        updateCoords();
-                        setIsDropdownOpen(true);
-                    }}
-                    onClick={() => {
-                        updateCoords();
-                        if (!isDropdownOpen) setIsDropdownOpen(true);
-                    }}
-                    onBlur={() => {
-                        // Retraso para permitir que el onMouseDown del item ocurra primero
-                        setTimeout(() => setIsDropdownOpen(false), 200);
-                    }}
-                    onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                            e.preventDefault();
-                            if (filteredOptions.length > 0) {
-                                handleSelectOption(filteredOptions[0]);
-                            }
-                        }
-                    }}
-                    className={`w-full h-full rounded-lg text-gray-800 px-3 py-2 bg-gray-100 pt-4 
-    ${disabled ? "bg-gray-200 text-gray-700" : ""} 
-    truncate overflow-hidden text-ellipsis pr-14`}
-                    style={{
-                        height: "45px",
-                        padding: "8px 12px",
-                        paddingBottom: "2px",
-                        paddingRight: "3rem",
-                    }}
-                    disabled={disabled}
+        <div ref={containerRef} className={`relative w-full ${className}`}>
+            {/* ── Trigger: input con label flotante ──────────────────────── */}
+            <SelectInput
+                label={label}
+                idPrefix={idPrefix}
+                isRequired={isRequired}
+                disabled={disabled}
+                value={displayValue}
+                isOpen={isOpen}
+                inputRef={inputRef}
+                onChange={handleInputChange}
+                onFocus={handleFocus}
+                onBlur={restoreDisplayValue}
+                onKeyDown={handleKeyDown}
+                onClear={handleClear}
+                onToggle={handleToggle}
+            />
+
+            {/* ── Dropdown flotante (vía portal) ─────────────────────────── */}
+            {isOpen && !disabled && (
+                <SelectDropdown
+                    items={filteredItems}
+                    selectedKey={selectedKey}
+                    onSelect={handleSelect}
+                    coords={coords}
+                    dropdownRef={dropdownRef}
+                    loading={loading}
                 />
-                {searchValue && !disabled && (
-                    <button
-                        onClick={handleClear}
-                        title="Limpiar_seleccion"
-                        aria-label="Limpiar_seleccion"
-                        className="absolute right-10 top-1/2 transform -translate-y-1/2 text-gray-700 hover:text-gray-700"
-                    >
-                        <FaTimes className="text-md" />
-                    </button>
-                )}
-                {!disabled && (
-                    <button
-                        type="button"
-                        title="Abrir_menu_desplegable"
-                        aria-label="Abrir_menu_desplegable"
-                        onClick={() => {
-                            if (!isDropdownOpen) updateCoords();
-                            setIsDropdownOpen((prev) => !prev);
-                        }}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-700 hover:text-gray-700"
-                    >
-                        <FaChevronDown
-                            className={`text-md transition-transform duration-300 ${isDropdownOpen ? "rotate-180" : ""
-                                }`}
-                        />
-                    </button>
-                )}
-            </div>
-            {isDropdownOpen && filteredOptions.length > 0 && !disabled && createPortal(
-                <div
-                    ref={dropdownRef}
-                    className="fixed z-[9999] bg-white rounded-lg shadow-xl border border-gray-200 mt-1 overflow-hidden"
-                    style={{
-                        top: coords.placement === 'bottom' ? `${coords.top}px` : 'auto',
-                        bottom: coords.placement === 'top' ? `${coords.bottom}px` : 'auto',
-                        left: `${coords.left}px`,
-                        width: `${coords.width}px`,
-                        maxHeight: "200px",
-                    }}
-                >
-                    <ul className="list-none p-0 m-0 w-full overflow-y-auto max-h-[200px]">
-                        {filteredOptions.map((item) => (
-                            <li
-                                key={item.key}
-                                onMouseDown={(e) => {
-                                    e.stopPropagation();
-                                    handleSelectOption(item, e);
-                                }}
-                                className="p-2 mx-2 my-1 hover:bg-gray-100 cursor-pointer text-sm rounded-lg transition-colors"
-                            >
-                                {item.textValue}
-                            </li>
-                        ))}
-                    </ul>
-                </div>,
-                document.body
             )}
         </div>
     );

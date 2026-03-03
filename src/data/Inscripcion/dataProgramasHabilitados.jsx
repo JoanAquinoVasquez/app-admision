@@ -4,13 +4,17 @@ import axios from "../../axios";
 export default function useProgramasHabilitados() {
     const [programasHabilitados, setProgramasHabilitados] = useState([]);
     const [filteredProgramasHabilitados, setFilteredProgramasHabilitados] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     const fetchProgramasHabilitados = useCallback(async () => {
+        setLoading(true);
         try {
             const response = await axios.get("/programas-habilitados");
             setProgramasHabilitados(response.data.data); // Mantén todos los programasHabilitados
         } catch (error) {
             console.error("Error al cargar los programas Habilitados:", error);
+        } finally {
+            setLoading(false);
         }
     }, []);
 
@@ -32,5 +36,5 @@ export default function useProgramasHabilitados() {
         fetchProgramasHabilitados();
     }, [fetchProgramasHabilitados]);
 
-    return { programasHabilitados, filteredProgramasHabilitados, filterByGrado, fetchProgramasHabilitados };
+    return { programasHabilitados, filteredProgramasHabilitados, filterByGrado, fetchProgramasHabilitados, loading };
 }

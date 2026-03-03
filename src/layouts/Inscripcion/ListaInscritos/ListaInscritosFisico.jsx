@@ -11,8 +11,11 @@ function Inscritos() {
                 <Breadcrumb
                     paths={[
                         {
-                            name: "Validación Física",
-                            href: "/inscripciones-expediente",
+                            name: "Inscripción"
+                        },
+                        {
+                            name: "Validar Expediente Físico",
+                            href: "/validar-expedientes",
                         },
                     ]}
                 />

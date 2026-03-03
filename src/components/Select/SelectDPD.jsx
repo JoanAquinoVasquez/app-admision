@@ -15,8 +15,8 @@ function SelectDPD({
     initialDistritoNombre
 }) {
     const { departamentos } = useDepartamentos();
-    const { provincias, setProvincias, fetchProvincias } = useProvincias();
-    const { distritos, setDistritos, fetchDistritos } = useDistritos();
+    const { provincias, setProvincias, fetchProvincias, loading: loadingProvincias } = useProvincias();
+    const { distritos, setDistritos, fetchDistritos, loading: loadingDistritos } = useDistritos();
 
     const [departamento_id, setDepartamento_id] = useState(initialDepartamentoId || "");
     const [provincia_id, setProvincia_id] = useState(initialProvinciaId || "");
@@ -101,6 +101,7 @@ function SelectDPD({
                 label="Provincia"
                 selectedKey={provincia_id ? provincia_id.toString() : ""}
                 disabled={!departamento_id}
+                loading={loadingProvincias}
                 value={provincia_id || ""}
                 defaultItems={provincias.length > 0
                     ? provincias.map((item) => ({
@@ -121,6 +122,7 @@ function SelectDPD({
             <Select
                 label="Distrito"
                 disabled={!provincia_id}
+                loading={loadingDistritos}
                 selectedKey={distrito_id ? distrito_id.toString() : ""}
                 value={distrito_id || ""}
                 defaultItems={distritos.length > 0

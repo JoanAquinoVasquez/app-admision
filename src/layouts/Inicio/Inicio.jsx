@@ -56,11 +56,11 @@ function Inicio() {
         if (currentStage === "RESULTADOS" || currentStage === "FINALIZADO")
             return false;
 
-        // Si estamos en Evaluación, los resultados siguen ocultos
+        // // Si estamos en Evaluación, los resultados siguen ocultos
         if (currentStage === "EVALUACION") return tabKey === "resultados";
 
-        // Si estamos en Inscripción, los resultados están deshabilitados
-        // (Evaluación queda habilitada porque "suelen estar juntos")
+        // // Si estamos en Inscripción, los resultados están deshabilitados
+        // // (Evaluación queda habilitada porque "suelen estar juntos")
         if (currentStage === "INSCRIPCION") return tabKey === "resultados";
 
         // Si estamos en Preinscripción, todo el resto del proceso está bloqueado

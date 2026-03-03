@@ -73,6 +73,7 @@ export default function EditInscripcionModal({
 
     useEffect(() => {
         if (isOpen && inscripcionId) {
+            setEditMode(false);
             loadData();
         }
     }, [isOpen, inscripcionId]);
@@ -169,20 +170,27 @@ export default function EditInscripcionModal({
         }
 
         setLoading(true);
+        const promise = axios.post(
+            `/inscripcion-update/${inscripcionId}`,
+            formDataRef.current,
+            {
+                headers: { "Content-Type": "multipart/form-data" },
+            }
+        );
+
+        toast.promise(promise, {
+            loading: "Actualizando inscripción...",
+            success: "Inscripción actualizada correctamente",
+            error: "Error al actualizar la inscripción",
+        });
+
         try {
-            await axios.post(
-                `/inscripcion-update/${inscripcionId}`,
-                formDataRef.current,
-                {
-                    headers: { "Content-Type": "multipart/form-data" },
-                }
-            );
-            toast.success("Inscripción actualizada correctamente");
+            await promise;
             onSuccess();
             onClose();
             formDataRef.current = new FormData();
         } catch (error) {
-            toast.error("Error al actualizar inscripción");
+            // Managed by toast.promise
         } finally {
             setLoading(false);
         }
@@ -192,6 +200,8 @@ export default function EditInscripcionModal({
 
     return (
         <Modal
+            shouldBlockScroll={false}
+            isDismissable={false}
             backdrop="opaque"
             isOpen={isOpen}
             placement="center"

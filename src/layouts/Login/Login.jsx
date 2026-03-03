@@ -29,11 +29,17 @@ function Login() {
         setIsAuthenticating(true);
         try {
             await axios.post("/google-login", { credential: credentialResponse.credential }, { withCredentials: true });
-            // Wait a moment for cookies to be set by the browser
-            await new Promise(resolve => setTimeout(resolve, 100));
-            await refreshUser();
-            toast.success("Bienvenido");
-            navigate("/auth/inicio");
+
+            // Actualizar el estado global del usuario forzando el check
+            const isAuthenticated = await refreshUser(true);
+
+            if (isAuthenticated) {
+                toast.success("Bienvenido");
+                navigate("/auth/inicio");
+            } else {
+                toast.error("Error al verificar la sesión. Por favor reintente.");
+                setIsAuthenticating(false);
+            }
         } catch (error) {
             toast.error("Error al iniciar sesión.");
             setIsAuthenticating(false);
@@ -79,7 +85,7 @@ function Login() {
                             <div className="w-full flex justify-center py-2">
                                 {isAuthenticating ? (
                                     <div className="flex flex-col items-center py-2">
-                                        <Spinner size="sm" />
+                                        <Spinner size="sm" aria-label="Validando..." />
                                         <p className="text-[10px] text-gray-400 mt-2 font-medium">Validando...</p>
                                     </div>
                                 ) : (

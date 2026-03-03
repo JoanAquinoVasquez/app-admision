@@ -8,7 +8,10 @@ function Inscritos() {
         <div className="container max-w-full mx-auto">
             <div>
                 <Breadcrumb
-                    paths={[{ name: "Inscripción", href: "/inscripciones" }]}
+                    paths={[
+                        { name: "Inscripción" },
+                        { name: "Ver Inscritos", href: "/inscripciones" },
+                    ]}
                 />
             </div>
 

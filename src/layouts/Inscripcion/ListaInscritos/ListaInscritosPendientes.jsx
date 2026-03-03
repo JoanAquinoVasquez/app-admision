@@ -8,8 +8,11 @@ function Inscritos() {
             <Breadcrumb
                 paths={[
                     {
+                        name: "Inscripción"
+                    },
+                    {
                         name: "Inscripciones Pendientes",
-                        href: "/inscripciones-pendientes",
+                        href: "/inscripcion-pendiente",
                     },
                 ]}
             />

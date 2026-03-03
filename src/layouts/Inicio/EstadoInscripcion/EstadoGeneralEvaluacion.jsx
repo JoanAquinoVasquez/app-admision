@@ -43,6 +43,7 @@ const EstadoGeneralEvaluacion = ({ docenteResumen, loading }) => {
                             📊 Total CV's Evaluados
                         </p>
                         <CircularProgress
+                            aria-label="Avance de evaluación"
                             color="primary"
                             value={avanceGeneral}
                             valueLabel={`${avanceGeneral}%`}

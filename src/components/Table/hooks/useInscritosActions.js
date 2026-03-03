@@ -12,37 +12,49 @@ export function useInscritosActions(fetchInscripciones) {
     const [isExporting, setIsExporting] = useState(false);
 
     const handleValidar = useCallback(async (inscripcionId) => {
-        setIsValidarOpen(false);
         setLoading(true);
+        const promise = axios.post(`/inscripcion/val-digital`, {
+            id: inscripcionId,
+            tipoVal: 1,
+        });
+
+        toast.promise(promise, {
+            loading: "Validando inscripción...",
+            success: "Inscripción validada correctamente",
+            error: "Error al validar la inscripción",
+        });
+
         try {
-            await axios.post(`/inscripcion/val-digital`, {
-                id: inscripcionId,
-                tipoVal: 1,
-            });
+            await promise;
             setIsValidarOpen(false);
             fetchInscripciones();
-            toast.success("Inscripción validada correctamente");
         } catch (error) {
-            toast.error("Error al validar:", error);
+            // Error managed by toast.promise
         } finally {
             setLoading(false);
         }
     }, [fetchInscripciones]);
 
     const handleObservar = useCallback(async (inscripcionId, observationText) => {
-        setIsObservarOpen(false);
         setLoading(true);
+        const promise = axios.post(`/inscripcion/val-digital`, {
+            id: inscripcionId,
+            tipoVal: 2,
+            observacion: observationText || "No agregó descripción",
+        });
+
+        toast.promise(promise, {
+            loading: "Guardando observación...",
+            success: "Inscripción observada correctamente",
+            error: "Error al observar la inscripción",
+        });
+
         try {
-            await axios.post(`/inscripcion/val-digital`, {
-                id: inscripcionId,
-                tipoVal: 2,
-                observacion: observationText || "No agregó descripción",
-            });
+            await promise;
             setIsObservarOpen(false);
             fetchInscripciones();
-            toast.success("Inscripción observada correctamente");
         } catch (error) {
-            toast.error("Error al observar");
+            // Error managed by toast.promise
         } finally {
             setLoading(false);
         }
@@ -56,20 +68,28 @@ export function useInscritosActions(fetchInscripciones) {
     const handleVerConstancia = useCallback(async (postulanteId) => {
         setLoading(true);
 
+        const constanciaPromise = axios.get(
+            `/postulante/constancia/${postulanteId}`,
+            {
+                responseType: "blob",
+            }
+        );
+
+        toast.promise(constanciaPromise, {
+            loading: "Generando constancia...",
+            success: "Constancia generada con éxito",
+            error: "Error al obtener la constancia",
+        });
+
         try {
-            const response = await axios.get(
-                `/postulante/constancia/${postulanteId}`,
-                {
-                    responseType: "blob",
-                }
-            );
+            const response = await constanciaPromise;
 
             const file = new Blob([response.data], { type: "application/pdf" });
             const fileURL = URL.createObjectURL(file);
 
             window.open(fileURL, "_blank");
         } catch (error) {
-            toast.error("Error al obtener la constancia:");
+            // Error managed by toast.promise
         } finally {
             setLoading(false);
         }

@@ -470,7 +470,10 @@ export default function App() {
                     <Breadcrumb
                         paths={[
                             {
-                                name: "Lista de preinscritos",
+                                name: "Preinscripción"
+                            },
+                            {
+                                name: "Ver Preinscritos",
                                 href: "/preinscripciones",
                             },
                         ]}
@@ -481,219 +484,251 @@ export default function App() {
                     <div className="grid grid-cols-1 md:grid-cols-6 gap-4 w-full">
                         {/* Buscador */}
                         <div className="md:col-span-2">
-                            <Input
-                                isClearable
-                                id="buscar"
-                                className="w-full h-12"
-                                placeholder="Buscar ..."
-                                startContent={<SearchIcon />}
-                                value={filterValue}
-                                onClear={onClear}
-                                onValueChange={onSearchChange}
-                            />
+                            {dataLoading ? (
+                                <Skeleton className="w-full h-12 rounded-lg" />
+                            ) : (
+                                <Input
+                                    isClearable
+                                    id="buscar"
+                                    className="w-full h-12"
+                                    placeholder="Buscar ..."
+                                    startContent={<SearchIcon />}
+                                    value={filterValue}
+                                    onClear={onClear}
+                                    onValueChange={onSearchChange}
+                                />
+                            )}
                         </div>
 
                         {/* Select Grado Académico */}
                         <div className="md:col-span-1">
-                            <Select
-                                idPrefix="filter-"
-                                label="Grado Académico"
-                                variant="flat"
-                                className="w-full h-12 text-sm"
-                                defaultItems={listaGrados.map((item) => ({
-                                    key: String(item.id),
-                                    textValue: item.nombre,
-                                    ...item,
-                                }))}
-                                selectedKey={gradoFilter !== "all" ? String(gradoFilter) : null}
-                                onSelectionChange={(key) => {
-                                    const val = key ? String(key) : "all";
-                                    setGradoFilter(val);
-                                    setProgramaFilter("all"); // Reset programa
-                                }}
-                            />
+                            {dataLoading ? (
+                                <Skeleton className="w-full h-12 rounded-lg" />
+                            ) : (
+                                <Select
+                                    idPrefix="filter-"
+                                    label="Grado Académico"
+                                    variant="flat"
+                                    className="w-full h-12 text-sm"
+                                    defaultItems={listaGrados.map((item) => ({
+                                        key: String(item.id),
+                                        textValue: item.nombre,
+                                        ...item,
+                                    }))}
+                                    selectedKey={gradoFilter !== "all" ? String(gradoFilter) : null}
+                                    onSelectionChange={(key) => {
+                                        const val = key ? String(key) : "all";
+                                        setGradoFilter(val);
+                                        setProgramaFilter("all"); // Reset programa
+                                    }}
+                                />
+                            )}
                         </div>
 
                         {/* Select Programa */}
                         <div className="md:col-span-3">
-                            <Select
-                                idPrefix="filter-"
-                                label="Programa"
-                                className="w-full h-12 text-sm"
-                                disabled={listaProgramasFiltrados.length === 0}
-                                defaultItems={listaProgramasFiltrados.map((item) => ({
-                                    key: String(item.id),
-                                    textValue: item.nombre,
-                                    ...item,
-                                }))}
-                                selectedKey={programaFilter !== "all" ? String(programaFilter) : null}
-                                onSelectionChange={(key) => {
-                                    setProgramaFilter(key ? String(key) : "all");
-                                }}
-                            />
+                            {dataLoading ? (
+                                <Skeleton className="w-full h-12 rounded-lg" />
+                            ) : (
+                                <Select
+                                    idPrefix="filter-"
+                                    label="Programa"
+                                    className="w-full h-12 text-sm"
+                                    disabled={listaProgramasFiltrados.length === 0}
+                                    defaultItems={listaProgramasFiltrados.map((item) => ({
+                                        key: String(item.id),
+                                        textValue: item.nombre,
+                                        ...item,
+                                    }))}
+                                    selectedKey={programaFilter !== "all" ? String(programaFilter) : null}
+                                    onSelectionChange={(key) => {
+                                        setProgramaFilter(key ? String(key) : "all");
+                                    }}
+                                />
+                            )}
                         </div>
                     </div>
 
                     {/* Fila 2: Filtros y Exportar */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 items-center w-full">
                         {/* Estado */}
-                        <Dropdown>
-                            <DropdownTrigger>
-                                <Button
-                                    endContent={
-                                        <ChevronDownIcon className="text-small" />
-                                    }
-                                    variant="flat"
-                                    className="h-12 w-full"
-                                >
-                                    Estado
-                                </Button>
-                            </DropdownTrigger>
-                            <DropdownMenu
-                                disallowEmptySelection
-                                closeOnSelect={false}
-                                selectedKeys={statusFilter}
-                                selectionMode="multiple"
-                                onSelectionChange={setStatusFilter}
-                            >
-                                {statusOptions.map((status) => (
-                                    <DropdownItem
-                                        key={status.uid}
-                                        textValue={status.name}
-                                        className="capitalize"
-                                    >
-                                        {capitalize(status.name)}
-                                    </DropdownItem>
-                                ))}
-                            </DropdownMenu>
-                        </Dropdown>
-
-                        {/* Pago */}
-                        <Dropdown>
-                            <DropdownTrigger>
-                                <Button
-                                    endContent={
-                                        <ChevronDownIcon className="text-small" />
-                                    }
-                                    id="pago"
-                                    name="pago"
-                                    variant="flat"
-                                    className="h-10"
-                                >
-                                    Pago
-                                </Button>
-                            </DropdownTrigger>
-                            <DropdownMenu
-                                disallowEmptySelection
-                                closeOnSelect={false}
-                                selectedKeys={pagoFilter}
-                                selectionMode="multiple"
-                                onSelectionChange={setPagoFilter}
-                            >
-                                {pagoOptions.map((status) => (
-                                    <DropdownItem
-                                        key={status.uid}
-                                        id={status.name}
-                                        name={status.name}
-                                        textValue={status.name}
-                                        className="capitalize"
-                                    >
-                                        {capitalize(status.name)}
-                                    </DropdownItem>
-                                ))}
-                            </DropdownMenu>
-                        </Dropdown>
-
-                        {/* Columnas */}
-                        <Dropdown>
-                            <DropdownTrigger>
-                                <Button
-                                    endContent={
-                                        <ChevronDownIcon className="text-small" />
-                                    }
-                                    variant="flat"
-                                    className="h-12 w-full"
-                                >
-                                    Columnas
-                                </Button>
-                            </DropdownTrigger>
-                            <DropdownMenu
-                                disallowEmptySelection
-                                closeOnSelect={false}
-                                selectedKeys={visibleColumns}
-                                selectionMode="multiple"
-                                onSelectionChange={setVisibleColumns}
-                            >
-                                {columns.map((column) => (
-                                    <DropdownItem
-                                        key={column.uid}
-                                        textValue={column.name}
-                                        className="capitalize"
-                                    >
-                                        {capitalize(column.name)}
-                                    </DropdownItem>
-                                ))}
-                            </DropdownMenu>
-                        </Dropdown>
-
-                        {/* Nueva Preinscripción */}
-                        <Button
-                            color="success"
-                            variant="solid"
-                            className="h-12 w-full text-white font-medium"
-                            onPress={onOpen}
-                        >
-                            Nueva Preinscripción
-                        </Button>
-
-                        {/* Exportar */}
-                        <div className="flex justify-end">
-                            <Dropdown>
-                                <DropdownTrigger asChild>
+                        {dataLoading ? (
+                            <Skeleton className="h-12 w-full rounded-lg" />
+                        ) : (
+                            <Dropdown shouldBlockScroll={false}>
+                                <DropdownTrigger>
                                     <Button
                                         endContent={
                                             <ChevronDownIcon className="text-small" />
                                         }
-                                        id="exportar"
-                                        name="exportar"
-                                        color="primary"
+                                        variant="flat"
                                         className="h-12 w-full"
-                                        isLoading={isExporting}
                                     >
-                                        Exportar
+                                        Estado
                                     </Button>
                                 </DropdownTrigger>
-                                <DropdownMenu>
-                                    <DropdownItem
-                                        textValue="Excel"
-                                        onPress={() =>
-                                            handleExportMultiple("Excel")
-                                        }
-                                    >
-                                        Reporte General en Excel
-                                    </DropdownItem>
-                                    <DropdownItem
-                                        textValue="Reporte Diario"
-                                        onPress={() =>
-                                            handleExportMultiple(
-                                                "Reporte Diario"
-                                            )
-                                        }
-                                    >
-                                        Reporte Diario en Excel
-                                    </DropdownItem>
-                                    <DropdownItem
-                                        textValue="Facultad Excel"
-                                        onPress={() =>
-                                            handleExportMultiple(
-                                                "Facultad Excel"
-                                            )
-                                        }
-                                    >
-                                        Reporte Diario por Facultad en Excel
-                                    </DropdownItem>
+                                <DropdownMenu
+                                    disallowEmptySelection
+                                    closeOnSelect={false}
+                                    selectedKeys={statusFilter}
+                                    selectionMode="multiple"
+                                    onSelectionChange={setStatusFilter}
+                                >
+                                    {statusOptions.map((status) => (
+                                        <DropdownItem
+                                            key={status.uid}
+                                            textValue={status.name}
+                                            className="capitalize"
+                                        >
+                                            {capitalize(status.name)}
+                                        </DropdownItem>
+                                    ))}
                                 </DropdownMenu>
                             </Dropdown>
+                        )}
+
+                        {/* Pago */}
+                        {dataLoading ? (
+                            <Skeleton className="h-12 w-full rounded-lg" />
+                        ) : (
+                            <Dropdown shouldBlockScroll={false}>
+                                <DropdownTrigger>
+                                    <Button
+                                        endContent={
+                                            <ChevronDownIcon className="text-small" />
+                                        }
+                                        id="pago"
+                                        name="pago"
+                                        variant="flat"
+                                        className="h-10"
+                                    >
+                                        Pago
+                                    </Button>
+                                </DropdownTrigger>
+                                <DropdownMenu
+                                    disallowEmptySelection
+                                    closeOnSelect={false}
+                                    selectedKeys={pagoFilter}
+                                    selectionMode="multiple"
+                                    onSelectionChange={setPagoFilter}
+                                >
+                                    {pagoOptions.map((status) => (
+                                        <DropdownItem
+                                            key={status.uid}
+                                            id={status.name}
+                                            name={status.name}
+                                            textValue={status.name}
+                                            className="capitalize"
+                                        >
+                                            {capitalize(status.name)}
+                                        </DropdownItem>
+                                    ))}
+                                </DropdownMenu>
+                            </Dropdown>
+                        )}
+
+                        {/* Columnas */}
+                        {dataLoading ? (
+                            <Skeleton className="h-12 w-full rounded-lg" />
+                        ) : (
+                            <Dropdown shouldBlockScroll={false}>
+                                <DropdownTrigger>
+                                    <Button
+                                        endContent={
+                                            <ChevronDownIcon className="text-small" />
+                                        }
+                                        variant="flat"
+                                        className="h-12 w-full"
+                                    >
+                                        Columnas
+                                    </Button>
+                                </DropdownTrigger>
+                                <DropdownMenu
+                                    disallowEmptySelection
+                                    closeOnSelect={false}
+                                    selectedKeys={visibleColumns}
+                                    selectionMode="multiple"
+                                    onSelectionChange={setVisibleColumns}
+                                >
+                                    {columns.map((column) => (
+                                        <DropdownItem
+                                            key={column.uid}
+                                            textValue={column.name}
+                                            className="capitalize"
+                                        >
+                                            {capitalize(column.name)}
+                                        </DropdownItem>
+                                    ))}
+                                </DropdownMenu>
+                            </Dropdown>
+                        )}
+
+                        {/* Nueva Preinscripción */}
+                        {dataLoading ? (
+                            <Skeleton className="h-12 w-full rounded-lg" />
+                        ) : (
+                            <Button
+                                color="success"
+                                variant="solid"
+                                className="h-12 w-full text-white font-medium"
+                                onPress={onOpen}
+                            >
+                                Nueva Preinscripción
+                            </Button>
+                        )}
+
+                        {/* Exportar */}
+                        <div className="flex justify-end">
+                            {dataLoading ? (
+                                <Skeleton className="h-12 w-full sm:w-[150px] rounded-lg" />
+                            ) : (
+                                <Dropdown shouldBlockScroll={false}>
+                                    <DropdownTrigger asChild>
+                                        <Button
+                                            endContent={
+                                                <ChevronDownIcon className="text-small" />
+                                            }
+                                            id="exportar"
+                                            name="exportar"
+                                            color="primary"
+                                            className="h-12 w-full"
+                                            isLoading={isExporting}
+                                        >
+                                            Exportar
+                                        </Button>
+                                    </DropdownTrigger>
+                                    <DropdownMenu>
+                                        <DropdownItem
+                                            textValue="Excel"
+                                            onPress={() =>
+                                                handleExportMultiple("Excel")
+                                            }
+                                        >
+                                            Reporte General en Excel
+                                        </DropdownItem>
+                                        <DropdownItem
+                                            textValue="Reporte Diario"
+                                            onPress={() =>
+                                                handleExportMultiple(
+                                                    "Reporte Diario"
+                                                )
+                                            }
+                                        >
+                                            Reporte Diario en Excel
+                                        </DropdownItem>
+                                        <DropdownItem
+                                            textValue="Facultad Excel"
+                                            onPress={() =>
+                                                handleExportMultiple(
+                                                    "Facultad Excel"
+                                                )
+                                            }
+                                        >
+                                            Reporte Diario por Facultad en Excel
+                                        </DropdownItem>
+                                    </DropdownMenu>
+                                </Dropdown>
+                            )}
                         </div>
                     </div>
                     {/* Total y filas por página eliminados aquí, se muestran en TablePagination */}
@@ -714,6 +749,7 @@ export default function App() {
         listaProgramasFiltrados, // Necesario para re-renderizar select de programas
         gradoFilter, // Necesario para visual update
         programaFilter,
+        dataLoading,
     ]);
 
     const bottomContent = useMemo(

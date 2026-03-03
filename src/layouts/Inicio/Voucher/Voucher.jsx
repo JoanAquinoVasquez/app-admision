@@ -25,7 +25,7 @@ const TotalVouchers = ({ resumenVouchers, loading }) => {
     return (
         <DashboardCard
             title="Vouchers"
-            icon={<MdReceiptLong className="text-purple-500 text-lg" />}
+            icon={<MdReceiptLong className="text-blue-500 text-lg" />}
         >
             {loading ? (
                 <div className="flex flex-col justify-center h-[165px] w-full px-4 gap-4">

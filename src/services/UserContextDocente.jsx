@@ -7,30 +7,42 @@ const DocenteContext = createContext();
 export const DocenteProvider = ({ children }) => {
     const [docenteData, setDocenteData] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [loadingSession, setLoadingSession] = useState(true);
-    const navigate = useNavigate();
+    const [hasChecked, setHasChecked] = useState(false);
+
+    const checkAuth = async (force = false) => {
+        if (hasChecked && !force && docenteData) return true;
+        if (hasChecked && loading && !force) return false;
+
+        setLoading(true);
+        try {
+            const { data } = await axios.get("/check-auth-docente", {
+                withCredentials: true,
+            });
+
+            if (data.authenticated) {
+                setDocenteData({
+                    ...data.docente,
+                });
+                setHasChecked(true);
+                return true;
+            } else {
+                setDocenteData(null);
+                setHasChecked(true);
+                return false;
+            }
+        } catch (error) {
+            setDocenteData(null);
+            setHasChecked(true);
+            return false;
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const checkAuth = async () => {
-            try {
-                const { data } = await axios.get("/check-auth-docente", {
-                    withCredentials: true,
-                });
-
-                if (data.authenticated) {
-                    setDocenteData({
-                        ...data.docente,
-                    });
-                } else {
-                    setDocenteData(null);
-                }
-            } catch (error) {
-                setDocenteData(null);
-            } finally {
-                setLoading(false);
-            }
-        };
-        checkAuth();
+        if (!hasChecked) {
+            checkAuth();
+        }
     }, []);
 
     const logout = async (message = "Sesión cerrada correctamente") => {
@@ -41,7 +53,8 @@ export const DocenteProvider = ({ children }) => {
         } catch (error) {
             console.error("Error cerrando sesión:", error);
         } finally {
-            setLoadingSession(false);
+            setHasChecked(false);
+            setDocenteData(null);
             navigate("/iniciar-sesion", {
                 state: message ? { logoutMessage: message } : {},
             });
@@ -50,7 +63,7 @@ export const DocenteProvider = ({ children }) => {
 
     return (
         <DocenteContext.Provider
-            value={{ docenteData, setDocenteData, loadingSession, loading, logout }}
+            value={{ docenteData, setDocenteData, loading, logout, refreshDocente: checkAuth }}
         >
             {children}
         </DocenteContext.Provider>

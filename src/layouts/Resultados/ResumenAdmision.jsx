@@ -3,6 +3,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Skeleton, Select, SelectItem } from "@heroui/react";
 import DashboardCard from "../../components/Cards/DashboardCard";
 import { useState, useEffect } from "react";
+import { formatDisplayValue } from "../../components/Select/utils/formatDisplay";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -145,7 +146,7 @@ const ResumenAdmision = ({ resumenGeneral, loading }) => {
             >
                 {resumenes.map((item) => (
                     <SelectItem key={item.grado} value={item.grado}>
-                        {item.grado}
+                        {formatDisplayValue(item.grado)}
                     </SelectItem>
                 ))}
             </Select>

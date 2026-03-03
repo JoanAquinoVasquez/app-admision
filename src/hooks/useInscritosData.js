@@ -77,7 +77,7 @@ export const useInscritosData = (
                 ruta_foto:
                     item.postulante?.documentos?.find(
                         (doc) => doc.tipo === "Foto"
-                    )?.nombre_archivo || null,
+                    )?.url || null,
                 voucher: item.codigo,
                 ruta_voucher:
                     item.postulante?.documentos?.find(

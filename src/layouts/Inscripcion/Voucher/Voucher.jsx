@@ -21,10 +21,9 @@ import {
     ModalBody,
     ModalFooter,
     useDisclosure,
-    Select,
-    SelectItem,
     Skeleton,
 } from "@heroui/react";
+import Select from "../../../components/Select/Select";
 
 import { capitalize } from "../../../services/utils.js";
 import Spinner from "../../../components/Spinner/Spinner.jsx";
@@ -144,6 +143,7 @@ export default function CargarVoucher() {
     const [conceptosPago, setConceptosPago] = useState([]);
     const [isSearchingDni, setIsSearchingDni] = useState(false);
     const [tipoPago, setTipoPago] = useState("BN"); // BN o PAGALO
+    const [resetUpload, setResetUpload] = useState(false);
     const [manualVoucher, setManualVoucher] = useState({
         num_iden: "",
         nombre_completo: "",
@@ -247,11 +247,19 @@ export default function CargarVoucher() {
     };
 
     const handleConceptoChange = (id) => {
+        if (!id) {
+            setManualVoucher((prev) => ({
+                ...prev,
+                concepto_pago_id: "",
+                monto: "",
+            }));
+            return;
+        }
         const concepto = conceptosPago.find((c) => c.id.toString() === id);
         setManualVoucher((prev) => ({
             ...prev,
             concepto_pago_id: id,
-            monto: concepto ? concepto.monto : "",
+            monto: concepto ? concepto.monto.toString() : "",
         }));
     };
 
@@ -302,14 +310,19 @@ export default function CargarVoucher() {
         const dataToSend = {
             ...manualVoucher,
             numero: finalNumero,
-            // La agencia y cajero ya vienen del estado manualVoucher y se validan arriba.
-            // No se asigna automáticamente "PAGALO" a la agencia aquí.
         };
+
+        const savePromise = axios.post("/vouchers", dataToSend);
+
+        toast.promise(savePromise, {
+            loading: "Registrando voucher...",
+            success: "Voucher registrado exitosamente",
+            error: (err) => "Error al registrar: " + (err.response?.data?.message || err.message)
+        });
 
         try {
             setIsSaving(true);
-            const response = await axios.post("/vouchers", dataToSend);
-            setIsSaving(false);
+            await savePromise;
             fetchVouchers();
             onOpenChange(false);
             setManualVoucher({
@@ -324,15 +337,10 @@ export default function CargarVoucher() {
                 cajero: "0000",
             });
             setTipoPago("BN");
-            toast.success(
-                response.data.message || "Voucher registrado exitosamente."
-            );
         } catch (error) {
+            // Managed by toast
+        } finally {
             setIsSaving(false);
-            toast.error(
-                "Error al registrar el voucher: " +
-                (error.response?.data?.message || error.message)
-            );
         }
     };
     const handleSave = async () => {
@@ -352,28 +360,29 @@ export default function CargarVoucher() {
 
         const formData = new FormData();
         voucher.forEach((file) => {
-            formData.append("file[]", file); // Laravel: usa name="file[]" para múltiples archivos
+            formData.append("file[]", file);
+        });
+
+        const uploadPromise = axios.post("/vouchers", formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+        });
+
+        toast.promise(uploadPromise, {
+            loading: "Subiendo vouchers...",
+            success: response => response.data.message,
+            error: (err) => "Error al subir: " + (err.response?.data?.message || err.message)
         });
 
         try {
             setIsSaving(true);
-            const response = await axios.post("/vouchers", formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-            });
-            setIsSaving(false);
+            await uploadPromise;
             fetchVouchers();
             setVoucher([]); // Limpiar el estado después de la carga exitosa
-            toast.success(
-                response.data.message || "Vouchers cargados exitosamente."
-            );
+            setResetUpload(true);
         } catch (error) {
+            // Managed by toast
+        } finally {
             setIsSaving(false);
-            toast.error(
-                "Error al subir los archivos: " +
-                (error.response?.data?.message || error.message)
-            );
         }
     };
 
@@ -381,6 +390,7 @@ export default function CargarVoucher() {
         switch (inputId) {
             case "voucher":
                 setVoucher(files); // ← Guardamos el array de archivos
+                setResetUpload(false);
                 break;
             default:
                 break;
@@ -516,92 +526,107 @@ export default function CargarVoucher() {
         () => (
             <div className="flex flex-col gap-4">
                 <div className="flex flex-col sm:flex-row justify-between gap-3 items-center flex-wrap">
-                    <Input
-                        isClearable
-                        className="w-full xl:max-w-[44%] focus:outline-none "
-                        placeholder="Buscar voucher..."
-                        startContent={<SearchIcon />}
-                        value={filterValue}
-                        onClear={onClear}
-                        onValueChange={onSearchChange}
-                    />
+                    {isFetching ? (
+                        <Skeleton className="w-full xl:max-w-[44%] h-10 rounded-lg" />
+                    ) : (
+                        <Input
+                            isClearable
+                            className="w-full xl:max-w-[44%] focus:outline-none "
+                            placeholder="Buscar voucher..."
+                            startContent={<SearchIcon />}
+                            value={filterValue}
+                            onClear={onClear}
+                            onValueChange={onSearchChange}
+                        />
+                    )}
                     <div className="flex gap-3 w-full sm:w-auto ml-auto justify-end">
-                        <Button
-                            color="primary"
-                            onPress={handleExportVouchers}
-                            isLoading={isExporting}
-                        >
-                            Exportar Vouchers
-                        </Button>
-                        <Button
-                            color="success"
-                            variant="flat"
-                            onPress={onOpen}
-                        >
-                            Registrar Voucher Manual
-                        </Button>
-                        <Dropdown>
-                            <DropdownTrigger className="w-full sm:w-auto hidden md:flex lg:flex xl:flex">
+                        {isFetching ? (
+                            <>
+                                <Skeleton className="w-full sm:w-[150px] h-10 rounded-lg" />
+                                <Skeleton className="w-full sm:w-[200px] h-10 rounded-lg" />
+                                <Skeleton className="w-full sm:w-[100px] h-10 rounded-lg hidden md:flex lg:flex xl:flex" />
+                                <Skeleton className="w-full sm:w-[120px] h-10 rounded-lg hidden md:flex lg:flex xl:flex" />
+                            </>
+                        ) : (
+                            <>
                                 <Button
-                                    endContent={
-                                        <ChevronDownIcon className="text-small" />
-                                    }
-                                    variant="flat"
-                                    className="w-full sm:w-auto"
+                                    color="primary"
+                                    onPress={handleExportVouchers}
+                                    isLoading={isExporting}
                                 >
-                                    Estado
+                                    Exportar Vouchers
                                 </Button>
-                            </DropdownTrigger>
-                            <DropdownMenu
-                                disallowEmptySelection
-                                aria-label="Table Columns"
-                                closeOnSelect={false}
-                                selectedKeys={statusFilter}
-                                selectionMode="multiple"
-                                onSelectionChange={setStatusFilter}
-                            >
-                                {statusOptions.map((status) => (
-                                    <DropdownItem
-                                        key={status.uid}
-                                        textValue={status.name}
-                                        className="capitalize"
-                                    >
-                                        {capitalize(status.name)}
-                                    </DropdownItem>
-                                ))}
-                            </DropdownMenu>
-                        </Dropdown>
-                        <Dropdown>
-                            <DropdownTrigger className="w-full hidden md:flex lg:flex xl:flex">
                                 <Button
-                                    endContent={
-                                        <ChevronDownIcon className="text-small" />
-                                    }
+                                    color="success"
                                     variant="flat"
-                                    className="w-full sm:w-auto"
+                                    onPress={onOpen}
                                 >
-                                    Columnas
+                                    Registrar Voucher Manual
                                 </Button>
-                            </DropdownTrigger>
-                            <DropdownMenu
-                                disallowEmptySelection
-                                aria-label="Table Columns"
-                                closeOnSelect={false}
-                                selectedKeys={visibleColumns}
-                                selectionMode="multiple"
-                                onSelectionChange={setVisibleColumns}
-                            >
-                                {columns.map((column) => (
-                                    <DropdownItem
-                                        key={column.uid}
-                                        textValue={column.name}
-                                        className="capitalize"
+                                <Dropdown shouldBlockScroll={false}>
+                                    <DropdownTrigger className="w-full sm:w-auto hidden md:flex lg:flex xl:flex">
+                                        <Button
+                                            endContent={
+                                                <ChevronDownIcon className="text-small" />
+                                            }
+                                            variant="flat"
+                                            className="w-full sm:w-auto"
+                                        >
+                                            Estado
+                                        </Button>
+                                    </DropdownTrigger>
+                                    <DropdownMenu
+                                        disallowEmptySelection
+                                        aria-label="Table Columns"
+                                        closeOnSelect={false}
+                                        selectedKeys={statusFilter}
+                                        selectionMode="multiple"
+                                        onSelectionChange={setStatusFilter}
                                     >
-                                        {capitalize(column.name)}
-                                    </DropdownItem>
-                                ))}
-                            </DropdownMenu>
-                        </Dropdown>
+                                        {statusOptions.map((status) => (
+                                            <DropdownItem
+                                                key={status.uid}
+                                                textValue={status.name}
+                                                className="capitalize"
+                                            >
+                                                {capitalize(status.name)}
+                                            </DropdownItem>
+                                        ))}
+                                    </DropdownMenu>
+                                </Dropdown>
+                                <Dropdown shouldBlockScroll={false}>
+                                    <DropdownTrigger className="w-full hidden md:flex lg:flex xl:flex">
+                                        <Button
+                                            endContent={
+                                                <ChevronDownIcon className="text-small" />
+                                            }
+                                            variant="flat"
+                                            className="w-full sm:w-auto"
+                                        >
+                                            Columnas
+                                        </Button>
+                                    </DropdownTrigger>
+                                    <DropdownMenu
+                                        disallowEmptySelection
+                                        aria-label="Table Columns"
+                                        closeOnSelect={false}
+                                        selectedKeys={visibleColumns}
+                                        selectionMode="multiple"
+                                        onSelectionChange={setVisibleColumns}
+                                    >
+                                        {columns.map((column) => (
+                                            <DropdownItem
+                                                key={column.uid}
+                                                textValue={column.name}
+                                                className="capitalize"
+                                            >
+                                                {capitalize(column.name)}
+                                            </DropdownItem>
+                                        ))}
+                                    </DropdownMenu>
+                                </Dropdown>
+                            </>
+                        )}
                     </div>
                 </div>
                 {/* Total y filas por página */}
@@ -631,7 +656,8 @@ export default function CargarVoucher() {
             onRowsPerPageChange,
             onClear,
             handleExportVouchers,
-            isExporting
+            isExporting,
+            isFetching
         ]
     );
 
@@ -654,7 +680,10 @@ export default function CargarVoucher() {
             <Breadcrumb
                 paths={[
                     {
-                        name: "Cargar Vouchers Banco de la Nación",
+                        name: "Inscripción"
+                    },
+                    {
+                        name: "Cargar Vouchers",
                         href: "/cargar-vouchers",
                     },
                 ]}
@@ -675,6 +704,7 @@ export default function CargarVoucher() {
                             tamicono={30}
                             tamletra={15}
                             onFileUpload={handleFileUpload}
+                            reset={resetUpload}
                         />
                         <Button
                             isLoading={isSaving}
@@ -759,7 +789,7 @@ export default function CargarVoucher() {
                 </Table>
             </div>
 
-            <Modal isOpen={isOpen} onOpenChange={onOpenChange} size="2xl">
+            <Modal shouldBlockScroll={false} isDismissable={false} isOpen={isOpen} onOpenChange={onOpenChange} size="2xl">
                 <ModalContent>
                     {(onClose) => (
                         <>
@@ -786,32 +816,28 @@ export default function CargarVoucher() {
                                     <div className="md:col-span-2">
                                         <Select
                                             label="Tipo de Pago"
-                                            selectedKeys={[tipoPago]}
-                                            onSelectionChange={(keys) => {
-                                                const val = Array.from(keys)[0];
-                                                if (val) setTipoPago(val);
+                                            selectedKey={tipoPago}
+                                            onSelectionChange={(val) => {
+                                                setTipoPago(val || "");
                                             }}
-                                        >
-                                            <SelectItem key="BN">Banco de la Nación (7 dígitos)</SelectItem>
-                                            <SelectItem key="PAGALO">Págalo.pe (6 dígitos)</SelectItem>
-                                        </Select>
+                                            defaultItems={[
+                                                { key: "BN", textValue: "Banco de la Nación (7 dígitos)" },
+                                                { key: "PAGALO", textValue: "Págalo.pe (6 dígitos)" }
+                                            ]}
+                                        />
                                     </div>
                                     <div className="md:col-span-2">
                                         <Select
                                             label="Concepto de Pago"
-                                            placeholder="Seleccione un concepto"
-                                            selectedKeys={manualVoucher.concepto_pago_id ? [manualVoucher.concepto_pago_id.toString()] : []}
-                                            onSelectionChange={(keys) => {
-                                                const val = Array.from(keys)[0];
-                                                if (val) handleConceptoChange(val);
+                                            selectedKey={manualVoucher.concepto_pago_id?.toString() || ""}
+                                            onSelectionChange={(val) => {
+                                                handleConceptoChange(val);
                                             }}
-                                        >
-                                            {conceptosPago.map((c) => (
-                                                <SelectItem key={c.id.toString()}>
-                                                    {c.nombre} ({c.cod_concepto}) - S/. {c.monto}
-                                                </SelectItem>
-                                            ))}
-                                        </Select>
+                                            defaultItems={conceptosPago.map((c) => ({
+                                                key: c.id.toString(),
+                                                textValue: `${c.nombre} (${c.cod_concepto}) - S/. ${c.monto}`
+                                            }))}
+                                        />
                                     </div>
                                     <Input
                                         label="Número de Voucher"

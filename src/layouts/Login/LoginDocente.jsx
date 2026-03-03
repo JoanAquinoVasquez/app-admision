@@ -22,7 +22,7 @@ import { useDocente } from "../../services/UserContextDocente";
 function LoginDocente() {
     const navigate = useNavigate();
     const location = useLocation();
-    const { setDocenteData } = useDocente();
+    const { setDocenteData, refreshDocente } = useDocente();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -48,11 +48,16 @@ function LoginDocente() {
         try {
             const { data } = await axios.post("/docente-login", { email, password });
 
-            if (data.success && data.docente) {
-                // Use docente data from login response
-                setDocenteData(data.docente);
-                toast.success("Bienvenido, estimado docente");
-                navigate("/docente/inicio");
+            if (data.success) {
+                // Verify session and update global state
+                const isAuthenticated = await refreshDocente(true);
+
+                if (isAuthenticated) {
+                    toast.success("Bienvenido, estimado docente");
+                    navigate("/docente/inicio");
+                } else {
+                    toast.error("Error al verificar la sesión. Reintente.");
+                }
             } else {
                 toast.error("Error al iniciar sesión");
             }

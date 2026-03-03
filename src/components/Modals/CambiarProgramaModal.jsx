@@ -63,6 +63,7 @@ const CambiarProgramaModal = ({
 
     return (
         <Modal
+            shouldBlockScroll={false}
             size="lg"
             isOpen={isOpen}
             onOpenChange={onClose}
@@ -90,7 +91,7 @@ const CambiarProgramaModal = ({
                     </div>
                     <p className="text-sm text-default-500 font-normal">
                         Seleccione el nuevo grado y programa para el postulante.{" "}
-                        <span className="font-semibold text-warning">
+                        <span className="font-semibold text-blue-500">
                             Esta acción es irreversible.
                         </span>
                     </p>
@@ -101,7 +102,7 @@ const CambiarProgramaModal = ({
                         <p className="text-sm font-medium text-default-700 mb-3">
                             Selección de Programa
                         </p>
-                        
+
                         <div className="flex flex-col gap-4">
                             {/* Select de Grado */}
                             <Select

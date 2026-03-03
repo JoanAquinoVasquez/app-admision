@@ -29,9 +29,9 @@ export const columns = [
 ];
 
 export const statusOptions = [
-    { name: "DOCTORADO", uid: "DOC" },
-    { name: "MAESTRÍA", uid: "MAE" },
-    { name: "SEGUNDA ESPECIALIDAD", uid: "SEG" },
+    { name: "Doctorado", uid: "Doctorado" },
+    { name: "Maestria", uid: "Maestria" },
+    { name: "Segunda Especialidad Profesional", uid: "Segunda Especialidad Profesional" },
 ];
 
 export function capitalize(s) {
@@ -71,17 +71,38 @@ export default function App({ resumenEvaluacion, grados, loading: dataLoading })
         }));
     }, [resumenEvaluacion]);
 
+    // gradoFilter: estado LOCAL (igual que Table.jsx) — los 3 activos por defecto
+    const [gradoFilter, setGradoFilter] = useState(
+        new Set(["Doctorado", "Maestria", "Segunda Especialidad Profesional"])
+    );
+
+    // useCallback: la referencia de gradoCustomFilter solo cambia cuando gradoFilter cambia.
+    // Esto evita el bucle infinito: customFilter nuevo → filteredItems nuevo → useEffect → setState → render → …
+    const gradoCustomFilter = useCallback((data) => {
+        if (
+            gradoFilter instanceof Set &&
+            gradoFilter.size > 0 &&
+            gradoFilter.size < statusOptions.length
+        ) {
+            return data.filter((item) => {
+                const gp = item.grado_programa?.toLowerCase() ?? "";
+                return Array.from(gradoFilter).some((uid) =>
+                    gp.startsWith(uid.toLowerCase())
+                );
+            });
+        }
+        return data;
+    }, [gradoFilter]);
+
     const {
         filterValue,
         statusFilter,
-        gradoFilter,
         programaFilter,
         page,
         rowsPerPage,
         sortDescriptor,
         setFilterValue,
         setStatusFilter,
-        setGradoFilter,
         setProgramaFilter,
         setPage,
         setRowsPerPage,
@@ -97,6 +118,7 @@ export default function App({ resumenEvaluacion, grados, loading: dataLoading })
         initialRowsPerPage: 5,
         initialSortColumn: "inscritos",
         initialSortDirection: "descending",
+        customFilter: gradoCustomFilter,
     });
 
     const [selectedKeys, setSelectedKeys] = useState(new Set([]));
@@ -222,82 +244,91 @@ export default function App({ resumenEvaluacion, grados, loading: dataLoading })
         return (
             <div className="flex flex-col gap-4">
                 <div className="flex justify-between gap-3 items-end">
-                    <Input
-                        isClearable
-                        className="w-full sm:max-w-[44%]"
-                        placeholder="Buscar por nombre..."
-                        startContent={<SearchIcon />}
-                        value={filterValue}
-                        onClear={() => onClear()}
-                        onValueChange={onSearchChange}
-                    />
+                    {dataLoading ? (
+                        <Skeleton className="w-full sm:max-w-[44%] h-10 rounded-lg" />
+                    ) : (
+                        <Input
+                            isClearable
+                            className="w-full sm:max-w-[44%]"
+                            placeholder="Buscar por nombre..."
+                            startContent={<SearchIcon />}
+                            value={filterValue}
+                            onClear={() => onClear()}
+                            onValueChange={onSearchChange}
+                        />
+                    )}
                     <div className="flex gap-3 text-small text-default-400 items-center">
-                        {/* No hay export configurado aún para esta tabla específica */}
-                        {/* Dropdown Grado */}
-                        <Dropdown>
-                            <DropdownTrigger className="w-full sm:w-auto md:flex lg:flex xl:flex">
-                                <Button
-                                    aria-label="lista_grados"
-                                    endContent={
-                                        <ChevronDownIcon className="text-small" />
-                                    }
-                                    variant="flat"
-                                    className="h-10 w-full"
-                                >
-                                    Grado
-                                </Button>
-                            </DropdownTrigger>
-                            <DropdownMenu
-                                disallowEmptySelection
-                                aria-label="Table Columns"
-                                closeOnSelect={false}
-                                selectedKeys={gradoFilter}
-                                selectionMode="multiple"
-                                onSelectionChange={setGradoFilter}
-                            >
-                                {statusOptions.map((status) => (
-                                    <DropdownItem
-                                        key={status.uid}
-                                        textValue={status.name}
-                                        className="capitalize"
+                        {dataLoading ? (
+                            <>
+                                <Skeleton className="w-full sm:w-28 h-10 rounded-lg" />
+                                <Skeleton className="hidden sm:flex w-24 h-10 rounded-lg" />
+                            </>
+                        ) : (
+                            <>
+                                {/* No hay export configurado aún para esta tabla específica */}
+                                {/* Dropdown Grado */}
+                                <Dropdown shouldBlockScroll={false}>
+                                    <DropdownTrigger className="w-full sm:w-auto md:flex lg:flex xl:flex">
+                                        <Button
+                                            aria-label="lista_grados"
+                                            endContent={<ChevronDownIcon className="text-small" />}
+                                            variant="flat"
+                                            className="h-10 w-full"
+                                        >
+                                            Grado
+                                        </Button>
+                                    </DropdownTrigger>
+                                    <DropdownMenu
+                                        disallowEmptySelection
+                                        aria-label="Table Columns"
+                                        closeOnSelect={false}
+                                        selectedKeys={gradoFilter}
+                                        selectionMode="multiple"
+                                        onSelectionChange={setGradoFilter}
                                     >
-                                        {capitalize(status.name)}
-                                    </DropdownItem>
-                                ))}
-                            </DropdownMenu>
-                        </Dropdown>
+                                        {statusOptions.map((status) => (
+                                            <DropdownItem
+                                                key={status.uid}
+                                                textValue={status.name}
+                                                className="capitalize"
+                                            >
+                                                {capitalize(status.name)}
+                                            </DropdownItem>
+                                        ))}
+                                    </DropdownMenu>
+                                </Dropdown>
 
-                        <Dropdown>
-                            <DropdownTrigger className="hidden sm:flex">
-                                <Button
-                                    aria-label="lista_columnas"
-                                    endContent={
-                                        <ChevronDownIcon className="text-small" />
-                                    }
-                                    variant="flat"
-                                >
-                                    Columnas
-                                </Button>
-                            </DropdownTrigger>
-                            <DropdownMenu
-                                disallowEmptySelection
-                                aria-label="Table Columns"
-                                closeOnSelect={false}
-                                selectedKeys={visibleColumns}
-                                selectionMode="multiple"
-                                onSelectionChange={setVisibleColumns}
-                            >
-                                {columns.map((column) => (
-                                    <DropdownItem
-                                        key={column.uid}
-                                        textValue={column.name}
-                                        className="capitalize"
+                                <Dropdown shouldBlockScroll={false}>
+                                    <DropdownTrigger className="hidden sm:flex">
+                                        <Button
+                                            aria-label="lista_columnas"
+                                            endContent={<ChevronDownIcon className="text-small" />}
+                                            variant="flat"
+                                        >
+                                            Columnas
+                                        </Button>
+                                    </DropdownTrigger>
+                                    <DropdownMenu
+                                        disallowEmptySelection
+                                        aria-label="Table Columns"
+                                        closeOnSelect={false}
+                                        selectedKeys={visibleColumns}
+                                        selectionMode="multiple"
+                                        onSelectionChange={setVisibleColumns}
                                     >
-                                        {capitalize(column.name)}
-                                    </DropdownItem>
-                                ))}
-                            </DropdownMenu>
-                        </Dropdown>
+                                        {columns.map((column) => (
+                                            <DropdownItem
+                                                key={column.uid}
+                                                textValue={column.name}
+                                                className="capitalize"
+                                            >
+                                                {capitalize(column.name)}
+                                            </DropdownItem>
+                                        ))}
+                                    </DropdownMenu>
+                                </Dropdown>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
@@ -310,6 +341,7 @@ export default function App({ resumenEvaluacion, grados, loading: dataLoading })
         onRowsPerPageChange,
         users.length,
         onSearchChange,
+        dataLoading,
     ]);
 
     const bottomContent = useMemo(() => {
@@ -379,24 +411,18 @@ export default function App({ resumenEvaluacion, grados, loading: dataLoading })
                     )}
                 </TableHeader>
                 <TableBody
-                    emptyContent={dataLoading ? (
-                        <div className="flex flex-col gap-2 w-full p-2">
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                        </div>
-                    ) : "No se encontró información"}
-                    items={items}
-                    isLoading={dataLoading}
-                    loadingContent={
-                        <div className="w-full h-full flex flex-col gap-2 p-4 bg-white/50 backdrop-blur-sm z-50">
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                        </div>
+                    emptyContent={
+                        dataLoading ? (
+                            <div className="flex flex-col gap-2 w-full p-2">
+                                <Skeleton className="h-10 w-full rounded-lg" />
+                                <Skeleton className="h-10 w-full rounded-lg" />
+                                <Skeleton className="h-10 w-full rounded-lg" />
+                                <Skeleton className="h-10 w-full rounded-lg" />
+                                <Skeleton className="h-10 w-full rounded-lg" />
+                            </div>
+                        ) : "No se encontró información"
                     }
+                    items={dataLoading ? [] : items}
                     className="space-y-1"
                     aria-label="Cuerpo de la tabla"
                 >

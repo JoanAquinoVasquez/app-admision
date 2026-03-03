@@ -26,7 +26,7 @@ import {
 import useInscripcioNota from "../../data/Inscripcion/dataInscripcionNota";
 import Select from "../../components/Select/Select";
 
-import useProgramas from "../../data/dataProgramas";
+import useProgramasHabilitados from "../../data/Inscripcion/dataProgramasHabilitados";
 
 export const columns = [
     { name: "ID", uid: "id", sortable: true },
@@ -79,8 +79,8 @@ export default function App() {
     const [validarId, setValidarId] = useState(null);
     const [isObservarOpen, setIsObservarOpen] = useState(false);
 
-    const { grados } = useGrado();
-    const { filteredProgramas, filterByGrado } = useProgramas();
+    const { grados, loading: gradosLoading } = useGrado();
+    const { filteredProgramasHabilitados, filterByGrado, loading: programasLoading } = useProgramasHabilitados();
 
     const [programasPosibles, setProgramasPosibles] = useState([]);
     const [programasFiltrados, setProgramasFiltrados] = useState([]);
@@ -95,6 +95,9 @@ export default function App() {
     // But dataLoading is from useInscripcioNota
     const { loading: exportLoading, handleExport } = usePostulanteExports();
     const [selectedKeysPrograma, setSelectedKeysPrograma] = useState([]);
+
+    // ✅ Estado que indica si es la carga inicial (para mostrar Skeletons solo la primera vez)
+    const isInitialLoading = dataLoading && (!inscripcioNota || inscripcioNota.length === 0);
 
     // ✅ Aseguramos que `inscripcioNota` tenga datos antes de mapear
     const users = useMemo(() => {
@@ -129,6 +132,7 @@ export default function App() {
             });
     }, [inscripcioNota]);
 
+
     const {
         filterValue,
         statusFilter,
@@ -151,10 +155,7 @@ export default function App() {
         onClear,
         onRowsPerPageChange,
         filteredItems,
-    } = useTableFilters(users, {
-        initialRowsPerPage: 10,
-        initialSortColumn: "id",
-    });
+    } = useTableFilters(users);
 
     const [selectedKeys, setSelectedKeys] = useState(new Set([]));
     const [visibleColumns, setVisibleColumns] = useState(
@@ -190,7 +191,7 @@ export default function App() {
 
     const renderActions = useCallback((user) => (
         <div className="relative flex justify-end items-center gap-2">
-            <Dropdown>
+            <Dropdown shouldBlockScroll={false}>
                 <DropdownTrigger>
                     <Button
                         isIconOnly
@@ -228,7 +229,7 @@ export default function App() {
     const renderCell = useCallback((user, columnKey) => {
         const cellValue = user[columnKey];
 
-        if (["nota_expediente", "nota_entrevista", "nota_examen"].includes(columnKey)) {
+        if (["id", "nota_expediente", "nota_entrevista", "nota_examen"].includes(columnKey)) {
             return (
                 <div className="flex flex-col">
                     <p className="font-medium capitalize text-sm text-default-500">
@@ -264,7 +265,7 @@ export default function App() {
 
     const topContent = useMemo(() => {
         return (
-            <>
+            <div className="flex flex-col gap-2 mb-4">
                 <UploadNotesModal
                     isOpen={isObservarOpen}
                     onClose={() => setIsObservarOpen(false)}
@@ -278,187 +279,174 @@ export default function App() {
                     gradoSelected={gradoSelected}
                     onSuccess={fetchInscripcionNota}
                 />
-                {/* Overlay de carga (solo se renderiza si loading es true) */}
-                <div className="flex flex-wrap gap-4 w-full">
-                    {/* Input de búsqueda */}
-                    <div className="w-full sm:w-[60%] md:w-[18%]">
+
+                {/* 1) Fila de Búsqueda */}
+                <div className="w-full">
+                    {isInitialLoading ? (
+                        <Skeleton className="w-full h-12 rounded-lg" />
+                    ) : (
                         <Input
                             isClearable
-                            className="w-full h-10 focus:outline-none"
+                            className="w-full h-12 focus:outline-none"
                             classNames={{
                                 input: "placeholder:text-gray-800 placeholder:opacity-100 text-gray-900",
                             }}
-                            placeholder="Buscar al postulante"
+                            placeholder="Buscar Postulante..."
                             startContent={<SearchIcon />}
                             value={filterValue}
                             onClear={onClear}
                             onValueChange={onSearchChange}
                         />
-                    </div>
+                    )}
+                </div>
 
-                    {/* Select Grado Académico */}
-                    <div className="w-full sm:w-[40%] md:w-[15%]">
-                        <Select
-                            label="Grado Académico"
-                            variant="flat"
-                            defaultItems={(grados || []).map((item) => ({
-                                key: item.id,
-                                textValue: item.nombre,
-                                ...item,
-                            }))}
-                            selectedKey={
-                                gradoFilter !== "all" ? gradoFilter : null
-                            }
-                            onSelectionChange={(grado_id) => {
-                                if (grado_id === null) {
-                                    setGradoFilter("all");
-                                    setProgramaFilter([]); // Vaciar programas
-                                    setSelectedKeysPrograma([]); // Vaciar selección de programas
-                                } else {
-                                    setGradoFilter(parseInt(grado_id));
-                                    setProgramaFilter([]); // Reiniciar programas cuando se cambia de grado
-                                    setSelectedKeysPrograma([]);
-                                }
-                            }}
-                        />
-                    </div>
-
-                    {/* Select Programa */}
-                    <div className="w-full sm:w-[60%] md:w-[30%] lg:w-[45%]">
-                        <MultiSelect
-                            label="Selecciona Programas"
-                            defaultItems={
-                                (gradoFilter !== "all"
-                                    ? filteredProgramas
-                                    : users // Si no hay grado, dejar que el usuario filtre por programas de la lista actual
-                                        .reduce((acc, current) => {
-                                            if (!acc.find(item => item.id === current.programa_id)) {
-                                                acc.push({ id: current.programa_id, nombre: current.programa });
-                                            }
-                                            return acc;
-                                        }, [])
-                                ).map((item) => ({
-                                    key: item.id.toString(),
-                                    textValue: item.nombre,
+                {/* 2) Fila de Filtros Avanzados y Acciones Principales */}
+                <div className="w-full flex flex-col md:flex-row md:items-end gap-3">
+                    <div className="w-full md:w-[220px] shrink-0">
+                        {isInitialLoading ? (
+                            <Skeleton className="w-full h-12 rounded-lg" />
+                        ) : (
+                            <Select
+                                label="Grado Académico"
+                                variant="flat"
+                                className="w-full h-12 text-sm"
+                                placeholder={gradosLoading ? "Cargando..." : "Todos los grados"}
+                                defaultItems={(grados || []).map((item) => ({
+                                    key: (item.id || item.uid || "").toString(),
+                                    textValue: item.nombre || item.name || "",
                                     ...item,
-                                }))
-                            }
-                            className="w-full min-h-[50px]"
-                            selectedKeys={selectedKeysPrograma}
-                            onSelectionChange={(keys) => {
-                                setSelectedKeysPrograma(keys);
-                                setProgramaFilter(
-                                    Array.from(keys).map((key) => parseInt(key))
-                                );
-                            }}
-                            isRequired={true}
-                            closeOnSelect={false} // Mantener el dropdown abierto al seleccionar
-                        />
+                                }))}
+                                selectedKey={gradoFilter !== "all" ? gradoFilter.toString() : null}
+                                onSelectionChange={(grado_id) => {
+                                    if (!grado_id || grado_id === "all") {
+                                        setGradoFilter("all");
+                                        setProgramaFilter([]);
+                                        setSelectedKeysPrograma(new Set([]));
+                                        filterByGrado(null);
+                                    } else {
+                                        setGradoFilter(grado_id);
+                                        setProgramaFilter([]);
+                                        setSelectedKeysPrograma(new Set([]));
+                                        filterByGrado(grado_id);
+                                    }
+                                }}
+                            />
+                        )}
                     </div>
 
-                    {/* Botón de PDF */}
-                    <div className="w-full sm:w-auto md:w-[15%] mb-3 flex items-end gap-2">
-                        <Button
-                            color="default"
-                            variant="flat"
-                            isIconOnly
-                            onPress={fetchInscripcionNota}
-                            aria-label="Recargar"
-                        >
-                            <RefreshIcon />
-                        </Button>
-                        <Button
-                            color="danger"
-                            onPress={() => {
-                                setIsObservarOpen(true);
-                            }}
-                        >
-                            Importar
-                        </Button>
-                        <Dropdown>
-                            <DropdownTrigger asChild>
-                                <Button color="primary" className="h-10">
-                                    Exportar
+                    <div className="w-full md:flex-1">
+                        {isInitialLoading ? (
+                            <Skeleton className="w-full h-12 rounded-lg" />
+                        ) : (
+                            <MultiSelect
+                                label="Filtrar por Programas"
+                                placeholder={programasLoading ? "Cargando..." : "Seleccione uno o más programas"}
+                                defaultItems={
+                                    filteredProgramasHabilitados.map((item) => ({
+                                        key: item.id.toString(),
+                                        textValue: item.nombre,
+                                        ...item,
+                                    }))
+                                }
+                                selectedKeys={selectedKeysPrograma}
+                                onSelectionChange={(keys) => {
+                                    setSelectedKeysPrograma(keys);
+                                    setProgramaFilter(Array.from(keys).map((key) => parseInt(key)));
+                                }}
+                                disabled={gradoFilter === "all"}
+                                isRequired={true}
+                                className="w-full h-12 text-sm"
+                            />
+                        )}
+                    </div>
+
+                    <div className="w-full md:w-auto flex flex-col sm:flex-row gap-2 md:ml-auto">
+                        {isInitialLoading ? (
+                            <>
+                                <Skeleton className="h-12 w-12 rounded-lg" />
+                                <Skeleton className="w-full sm:w-[150px] h-12 rounded-lg" />
+                                <Skeleton className="w-full sm:w-[120px] h-12 rounded-lg" />
+                            </>
+                        ) : (
+                            <>
+                                <Button
+                                    isIconOnly
+                                    variant="flat"
+                                    color="default"
+                                    onPress={fetchInscripcionNota}
+                                    aria-label="Recargar"
+                                    className="bg-white shadow-sm border border-slate-200 h-12 w-12 shrink-0"
+                                    isLoading={dataLoading}
+                                >
+                                    <RefreshIcon />
                                 </Button>
-                            </DropdownTrigger>
-                            <DropdownMenu>
-                                <DropdownItem
-                                    textValue="Reporte Notas CV PDF"
-                                    onPress={() => onExport("CV")}
+                                <Button
+                                    color="success"
+                                    className="text-white font-semibold h-12 w-full sm:w-auto px-4"
+                                    onPress={() => setIsObservarOpen(true)}
                                 >
-                                    Reporte Notas CV PDF
-                                </DropdownItem>
-                                <DropdownItem
-                                    textValue="Plantilla Notas Entrevista"
-                                    onPress={() =>
-                                        onExport(
-                                            "Plantilla Notas Entrevista"
-                                        )
-                                    }
-                                >
-                                    Plantilla Notas Entrevista PDF
-                                </DropdownItem>
-                                <DropdownItem
-                                    textValue="Reporte Aptos Asistencia PDF"
-                                    onPress={() =>
-                                        onExport(
-                                            "Reporte Aptos Asistencia PDF"
-                                        )
-                                    }
-                                >
-                                    Plantilla Asistencia PDF
-                                </DropdownItem>
-                                <DropdownItem
-                                    textValue="Reporte Aulas PDF"
-                                    onPress={() =>
-                                        onExport(
-                                            "Reporte Aulas PDF"
-                                        )
-                                    }
-                                >
-                                    Plantilla Aulas PDF
-                                </DropdownItem>
-                                <DropdownItem
-                                    textValue="Reporte Aptos Excel"
-                                    onPress={() =>
-                                        onExport(
-                                            "Reporte Aptos Excel"
-                                        )
-                                    }
-                                >
-                                    Reporte Final Notas Excel
-                                </DropdownItem>
-                            </DropdownMenu>
-                        </Dropdown>
-                    </div>
-                    {/* 📊 Resumen de resultados */}
-                    <div className="flex justify-between items-center w-full">
-                        <div className="flex items-center">
-                            <span className="text-default-400 text-small">
-                                {`${notaStats.conNota} de ${filteredItems.length} postulantes evaluados`}
-                            </span>
-                        </div>
-
-                        <div className="flex items-center">
-                            <label className="flex items-center text-default-400 text-small">
-                                Rows per page:
-                                <select
-                                    value={rowsPerPage}
-                                    onChange={(e) => {
-                                        setRowsPerPage(Number(e.target.value));
-                                        setPage(1);
-                                    }}
-                                    className="bg-transparent outline-none text-default-400 text-small ml-2"
-                                >
-                                    <option value="5">5</option>
-                                    <option value="10">10</option>
-                                    <option value="30">30</option>
-                                </select>
-                            </label>
-                        </div>
+                                    Importar Notas
+                                </Button>
+                                <Dropdown shouldBlockScroll={false}>
+                                    <DropdownTrigger>
+                                        <Button
+                                            color="primary"
+                                            className="font-semibold h-12 w-full sm:w-auto px-4"
+                                            endContent={<ChevronDownIcon />}
+                                        >
+                                            Exportar
+                                        </Button>
+                                    </DropdownTrigger>
+                                    <DropdownMenu aria-label="Opciones de exportación">
+                                        <DropdownItem key="cv" textValue="Reporte Notas CV PDF" onPress={() => onExport("CV")}>
+                                            Reporte Notas CV PDF
+                                        </DropdownItem>
+                                        <DropdownItem key="entrevista" textValue="Plantilla Notas Entrevista" onPress={() => onExport("Plantilla Notas Entrevista")}>
+                                            Plantilla Notas Entrevista PDF
+                                        </DropdownItem>
+                                        <DropdownItem key="asistencia" textValue="Plantilla Asistencia PDF" onPress={() => onExport("Reporte Aptos Asistencia PDF")}>
+                                            Plantilla Asistencia PDF
+                                        </DropdownItem>
+                                        <DropdownItem key="aulas" textValue="Plantilla Aulas PDF" onPress={() => onExport("Reporte Aulas PDF")}>
+                                            Plantilla Aulas PDF
+                                        </DropdownItem>
+                                        <DropdownItem key="excel" textValue="Reporte Final Notas Excel" onPress={() => onExport("Reporte Aptos Excel")}>
+                                            Reporte Final Notas Excel
+                                        </DropdownItem>
+                                    </DropdownMenu>
+                                </Dropdown>
+                            </>
+                        )}
                     </div>
                 </div>
-            </>
+
+                {/* 3) Info de resultados y paginación en el mismo layout limpio */}
+                <div className="flex justify-between items-center w-full mt-2">
+                    <div className="flex items-center">
+                        <span className="text-default-400 text-small font-semibold">
+                            {`${notaStats.conNota} de ${filteredItems.length} evaluados`}
+                        </span>
+                    </div>
+
+                    <div className="flex items-center">
+                        <label className="flex items-center text-default-400 text-small">
+                            Filas por página:
+                            <select
+                                className="bg-transparent outline-none text-default-400 text-small ml-2"
+                                value={rowsPerPage}
+                                onChange={(e) => {
+                                    setRowsPerPage(Number(e.target.value));
+                                    setPage(1);
+                                }}
+                            >
+                                <option value="5">5</option>
+                                <option value="10">10</option>
+                                <option value="30">30</option>
+                            </select>
+                        </label>
+                    </div>
+                </div>
+            </div>
         );
     }, [
         filterValue,
@@ -468,14 +456,22 @@ export default function App() {
         onRowsPerPageChange,
         users.length,
         gradoFilter,
-        filteredProgramas,
+        filteredProgramasHabilitados,
         grados,
         selectedKeysPrograma,
         isObservarOpen,
         isNotaEntrevista,
         validarId,
         selectedNota,
-        gradoSelected
+        gradoSelected,
+        notaStats.conNota,
+        filteredItems.length,
+        rowsPerPage,
+        setPage,
+        setRowsPerPage,
+        fetchInscripcionNota,
+        onExport,
+        dataLoading,
     ]);
 
     const bottomContent = useMemo(
@@ -496,6 +492,7 @@ export default function App() {
             aria-label="Example table"
             layout="auto"
             isHeaderSticky
+            isLoading={dataLoading}
             bottomContent={bottomContent}
             bottomContentPlacement="outside"
             classNames={{
@@ -528,7 +525,7 @@ export default function App() {
                 )}
             </TableHeader>
             <TableBody
-                emptyContent={dataLoading ? (
+                emptyContent={(dataLoading && !inscripcioNota.length) ? (
                     <div className="flex flex-col gap-2 w-full p-2">
                         <Skeleton className="h-10 w-full rounded-lg" />
                         <Skeleton className="h-10 w-full rounded-lg" />
@@ -536,8 +533,8 @@ export default function App() {
                     </div>
                 ) : "No se encontró información"}
                 items={items}
-                className="space-y-1" // Reducir espacio entre filas
-                isLoading={dataLoading}
+                className="space-y-1"
+                isLoading={dataLoading && !inscripcioNota.length}
                 loadingContent={
                     <div className="w-full h-full flex flex-col gap-2 p-4 bg-white/50 backdrop-blur-sm z-50">
                         <Skeleton className="h-10 w-full rounded-lg" />

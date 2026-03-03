@@ -6,7 +6,10 @@ function Ingresantes() {
         <div className="container p-4 max-w-full">
             <div>
                 <Breadcrumb
-                    paths={[{ name: "Gestionar Usuarios", href: "/gestionar-usuarios" }]}
+                    paths={[
+                        { name: "Usuarios" },
+                        { name: "Gestión Usuarios", href: "/gestionar-usuarios" }
+                    ]}
                 />
             </div>
             <div className="bg-white rounded-lg p-3 shadow-md mb-3 min-w-[320px] overflow-x-auto">

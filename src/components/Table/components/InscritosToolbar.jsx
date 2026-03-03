@@ -6,6 +6,7 @@ import {
     DropdownTrigger,
     DropdownMenu,
     DropdownItem,
+    Skeleton,
 } from "@heroui/react";
 import Select from "../../Select/Select";
 import { SearchIcon, ChevronDownIcon, PlusIcon } from "./Icons";
@@ -33,6 +34,7 @@ export default function InscritosToolbar({
     onExport,
     customStatusOptions,
     isExporting = false,
+    isLoading = false,
 }) {
     // ... (rest of the file until the export button) ...
 
@@ -42,81 +44,94 @@ export default function InscritosToolbar({
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4 w-full">
                 {/* ... Input Search ... */}
                 <div className="col-span-1 md:col-span-4">
-                    <Input
-                        isClearable
-                        className="w-full h-12 focus:outline-none"
-                        classNames={{
-                            input: "placeholder:text-gray-800 placeholder:opacity-100 text-gray-900",
-                        }}
-                        placeholder="Buscar al postulante"
-                        startContent={<SearchIcon />}
-                        value={filterValue}
-                        onClear={onClear}
-                        onValueChange={onSearchChange}
-                    />
+                    {isLoading ? (
+                        <Skeleton className="w-full h-12 rounded-lg" />
+                    ) : (
+                        <Input
+                            isClearable
+                            className="w-full h-12 focus:outline-none"
+                            classNames={{
+                                input: "placeholder:text-gray-800 placeholder:opacity-100 text-gray-900",
+                            }}
+                            placeholder="Buscar al postulante"
+                            startContent={<SearchIcon />}
+                            value={filterValue}
+                            onClear={onClear}
+                            onValueChange={onSearchChange}
+                        />
+                    )}
                 </div>
 
                 {/* ... Dropdowns Estado/Columnas ... */}
                 <div className="col-span-1 md:col-span-1 flex flex-col sm:flex-row gap-2 justify-end w-full">
-                    <Dropdown>
-                        <DropdownTrigger className="w-full sm:w-auto">
-                            <Button
-                                aria-label="estado"
-                                endContent={<ChevronDownIcon className="text-small" />}
-                                variant="flat"
-                                className="h-12 w-full sm:w-auto"
-                            >
-                                Estado
-                            </Button>
-                        </DropdownTrigger>
-                        <DropdownMenu
-                            disallowEmptySelection
-                            closeOnSelect={false}
-                            selectedKeys={statusFilter}
-                            selectionMode="multiple"
-                            onSelectionChange={setStatusFilter}
-                        >
-                            {(customStatusOptions || statusOptions).map((status) => (
-                                <DropdownItem
-                                    key={status.uid}
-                                    textValue={status.name}
-                                    className="capitalize"
+                    {isLoading ? (
+                        <>
+                            <Skeleton className="h-12 w-full sm:w-24 rounded-lg" />
+                            <Skeleton className="h-12 w-full sm:w-24 rounded-lg" />
+                        </>
+                    ) : (
+                        <>
+                            <Dropdown shouldBlockScroll={false}>
+                                <DropdownTrigger className="w-full sm:w-auto">
+                                    <Button
+                                        aria-label="estado"
+                                        endContent={<ChevronDownIcon className="text-small" />}
+                                        variant="flat"
+                                        className="h-12 w-full sm:w-auto"
+                                    >
+                                        Estado
+                                    </Button>
+                                </DropdownTrigger>
+                                <DropdownMenu
+                                    disallowEmptySelection
+                                    closeOnSelect={false}
+                                    selectedKeys={statusFilter}
+                                    selectionMode="multiple"
+                                    onSelectionChange={setStatusFilter}
                                 >
-                                    {capitalize(status.name)}
-                                </DropdownItem>
-                            ))}
-                        </DropdownMenu>
-                    </Dropdown>
+                                    {(customStatusOptions || statusOptions).map((status) => (
+                                        <DropdownItem
+                                            key={status.uid}
+                                            textValue={status.name}
+                                            className="capitalize"
+                                        >
+                                            {capitalize(status.name)}
+                                        </DropdownItem>
+                                    ))}
+                                </DropdownMenu>
+                            </Dropdown>
 
-                    <Dropdown>
-                        <DropdownTrigger className="w-full sm:w-auto">
-                            <Button
-                                aria-label="columnas"
-                                endContent={<ChevronDownIcon className="text-small" />}
-                                variant="flat"
-                                className="h-12 w-full sm:w-auto"
-                            >
-                                Columnas
-                            </Button>
-                        </DropdownTrigger>
-                        <DropdownMenu
-                            disallowEmptySelection
-                            closeOnSelect={false}
-                            selectedKeys={visibleColumns}
-                            selectionMode="multiple"
-                            onSelectionChange={setVisibleColumns}
-                        >
-                            {columns.map((column) => (
-                                <DropdownItem
-                                    key={column.uid}
-                                    textValue={column.name}
-                                    className="capitalize"
+                            <Dropdown shouldBlockScroll={false}>
+                                <DropdownTrigger className="w-full sm:w-auto">
+                                    <Button
+                                        aria-label="columnas"
+                                        endContent={<ChevronDownIcon className="text-small" />}
+                                        variant="flat"
+                                        className="h-12 w-full sm:w-auto"
+                                    >
+                                        Columnas
+                                    </Button>
+                                </DropdownTrigger>
+                                <DropdownMenu
+                                    disallowEmptySelection
+                                    closeOnSelect={false}
+                                    selectedKeys={visibleColumns}
+                                    selectionMode="multiple"
+                                    onSelectionChange={setVisibleColumns}
                                 >
-                                    {capitalize(column.name)}
-                                </DropdownItem>
-                            ))}
-                        </DropdownMenu>
-                    </Dropdown>
+                                    {columns.map((column) => (
+                                        <DropdownItem
+                                            key={column.uid}
+                                            textValue={column.name}
+                                            className="capitalize"
+                                        >
+                                            {capitalize(column.name)}
+                                        </DropdownItem>
+                                    ))}
+                                </DropdownMenu>
+                            </Dropdown>
+                        </>
+                    )}
                 </div>
             </div>
 
@@ -124,51 +139,61 @@ export default function InscritosToolbar({
             <div className="w-full flex flex-col md:flex-row md:items-end gap-4">
                 {/* 🎓 Select Grado Académico */}
                 <div className="w-full md:w-1/4">
-                    <Select
-                        label="Grado Académico"
-                        variant="flat"
-                        className="w-full h-12 text-sm"
-                        defaultItems={grados.map((item) => ({
-                            key: item.id,
-                            textValue: item.nombre,
-                            ...item,
-                        }))}
-                        selectedKey={gradoFilter !== "all" ? gradoFilter : null}
-                        onSelectionChange={(grado_id) => {
-                            if (grado_id === null) {
-                                setGradoFilter("all");
-                                setProgramaFilter("all");
-                            } else {
-                                setGradoFilter(grado_id);
-                                setProgramaFilter("all");
-                            }
-                        }}
-                    />
+                    {isLoading ? (
+                        <Skeleton className="w-full h-12 rounded-lg" />
+                    ) : (
+                        <Select
+                            label="Grado Académico"
+                            variant="flat"
+                            className="w-full h-12 text-sm"
+                            defaultItems={grados.map((item) => ({
+                                key: item.id.toString(),
+                                textValue: item.nombre,
+                                ...item,
+                            }))}
+                            selectedKey={gradoFilter !== "all" ? gradoFilter : null}
+                            onSelectionChange={(grado_id) => {
+                                if (grado_id === null) {
+                                    setGradoFilter("all");
+                                    setProgramaFilter("all");
+                                } else {
+                                    setGradoFilter(grado_id);
+                                    setProgramaFilter("all");
+                                }
+                            }}
+                        />
+                    )}
                 </div>
 
                 {/* 🏫 Select Programa */}
                 <div className="w-full md:flex-1/4">
-                    <Select
-                        label="Programa"
-                        className="w-full h-12 text-sm"
-                        disabled={gradoFilter === "all"}
-                        defaultItems={filteredProgramas.map((item) => ({
-                            key: item.id,
-                            textValue: item.nombre,
-                            ...item,
-                        }))}
-                        selectedKey={programaFilter !== "all" ? programaFilter : null}
-                        onSelectionChange={(programa_id) => {
-                            if (programa_id === null) {
-                                setProgramaFilter("all");
-                            } else {
-                                setProgramaFilter(programa_id);
-                            }
-                        }}
-                    />
+                    {isLoading ? (
+                        <Skeleton className="w-full h-12 rounded-lg" />
+                    ) : (
+                        <Select
+                            label="Programa"
+                            className="w-full h-12 text-sm"
+                            disabled={gradoFilter === "all"}
+                            defaultItems={filteredProgramas.map((item) => ({
+                                key: item.id.toString(),
+                                textValue: item.nombre,
+                                ...item,
+                            }))}
+                            selectedKey={programaFilter !== "all" ? programaFilter : null}
+                            onSelectionChange={(programa_id) => {
+                                if (programa_id === null) {
+                                    setProgramaFilter("all");
+                                } else {
+                                    setProgramaFilter(programa_id);
+                                }
+                            }}
+                        />
+                    )}
                 </div>
                 <div className="w-full md:w-auto md:ml-auto">
-                    {simpleExport ? (
+                    {isLoading ? (
+                        <Skeleton className="w-full sm:w-[180px] h-12 rounded-lg" />
+                    ) : simpleExport ? (
                         <Button
                             color="primary"
                             onPress={onExport}
@@ -179,7 +204,7 @@ export default function InscritosToolbar({
                             {exportLabel}
                         </Button>
                     ) : (
-                        <Dropdown>
+                        <Dropdown shouldBlockScroll={false}>
                             <DropdownTrigger asChild>
                                 <Button
                                     aria-label="exportar reportes"

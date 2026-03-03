@@ -9,6 +9,7 @@ import useRoutes from "./RoutesSidebar.jsx";
 import Spinner from "../Spinner/Spinner.jsx";
 import RoleGuard from "../../services/RoleGuard.jsx";
 import { useUser } from "../../services/UserContext.jsx";
+import { admissionConfig } from "../../config/admission.js";
 
 const SidebarMenu = () => {
     const [isExpanded, setIsExpanded] = useState(false);
@@ -76,6 +77,12 @@ const SidebarMenu = () => {
             [section]: !prev[section],
         }));
 
+    const handleLinkClick = () => {
+        if (!isLgScreen) {
+            setIsExpanded(false);
+        }
+    };
+
     const renderMenuItems = (items) =>
         items.map(({ to, icon, text, subLinks, roles }, index) => {
             const match = pathname.includes(`/${to}`);
@@ -91,11 +98,11 @@ const SidebarMenu = () => {
                         >
                             <Link
                                 to={to}
-                                className={`li-sidebar w-full block px-6 py-2 rounded transition-colors ${
-                                    isActive
-                                        ? "bg-blue-100 text-blue-700 font-semibold hover:bg-blue-200 hover:text-blue-700"
-                                        : "text-gray-600 hover:bg-gray-100 bg-white hover:text-gray-700"
-                                }`}
+                                onClick={handleLinkClick}
+                                className={`li-sidebar w-full block px-4 py-2 rounded transition-colors ${isActive
+                                    ? "bg-blue-100 text-blue-700 font-semibold hover:bg-blue-200 hover:text-blue-700"
+                                    : "text-gray-600 hover:bg-gray-100 bg-white hover:text-gray-700"
+                                    }`}
                             >
                                 <div className="flex items-center w-full">
                                     {icon}
@@ -117,11 +124,10 @@ const SidebarMenu = () => {
                                     variant="light"
                                     title={
                                         <div
-                                            className={`li-sidebar px-3 py-2 w-full flex items-center ${
-                                                match
-                                                    ? "text-blue-600 font-semibold"
-                                                    : "text-gray-600"
-                                            }`}
+                                            className={`li-sidebar px-3 py-2 w-full flex items-center ${match
+                                                ? "text-blue-600 font-semibold"
+                                                : "text-gray-600"
+                                                }`}
                                         >
                                             {icon}
                                             <span className="ml-3 truncate">
@@ -145,13 +151,13 @@ const SidebarMenu = () => {
                                                 >
                                                     <Link
                                                         to={subLink.to}
-                                                        className={`li-sidebar w-full block px-2 py-1 rounded transition-colors ${
-                                                            pathname.includes(
-                                                                `/${subLink.to}`
-                                                            )
-                                                                ? "bg-blue-100 text-blue-600 font-semibold"
-                                                                : "text-gray-600 hover:bg-gray-100"
-                                                        }`}
+                                                        onClick={handleLinkClick}
+                                                        className={`li-sidebar w-full block px-2 py-1 rounded transition-colors ${pathname.includes(
+                                                            `/${subLink.to}`
+                                                        )
+                                                            ? "bg-blue-100 text-blue-600 font-semibold"
+                                                            : "text-gray-600 hover:bg-gray-100"
+                                                            }`}
                                                     >
                                                         <span className="truncate">
                                                             {subLink.text}
@@ -234,9 +240,8 @@ const SidebarMenu = () => {
             )}
 
             <div
-                className={`fixed top-0 left-0 h-screen z-40 bg-white shadow-lg w-60 ${
-                    isExpanded ? "translate-x-0" : "-translate-x-full"
-                } transition-transform duration-300 lg:relative lg:translate-x-0`}
+                className={`fixed top-0 left-0 h-screen z-40 bg-white shadow-lg w-56 ${isExpanded ? "translate-x-0" : "-translate-x-full"
+                    } transition-transform duration-300 lg:relative lg:translate-x-0`}
             >
                 <div className="flex items-center justify-center p-2">
                     <img
@@ -251,14 +256,16 @@ const SidebarMenu = () => {
                     />
                 </div>
 
-                <div className="px-6">
+                <div className="px-4 mt-1 text-center">
                     <h2 className="text-md font-semibold text-gray-600">
-                        Aplicación Admisión-EPG
+                        Admisión {admissionConfig.cronograma.periodo}
                     </h2>
+                    <div className="border-b border-gray-200 mt-2 mb-6"></div>
                 </div>
 
+
                 <nav
-                    className="flex-1 mt-8 overflow-y-auto lg:max-h-[calc(100vh-200px)] max-h-screen"
+                    className="flex-1 overflow-y-auto lg:max-h-[calc(100vh-200px)] max-h-screen"
                     aria-label="Menú principal"
                 >
                     <ul className="flex flex-col w-full space-y-1 px-2">

@@ -21,39 +21,46 @@ const UploadNotesModal = ({ isOpen, onClose, onSuccess }) => {
     };
 
     const handleObservar = async () => {
-        setLoading(true);
         // Verificar si el FormData tiene un archivo
         if (!formDataRef.current.has("notas_examen")) {
             toast.error("Debe seleccionar un archivo.");
-            setLoading(false);
             return;
         }
 
-        try {
-            const response = await axios.post(
-                "/extraer-notas-examen",
-                formDataRef.current,
-                {
-                    headers: {
-                        "Content-Type": "multipart/form-data",
-                    },
-                }
-            );
-            onSuccess();
-            toast.success(response.data.message);
-            onClose();
-        } catch (error) {
-            toast.error(
-                error.response?.data?.message ||
+        setLoading(true);
+        const promise = axios.post(
+            "/extraer-notas-examen",
+            formDataRef.current,
+            {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            }
+        );
+
+        toast.promise(promise, {
+            loading: "Procesando notas de examen...",
+            success: (response) => {
+                onSuccess();
+                onClose();
+                return response.data.message || "Notas procesadas con éxito.";
+            },
+            error: (err) =>
+                err.response?.data?.message ||
                 "Hubo un problema al subir el archivo."
-            );
+        });
+
+        try {
+            await promise;
+        } catch (error) {
+            // Error managed by toast.promise
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose}>
+        <Modal isOpen={isOpen} onClose={onClose} shouldBlockScroll={false}>
             <ModalContent>
                 <ModalHeader>Subir Notas Examen Admisión</ModalHeader>
                 <ModalBody>

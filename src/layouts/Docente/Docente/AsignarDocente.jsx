@@ -79,22 +79,21 @@ function DocenteEvaluador() {
         setIsSaving(true);
         setError(null);
 
-        axios
-            .post(`/docente-programa/${docenteSeleccionado}`, {
-                programas: programasSeleccionados, // Enviar solo los programas como array
-            })
-            .then((response) => {
-                setIsSaving(false);
-                toast.success(response.data.message);
+        const promise = axios.post(`/docente-programa/${docenteSeleccionado}`, {
+            programas: programasSeleccionados,
+        });
+
+        toast.promise(promise, {
+            loading: "Asignando programas...",
+            success: (response) => {
                 fetchDocentes();
                 fetchProgramas();
-            })
-            .catch((error) => {
-                setIsSaving(false);
-                setError("Hubo un error al asignar el docente.");
-                toast.error("Hubo un error al asignar el docente.");
-                console.error("Error al asignar docente:", error);
-            });
+                return response.data.message || "Asignación completada";
+            },
+            error: (err) => err.response?.data?.message || "Error al asignar programas",
+        });
+
+        promise.finally(() => setIsSaving(false));
     };
 
     // Este useEffect se ejecutará solo cuando el grado se haya cambiado.
@@ -163,40 +162,36 @@ function DocenteEvaluador() {
     };
 
     const handleGuardarDocente = async (datos) => {
-        try {
-            setIsSaving(true);
-            const response = await axios.post("/docentes", datos, {
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
+        setIsSaving(true);
+        const promise = axios.post("/docentes", datos, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
 
-            if (response.data.success) {
-                toast.success(response.data.message || "Docente agregado correctamente");
-                fetchDocentes();
-            } else {
-                toast.error(`Error: ${response.data.message}`);
-            }
-        } catch (error) {
-            if (error.response) {
-                // Laravel retorna errores de validación con código 422
-                if (error.response.status === 422) {
+        toast.promise(promise, {
+            loading: "Agregando docente...",
+            success: (response) => {
+                if (response.data.success) {
+                    setModalAbierto(false);
+                    fetchDocentes();
+                    return response.data.message || "Docente agregado correctamente";
+                }
+                throw new Error(response.data.message || "Error al agregar docente");
+            },
+            error: (error) => {
+                if (error.response?.status === 422) {
                     const errores = error.response.data.errors;
                     const mensajes = Object.values(errores).flat();
-
-                    // Agrupar los mensajes de error en una sola cadena
-                    const mensajeErrores = mensajes.join(" ");
-                    toast.error(`Errores de validación: ${mensajeErrores}`);
-                } else if (error.response.data.message) {
-                    toast.error(error.response.data.message);
-                } else {
-                    toast.error(
-                        "Error inesperado en la respuesta del servidor"
-                    );
+                    return `Errores de validación: ${mensajes.join(" ")}`;
                 }
-            } else {
-                toast.error("Error al conectar con el servidor");
+                return error.response?.data?.message || error.message || "Error al conectar con el servidor";
             }
+        });
+
+        try {
+            await promise;
+        } catch (error) {
             console.error("Error al guardar:", error);
         } finally {
             setIsSaving(false);
@@ -209,7 +204,10 @@ function DocenteEvaluador() {
                 <Breadcrumb
                     paths={[
                         {
-                            name: "Gestión de Docentes",
+                            name: "Evaluación"
+                        },
+                        {
+                            name: "Asignar Docente",
                             href: "/asignar-docentes",
                         },
                     ]}
@@ -273,17 +271,17 @@ function DocenteEvaluador() {
                                         : "border-slate-100 bg-white hover:border-slate-300"
                                         }`}
                                 >
-                                    <CardBody className="p-3">
+                                    <CardBody className="p-3 !select-text">
                                         <div className="flex items-center justify-between gap-3">
                                             <User
                                                 name={`${docente.nombres} ${docente.ap_paterno} ${docente.ap_materno}`}
                                                 className="text-lg"
                                                 description={
-                                                    <div className="flex flex-col gap-0.5">
-                                                        <span className="flex items-center gap-1 text-sm text-slate-500">
+                                                    <div className="flex flex-col gap-0.5 !select-text">
+                                                        <span className="flex items-center gap-1 text-sm text-slate-500 !select-text">
                                                             <CreditCard size={10} /> {docente.dni}
                                                         </span>
-                                                        <span className="flex items-center gap-1 text-sm text-slate-500">
+                                                        <span className="flex items-center gap-1 text-sm text-slate-500 !select-text">
                                                             <Mail size={10} /> {docente.email}
                                                         </span>
                                                     </div>
@@ -298,7 +296,7 @@ function DocenteEvaluador() {
                                                     name: docente.nombres.charAt(0)
                                                 }}
                                                 classNames={{
-                                                    name: `text-md font-bold transition-colors ${docenteSeleccionado == docente.id ? "text-blue-800" : "text-slate-700"
+                                                    name: `text-md font-bold transition-colors select-text ${docenteSeleccionado == docente.id ? "text-blue-800" : "text-slate-700"
                                                         }`,
                                                     description: "mt-0.5"
                                                 }}
@@ -410,7 +408,7 @@ function DocenteEvaluador() {
                                                         {estaSeleccionado ? <CheckCircle2 size={18} /> : <BookOpen size={18} />}
                                                     </div>
                                                     <div className="flex items-center justify-between w-full gap-4 overflow-hidden">
-                                                        <span className={`text-[13px] font-bold truncate transition-colors ${estaSeleccionado ? "text-blue-800" : "text-slate-700"
+                                                        <span className={`text-[13px] font-bold truncate transition-colors select-text ${estaSeleccionado ? "text-blue-800" : "text-slate-700"
                                                             }`}>
                                                             {programa.nombre}
                                                         </span>

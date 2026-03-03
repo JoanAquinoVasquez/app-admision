@@ -1,7 +1,7 @@
 import { Spinner } from "@heroui/react"; // Cambia el nombre aquí
 import PropTypes from "prop-types";
 
-const ComponentSpinner = ({ label, fullScreen = true }) => {
+const ComponentSpinner = ({ label = "Cargando...", fullScreen = true }) => {
   if (fullScreen) {
     return (
       <div className="fixed inset-0 flex justify-center items-center bg-white bg-opacity-80 z-50">

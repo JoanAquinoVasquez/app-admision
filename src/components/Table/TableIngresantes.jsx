@@ -79,7 +79,7 @@ export default function App() {
 
     const [loading, setLoading] = useState(false); // local loading for actions
     const [isExporting, setIsExporting] = useState(false);
-    const [selectedKeysPrograma, setSelectedKeysPrograma] = useState([]);
+
 
     // ✅ Aseguramos que `ingresantes` tenga datos antes de mapear
     const users = useMemo(() => {
@@ -134,6 +134,12 @@ export default function App() {
         initialSortColumn: "nota_final",
         initialSortDirection: "descending",
     });
+
+    useEffect(() => {
+        if (gradoFilter !== "all" && gradoFilter !== null && gradoFilter !== undefined) {
+            filterByGrado(gradoFilter);
+        }
+    }, [gradoFilter, filterByGrado]);
 
     const handleExportMultiple = async (type) => {
         setLoading(true);
@@ -226,6 +232,16 @@ export default function App() {
             return baseRenderCell(proxyUser, "doc_iden");
         }
 
+        if (columnKey === "id") {
+            return (
+                <div className="flex flex-col">
+                    <p className="text-sm text-default-400 text-center">
+                        {cellValue}
+                    </p>
+                </div>
+            );
+        }
+
         if (["merito_programa", "merito_general", "nota_final"].includes(columnKey)) {
             return (
                 <div className="flex flex-col">
@@ -271,205 +287,182 @@ export default function App() {
 
     const topContent = useMemo(() => {
         return (
-            <>
-                {/* Overlay de carga (solo se renderiza si loading es true) */}
-                <div className="flex flex-wrap gap-4 w-full">
-                    {/* Input de búsqueda */}
-                    <div className="w-full sm:w-[60%] md:w-[18%]">
-                        <Input
-                            isClearable
-                            className="w-full h-10 focus:outline-none"
-                            classNames={{
-                                input: "placeholder:text-gray-800 placeholder:opacity-100 text-gray-900",
-                            }}
-                            placeholder="Buscar al postulante"
-                            startContent={<SearchIcon />}
-                            value={filterValue}
-                            onClear={onClear}
-                            onValueChange={onSearchChange}
-                        />
+            <div className="flex flex-col gap-2 mb-4">
+                {/* 1) Fila de Búsqueda y Columnas */}
+                <div className="flex flex-col md:flex-row gap-4 w-full">
+                    <div className="w-full md:flex-1">
+                        {dataLoading ? (
+                            <Skeleton className="w-full h-12 rounded-lg" />
+                        ) : (
+                            <Input
+                                isClearable
+                                className="w-full h-12 focus:outline-none"
+                                classNames={{
+                                    input: "placeholder:text-gray-800 placeholder:opacity-100 text-gray-900",
+                                }}
+                                placeholder="Buscar al postulante"
+                                startContent={<SearchIcon />}
+                                value={filterValue}
+                                onClear={onClear}
+                                onValueChange={onSearchChange}
+                            />
+                        )}
                     </div>
 
-                    {/* Select Grado Académico */}
-                    <div className="w-full sm:w-[40%] md:w-[15%]">
-                        <Select
-                            label="Grado Académico"
-                            variant="flat"
-                            defaultItems={grados.map((item) => ({
-                                key: item.id.toString(),
-                                textValue: item.nombre,
-                                ...item,
-                            }))}
-                            onSelectionChange={(grado_id) => {
-                                if (!grado_id) {
-                                    setGradoFilter("all");
-                                    setProgramaFilter([]); // Vaciar programas
-                                    setSelectedKeysPrograma([]); // Vaciar selección de programas
-                                } else {
-                                    setGradoFilter(parseInt(grado_id));
-                                    setProgramaFilter([]); // Reiniciar programas cuando se cambia de grado
-                                    setSelectedKeysPrograma([]);
-                                }
-                            }}
-                        />
+                    <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto shrink-0 justify-end">
+                        {dataLoading ? (
+                            <Skeleton className="h-12 w-full sm:w-24 rounded-lg" />
+                        ) : (
+                            <Dropdown shouldBlockScroll={false}>
+                                <DropdownTrigger className="w-full sm:w-auto">
+                                    <Button
+                                        aria-label="columnas"
+                                        endContent={<ChevronDownIcon className="text-small" />}
+                                        variant="flat"
+                                        className="h-12 w-full sm:w-auto"
+                                    >
+                                        Columnas
+                                    </Button>
+                                </DropdownTrigger>
+                                <DropdownMenu
+                                    disallowEmptySelection
+                                    closeOnSelect={false}
+                                    selectedKeys={visibleColumns}
+                                    selectionMode="multiple"
+                                    onSelectionChange={setVisibleColumns}
+                                >
+                                    {columns.map((column) => (
+                                        <DropdownItem
+                                            key={column.uid}
+                                            textValue={column.name}
+                                            className="capitalize"
+                                        >
+                                            {capitalize(column.name)}
+                                        </DropdownItem>
+                                    ))}
+                                </DropdownMenu>
+                            </Dropdown>
+                        )}
+                    </div>
+                </div>
+
+                {/* 2) Fila de Filtros Avanzados y Exportación */}
+                <div className="w-full flex flex-col md:flex-row md:items-end gap-4">
+                    <div className="w-full md:w-1/4">
+                        {dataLoading ? (
+                            <Skeleton className="w-full h-12 rounded-lg" />
+                        ) : (
+                            <Select
+                                label="Grado Académico"
+                                variant="flat"
+                                className="w-full h-12 text-sm"
+                                defaultItems={grados.map((item) => ({
+                                    key: item.id.toString(),
+                                    textValue: item.nombre,
+                                    ...item,
+                                }))}
+                                selectedKey={gradoFilter !== "all" ? gradoFilter?.toString() : null}
+                                onSelectionChange={(grado_id) => {
+                                    if (grado_id === null) {
+                                        setGradoFilter("all");
+                                        setProgramaFilter("all");
+                                    } else {
+                                        setGradoFilter(grado_id);
+                                        setProgramaFilter("all");
+                                    }
+                                }}
+                            />
+                        )}
                     </div>
 
-                    {/* Select Programa */}
-                    <div className="w-full sm:w-[60%] md:w-[30%] lg:w-[45%]">
-                        <MultiSelect
-                            label="Selecciona Programas"
-                            defaultItems={
-                                gradoFilter !== "all"
-                                    ? filteredProgramasHabilitados.map(
-                                        (item) => ({
+                    <div className="w-full md:flex-1">
+                        {dataLoading ? (
+                            <Skeleton className="w-full h-12 rounded-lg" />
+                        ) : (
+                            <Select
+                                label="Programa"
+                                className="w-full h-12 text-sm"
+                                defaultItems={
+                                    gradoFilter !== "all"
+                                        ? filteredProgramasHabilitados.map((item) => ({
                                             key: item.id.toString(),
                                             textValue: item.nombre,
                                             ...item,
-                                        })
-                                    )
-                                    : [] // Si no hay grado seleccionado, no mostrar opciones
-                            }
-                            className="w-full min-h-[50px]"
-                            selectedKeys={selectedKeysPrograma}
-                            onSelectionChange={(keys) => {
-                                setSelectedKeysPrograma(keys);
-                                setProgramaFilter(
-                                    Array.from(keys).map((key) => parseInt(key))
-                                ); // Convertir a números
-                            }}
-                            isRequired={true}
-                            disabled={gradoFilter === "all"}
-                            closeOnSelect={false} // Mantener el dropdown abierto al seleccionar
-                        />
+                                        }))
+                                        : []
+                                }
+                                selectedKey={
+                                    programaFilter !== "all" && programaFilter
+                                        ? programaFilter?.toString()
+                                        : null
+                                }
+                                onSelectionChange={(programa_id) => {
+                                    if (programa_id === null) {
+                                        setProgramaFilter("all");
+                                    } else {
+                                        setProgramaFilter(programa_id);
+                                    }
+                                }}
+                                disabled={gradoFilter === "all"}
+                            />
+                        )}
                     </div>
 
-                    {/* Botón de PDF */}
-                    <div className="w-full sm:w-auto md:w-[10%] mb-3 flex items-end gap-2">
-                        <Dropdown>
-                            <DropdownTrigger>
-                                <Button
-                                    color="primary"
-                                    className="h-10"
-                                    aria-label="reportes"
-                                    isLoading={isExporting}
-                                >
-                                    Exportar
-                                </Button>
-                            </DropdownTrigger>
-                            <DropdownMenu>
-                                <DropdownItem
-                                    textValue="Ingresantes por Programa PDF"
-                                    onPress={() =>
-                                        handleExportMultiple(
-                                            "Ingresantes por Programa PDF"
-                                        )
-                                    }
-                                >
-                                    N° Ingresantes por Programa PDF
-                                </DropdownItem>
-
-                                <DropdownItem
-                                    textValue="Reporte Ingresantes PDF"
-                                    onPress={() =>
-                                        handleExportMultiple(
-                                            "Reporte Ingresantes PDF"
-                                        )
-                                    }
-                                >
-                                    Reporte Ingresantes PDF
-                                </DropdownItem>
-                                <DropdownItem
-                                    textValue="Reporte Resultados Excel"
-                                    onPress={() =>
-                                        handleExportMultiple(
-                                            "Reporte Resultados Excel"
-                                        )
-                                    }
-                                >
-                                    Reporte Resultados Excel
-                                </DropdownItem>
-                                <DropdownItem
-                                    textValue="Reporte Programas Aperturados"
-                                    onPress={() =>
-                                        handleExportMultiple(
-                                            "Reporte Programas Aperturados"
-                                        )
-                                    }
-                                >
-                                    Reporte Programas Aperturados
-                                </DropdownItem>
-                                <DropdownItem
-                                    textValue="Reporte Programas No Aperturados"
-                                    onPress={() =>
-                                        handleExportMultiple(
-                                            "Reporte Programas No Aperturados"
-                                        )
-                                    }
-                                >
-                                    Reporte Programas No Aperturados
-                                </DropdownItem>
-                            </DropdownMenu>
-                        </Dropdown>
-                        <Dropdown>
-                            <DropdownTrigger className="w-full sm:w-auto">
-                                <Button
-                                    aria-label="lista_columna"
-                                    endContent={
-                                        <ChevronDownIcon className="text-small" />
-                                    }
-                                    variant="flat"
-                                    className="h-12 w-full sm:w-auto"
-                                >
-                                    Columnas
-                                </Button>
-                            </DropdownTrigger>
-                            <DropdownMenu
-                                disallowEmptySelection
-                                closeOnSelect={false}
-                                selectedKeys={visibleColumns}
-                                selectionMode="multiple"
-                                onSelectionChange={setVisibleColumns}
-                            >
-                                {columns.map((column) => (
-                                    <DropdownItem
-                                        textValue={column.name}
-                                        key={column.uid}
-                                        className="capitalize"
+                    <div className="w-full md:w-auto md:ml-auto">
+                        {dataLoading ? (
+                            <Skeleton className="w-full sm:w-[180px] h-12 rounded-lg" />
+                        ) : (
+                            <Dropdown shouldBlockScroll={false}>
+                                <DropdownTrigger className="w-full sm:w-auto">
+                                    <Button
+                                        aria-label="exportar reportes"
+                                        endContent={<ChevronDownIcon className="text-small" />}
+                                        color="primary"
+                                        className="h-12 w-full sm:w-auto"
+                                        isLoading={isExporting}
                                     >
-                                        {capitalize(column.name)}
-                                    </DropdownItem>
-                                ))}
-                            </DropdownMenu>
-                        </Dropdown>
-                    </div>
-                    {/* 📊 Resumen de resultados */}
-                    <div className="flex justify-between items-center w-full">
-                        <div className="flex items-center">
-                            <span className="text-default-400 text-small">
-                                {`${filteredItems.length} ingresantes encontrados`}
-                            </span>
-                        </div>
-
-                        <div className="flex items-center">
-                            <label className="flex items-center text-default-400 text-small">
-                                Filas por página:
-                                <select
-                                    className="bg-transparent outline-none text-default-400 text-small ml-2"
-                                    value={rowsPerPage}
-                                    onChange={(e) => {
-                                        setRowsPerPage(Number(e.target.value));
-                                        setPage(1);
-                                    }}
-                                >
-                                    <option value="5">5</option>
-                                    <option value="10">10</option>
-                                    <option value="30">30</option>
-                                </select>
-                            </label>
-                        </div>
+                                        Exportar Reportes
+                                    </Button>
+                                </DropdownTrigger>
+                                <DropdownMenu>
+                                    <DropdownItem textValue="Ingresantes por Programa PDF" onPress={() => handleExportMultiple("Ingresantes por Programa PDF")}>N° Ingresantes por Programa PDF</DropdownItem>
+                                    <DropdownItem textValue="Reporte Ingresantes PDF" onPress={() => handleExportMultiple("Reporte Ingresantes PDF")}>Reporte Ingresantes PDF</DropdownItem>
+                                    <DropdownItem textValue="Reporte Resultados Excel" onPress={() => handleExportMultiple("Reporte Resultados Excel")}>Reporte Resultados Excel</DropdownItem>
+                                    <DropdownItem textValue="Reporte Programas Aperturados" onPress={() => handleExportMultiple("Reporte Programas Aperturados")}>Reporte Programas Aperturados</DropdownItem>
+                                    <DropdownItem textValue="Reporte Programas No Aperturados" onPress={() => handleExportMultiple("Reporte Programas No Aperturados")}>Reporte Programas No Aperturados</DropdownItem>
+                                </DropdownMenu>
+                            </Dropdown>
+                        )}
                     </div>
                 </div>
-            </>
+
+                {/* 3) Info de resultados y paginación en el mismo layout de TableInscritos */}
+                <div className="flex justify-between items-center w-full mt-2">
+                    <div className="flex items-center">
+                        <span className="text-default-400 text-small">
+                            {`${filteredItems.length} resultados`}
+                        </span>
+                    </div>
+
+                    <div className="flex items-center">
+                        <label className="flex items-center text-default-400 text-small">
+                            Filas por página:
+                            <select
+                                className="bg-transparent outline-none text-default-400 text-small ml-2"
+                                value={rowsPerPage}
+                                onChange={(e) => {
+                                    setRowsPerPage(Number(e.target.value));
+                                    setPage(1);
+                                }}
+                            >
+                                <option value="5">5</option>
+                                <option value="10">10</option>
+                                <option value="30">30</option>
+                            </select>
+                        </label>
+                    </div>
+                </div>
+            </div>
         );
     }, [
         filterValue,
@@ -479,6 +472,18 @@ export default function App() {
         onRowsPerPageChange,
         onClear,
         users.length,
+        grados,
+        gradoFilter,
+        filteredProgramasHabilitados,
+        programaFilter,
+        dataLoading,
+        isExporting,
+        filteredItems.length,
+        rowsPerPage,
+        setGradoFilter,
+        setProgramaFilter,
+        setRowsPerPage,
+        setPage
     ]);
     const bottomContent = useMemo(
         () => (

@@ -1,4 +1,3 @@
-import React from "react";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { Progress, Skeleton } from "@heroui/react";
 import {
@@ -18,6 +17,9 @@ import {
 import DashboardCard from "../../components/Cards/DashboardCard";
 import { admissionConfig } from "../../config/admission";
 import TablePagination from "./components/TablePagination";
+import { UserIcon, FileDown, UsersIcon } from "lucide-react";
+import axios from "../../axios";
+import { toast } from "react-hot-toast";
 
 export const columns = [
     { name: "Grado y Programa", uid: "grado_programa", sortable: true },
@@ -31,9 +33,9 @@ export const columns = [
 ];
 
 export const statusOptions = [
-    { name: "DOCTORADO", uid: "DOC" },
-    { name: "MAESTRÍA", uid: "MAE" },
-    { name: "SEGUNDA ESPECIALIDAD", uid: "SEG" },
+    { name: "Doctorado", uid: "Doctorado" },
+    { name: "Maestria", uid: "Maestria" },
+    { name: "Segunda Especialidad Profesional", uid: "Segunda Especialidad Profesional" },
 ];
 
 export function capitalize(s) {
@@ -123,9 +125,51 @@ export default function App({ resumenInscripcion, loading }) {
         }));
     }, [resumenInscripcion]);
 
+    const [isExporting, setIsExporting] = useState(false);
+
+    const handleExport = async () => {
+        setIsExporting(true);
+        const exportPromise = axios.get("/reporte-inscripcion", {
+            responseType: "blob",
+        });
+
+        toast.promise(exportPromise, {
+            loading: "Generando reporte de inscritos...",
+            success: "Reporte generado con éxito",
+            error: "Error al exportar reporte",
+        });
+
+        try {
+            const response = await exportPromise;
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement("a");
+            link.href = url;
+
+            const contentDisposition = response.headers["content-disposition"];
+            let fileName = `reporte_inscritos_${new Date().toLocaleDateString('es-PE').replace(/\//g, '-')}.xlsx`;
+
+            if (contentDisposition) {
+                const match = contentDisposition.match(/filename="?([^"]+)"?/);
+                if (match?.[1]) fileName = match[1];
+            }
+
+            link.setAttribute("download", fileName);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            // Managed by toast.promise
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
     const [filterValue, setFilterValue] = useState("");
     const config = admissionConfig.cronograma || {};
-    const [gradoFilter, setGradoFilter] = useState("all");
+    const [gradoFilter, setGradoFilter] = useState(
+        new Set(["Doctorado", "Maestria", "Segunda Especialidad Profesional"])
+    );
     const [selectedKeys, setSelectedKeys] = useState(new Set([]));
     const [visibleColumns, setVisibleColumns] = useState(
         new Set(INITIAL_VISIBLE_COLUMNS)
@@ -164,12 +208,13 @@ export default function App({ resumenInscripcion, loading }) {
                 statusFilter.has(user.estado.toString())
             );
         }
-        if (gradoFilter !== "all") {
+        // Filtro de Grado: activo solo cuando la selección es parcial
+        if (gradoFilter instanceof Set && gradoFilter.size > 0 && gradoFilter.size < statusOptions.length) {
             filteredUsers = filteredUsers.filter((user) => {
-                const gradoProgramUid = user.grado_programa
-                    ? user.grado_programa.split(" - ")[0] // Extrae la parte antes del primer guion
-                    : "";
-                return gradoFilter.has(gradoProgramUid); // Verifica si el gradoProgramUid está en el Set
+                const gp = user.grado_programa?.toLowerCase() ?? "";
+                return Array.from(gradoFilter).some((uid) =>
+                    gp.startsWith(uid.toLowerCase())
+                );
             });
         }
 
@@ -332,81 +377,106 @@ export default function App({ resumenInscripcion, loading }) {
         return (
             <div className="flex flex-col gap-4">
                 <div className="flex justify-between gap-3 items-end">
-                    <Input
-                        isClearable
-                        className="w-full sm:max-w-[44%]"
-                        placeholder="Buscar por nombre..."
-                        startContent={<SearchIcon />}
-                        value={filterValue}
-                        onClear={() => onClear()}
-                        onValueChange={onSearchChange}
-                    />
+                    {loading ? (
+                        <Skeleton className="w-full sm:max-w-[44%] h-10 rounded-lg" />
+                    ) : (
+                        <Input
+                            isClearable
+                            className="w-full sm:max-w-[44%]"
+                            placeholder="Buscar por nombre..."
+                            startContent={<SearchIcon />}
+                            value={filterValue}
+                            onClear={() => onClear()}
+                            onValueChange={onSearchChange}
+                        />
+                    )}
                     <div className="flex gap-3">
-                        {/* Dropdown Grado */}
-                        <Dropdown>
-                            <DropdownTrigger className="w-full sm:w-auto md:flex lg:flex xl:flex">
+                        {loading ? (
+                            <>
+                                <Skeleton className="w-full sm:w-28 h-10 rounded-lg" />
+                                <Skeleton className="w-full sm:w-24 h-10 rounded-lg" />
+                                <Skeleton className="hidden sm:flex w-24 h-10 rounded-lg" />
+                            </>
+                        ) : (
+                            <>
                                 <Button
-                                    aria-label="lista_grados"
-                                    endContent={
-                                        <ChevronDownIcon className="text-small" />
-                                    }
+                                    onPress={handleExport}
+                                    color="primary"
+                                    size="md"
                                     variant="flat"
-                                    className="h-10 w-full"
+                                    isLoading={isExporting}
+                                    startContent={!isExporting && <FileDown className="h-5 w-5" />}
+                                    className="flex items-center gap-2 rounded-xl"
                                 >
-                                    Grado
+                                    Exportar
                                 </Button>
-                            </DropdownTrigger>
-                            <DropdownMenu
-                                disallowEmptySelection
-                                aria-label="Table Columns"
-                                closeOnSelect={false}
-                                selectedKeys={gradoFilter}
-                                selectionMode="multiple"
-                                onSelectionChange={setGradoFilter}
-                            >
-                                {statusOptions.map((status) => (
-                                    <DropdownItem
-                                        key={status.uid}
-                                        textValue={status.name}
-                                        className="capitalize"
+                                {/* Dropdown Grado */}
+                                <Dropdown shouldBlockScroll={false}>
+                                    <DropdownTrigger className="w-full sm:w-auto md:flex lg:flex xl:flex">
+                                        <Button
+                                            aria-label="lista_grados"
+                                            endContent={
+                                                <ChevronDownIcon className="text-small" />
+                                            }
+                                            variant="flat"
+                                            className="h-10 w-full"
+                                        >
+                                            Grado
+                                        </Button>
+                                    </DropdownTrigger>
+                                    <DropdownMenu
+                                        disallowEmptySelection
+                                        aria-label="Table Columns"
+                                        closeOnSelect={false}
+                                        selectedKeys={gradoFilter}
+                                        selectionMode="multiple"
+                                        onSelectionChange={setGradoFilter}
                                     >
-                                        {capitalize(status.name)}
-                                    </DropdownItem>
-                                ))}
-                            </DropdownMenu>
-                        </Dropdown>
+                                        {statusOptions.map((status) => (
+                                            <DropdownItem
+                                                key={status.uid}
+                                                textValue={status.name}
+                                                className="capitalize"
+                                            >
+                                                {capitalize(status.name)}
+                                            </DropdownItem>
+                                        ))}
+                                    </DropdownMenu>
+                                </Dropdown>
 
-                        <Dropdown>
-                            <DropdownTrigger className="hidden sm:flex">
-                                <Button
-                                    aria-label="lista_columnas"
-                                    endContent={
-                                        <ChevronDownIcon className="text-small" />
-                                    }
-                                    variant="flat"
-                                >
-                                    Columnas
-                                </Button>
-                            </DropdownTrigger>
-                            <DropdownMenu
-                                disallowEmptySelection
-                                aria-label="Table Columns"
-                                closeOnSelect={false}
-                                selectedKeys={visibleColumns}
-                                selectionMode="multiple"
-                                onSelectionChange={setVisibleColumns}
-                            >
-                                {columns.map((column) => (
-                                    <DropdownItem
-                                        key={column.uid}
-                                        textValue={column.name}
-                                        className="capitalize"
+                                <Dropdown shouldBlockScroll={false}>
+                                    <DropdownTrigger className="hidden sm:flex">
+                                        <Button
+                                            aria-label="lista_columnas"
+                                            endContent={
+                                                <ChevronDownIcon className="text-small" />
+                                            }
+                                            variant="flat"
+                                        >
+                                            Columnas
+                                        </Button>
+                                    </DropdownTrigger>
+                                    <DropdownMenu
+                                        disallowEmptySelection
+                                        aria-label="Table Columns"
+                                        closeOnSelect={false}
+                                        selectedKeys={visibleColumns}
+                                        selectionMode="multiple"
+                                        onSelectionChange={setVisibleColumns}
                                     >
-                                        {capitalize(column.name)}
-                                    </DropdownItem>
-                                ))}
-                            </DropdownMenu>
-                        </Dropdown>
+                                        {columns.map((column) => (
+                                            <DropdownItem
+                                                key={column.uid}
+                                                textValue={column.name}
+                                                className="capitalize"
+                                            >
+                                                {capitalize(column.name)}
+                                            </DropdownItem>
+                                        ))}
+                                    </DropdownMenu>
+                                </Dropdown>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
@@ -420,6 +490,7 @@ export default function App({ resumenInscripcion, loading }) {
         users.length,
         onSearchChange,
         hasSearchFilter,
+        loading,
     ]);
 
     const bottomContent = useMemo(() => {
@@ -438,7 +509,7 @@ export default function App({ resumenInscripcion, loading }) {
     return (
         <DashboardCard
             title={`Resumen Proc. Admisión ${config.periodo}`}
-            icon={<ChevronDownIcon className="text-green-500" />}
+            icon={<UsersIcon className="text-blue-500 h-4" />}
         >
             <Table
                 aria-label="Example table"
@@ -448,7 +519,7 @@ export default function App({ resumenInscripcion, loading }) {
                 bottomContentPlacement="outside"
                 classNames={{
                     wrapper:
-                        "max-h-[317px] min-h-[317px] overflow-auto w-full p-2 m-0",
+                        "max-h-[317px] min-h-[317px] overflow-auto w-full p-1 m-0",
                 }}
                 selectedKeys={selectedKeys}
                 sortDescriptor={sortDescriptor}

@@ -358,7 +358,7 @@ export default function App() {
             case "actions":
                 return (
                     <div className="relative flex justify-end items-center gap-2">
-                        <Dropdown>
+                        <Dropdown shouldBlockScroll={false}>
                             <DropdownTrigger>
                                 <Button
                                     isIconOnly
@@ -418,98 +418,112 @@ export default function App() {
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-1 w-full">
                         {/* 🔍 Input de búsqueda */}
                         <div className="col-span-1 md:col-span-2">
-                            <Input
-                                isClearable
-                                className="w-full h-12 focus:outline-none"
-                                classNames={{
-                                    input: "placeholder:text-gray-800 placeholder:opacity-100 text-gray-900",
-                                }}
-                                placeholder="Buscar al postulante"
-                                startContent={<SearchIcon />}
-                                value={filterValue}
-                                onClear={onClear}
-                                onValueChange={onSearchChange}
-                            />
+                            {loadingUsers ? (
+                                <Skeleton className="w-full h-12 rounded-lg" />
+                            ) : (
+                                <Input
+                                    isClearable
+                                    className="w-full h-12 focus:outline-none"
+                                    classNames={{
+                                        input: "placeholder:text-gray-800 placeholder:opacity-100 text-gray-900",
+                                    }}
+                                    placeholder="Buscar al postulante"
+                                    startContent={<SearchIcon />}
+                                    value={filterValue}
+                                    onClear={onClear}
+                                    onValueChange={onSearchChange}
+                                />
+                            )}
                         </div>
 
                         {/* 🧩 Filtros Estado y Columnas */}
                         <div className="col-span-1 md:col-span-2 flex flex-col sm:flex-row gap-2 justify-end w-full">
-                            <Dropdown>
-                                <DropdownTrigger className="w-full sm:w-auto">
-                                    <Button
-                                        endContent={
-                                            <ChevronDownIcon className="text-small" />
-                                        }
-                                        variant="flat"
-                                        className="h-12 w-full sm:w-auto"
-                                    >
-                                        Estado
-                                    </Button>
-                                </DropdownTrigger>
-                                <DropdownMenu
-                                    disallowEmptySelection
-                                    closeOnSelect={false}
-                                    selectedKeys={statusFilter}
-                                    selectionMode="multiple"
-                                    onSelectionChange={setStatusFilter}
-                                >
-                                    {statusOptions.map((status) => (
-                                        <DropdownItem
-                                            key={status.uid}
-                                            textValue={status.name}
-                                            className="capitalize"
+                            {loadingUsers ? (
+                                <>
+                                    <Skeleton className="h-12 w-full sm:w-[150px] rounded-lg" />
+                                    <Skeleton className="h-12 w-full sm:w-[150px] rounded-lg" />
+                                    <Skeleton className="h-12 w-full sm:w-[180px] rounded-lg" />
+                                </>
+                            ) : (
+                                <>
+                                    <Dropdown shouldBlockScroll={false}>
+                                        <DropdownTrigger className="w-full sm:w-auto">
+                                            <Button
+                                                endContent={
+                                                    <ChevronDownIcon className="text-small" />
+                                                }
+                                                variant="flat"
+                                                className="h-12 w-full sm:w-auto"
+                                            >
+                                                Estado
+                                            </Button>
+                                        </DropdownTrigger>
+                                        <DropdownMenu
+                                            disallowEmptySelection
+                                            closeOnSelect={false}
+                                            selectedKeys={statusFilter}
+                                            selectionMode="multiple"
+                                            onSelectionChange={setStatusFilter}
                                         >
-                                            {capitalize(status.name)}
-                                        </DropdownItem>
-                                    ))}
-                                </DropdownMenu>
-                            </Dropdown>
+                                            {statusOptions.map((status) => (
+                                                <DropdownItem
+                                                    key={status.uid}
+                                                    textValue={status.name}
+                                                    className="capitalize"
+                                                >
+                                                    {capitalize(status.name)}
+                                                </DropdownItem>
+                                            ))}
+                                        </DropdownMenu>
+                                    </Dropdown>
 
-                            <Dropdown>
-                                <DropdownTrigger className="w-full sm:w-auto">
-                                    <Button
-                                        endContent={
-                                            <ChevronDownIcon className="text-small" />
-                                        }
-                                        variant="flat"
-                                        className="h-12 w-full sm:w-auto"
-                                    >
-                                        Columnas
-                                    </Button>
-                                </DropdownTrigger>
-                                <DropdownMenu
-                                    disallowEmptySelection
-                                    closeOnSelect={false}
-                                    selectedKeys={visibleColumns}
-                                    selectionMode="multiple"
-                                    onSelectionChange={setVisibleColumns}
-                                >
-                                    {columns.map((column) => (
-                                        <DropdownItem
-                                            key={column.uid}
-                                            textValue={column.name}
-                                            className="capitalize"
+                                    <Dropdown shouldBlockScroll={false}>
+                                        <DropdownTrigger className="w-full sm:w-auto">
+                                            <Button
+                                                endContent={
+                                                    <ChevronDownIcon className="text-small" />
+                                                }
+                                                variant="flat"
+                                                className="h-12 w-full sm:w-auto"
+                                            >
+                                                Columnas
+                                            </Button>
+                                        </DropdownTrigger>
+                                        <DropdownMenu
+                                            disallowEmptySelection
+                                            closeOnSelect={false}
+                                            selectedKeys={visibleColumns}
+                                            selectionMode="multiple"
+                                            onSelectionChange={setVisibleColumns}
                                         >
-                                            {capitalize(column.name)}
-                                        </DropdownItem>
-                                    ))}
-                                </DropdownMenu>
-                            </Dropdown>
-                            <Button
-                                endContent={<PlusIcon className="text-small" />}
-                                color="primary"
-                                className="h-12 w-full md:w-auto"
-                                onPress={() => {
-                                    setModo("nuevo");
-                                    setIsModalOpen(true);
-                                    setNombres("");
-                                    setEmail("");
-                                    setRol("");
-                                    setEstado(true);
-                                }}
-                            >
-                                Nuevo Usuario
-                            </Button>
+                                            {columns.map((column) => (
+                                                <DropdownItem
+                                                    key={column.uid}
+                                                    textValue={column.name}
+                                                    className="capitalize"
+                                                >
+                                                    {capitalize(column.name)}
+                                                </DropdownItem>
+                                            ))}
+                                        </DropdownMenu>
+                                    </Dropdown>
+                                    <Button
+                                        endContent={<PlusIcon className="text-small" />}
+                                        color="primary"
+                                        className="h-12 w-full md:w-auto"
+                                        onPress={() => {
+                                            setModo("nuevo");
+                                            setIsModalOpen(true);
+                                            setNombres("");
+                                            setEmail("");
+                                            setRol("");
+                                            setEstado(true);
+                                        }}
+                                    >
+                                        Nuevo Usuario
+                                    </Button>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -524,7 +538,8 @@ export default function App() {
         onClear,
         users.length,
         isModalOpen,
-        isValidarOpen
+        isValidarOpen,
+        loadingUsers,
     ]);
 
     const bottomContent = useMemo(
@@ -711,20 +726,12 @@ export default function App() {
                             <Skeleton className="h-10 w-full rounded-lg" />
                             <Skeleton className="h-10 w-full rounded-lg" />
                             <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
                         </div>
                     ) : "No se encontró usuarios"}
-                    items={items}
+                    items={(loading || loadingUsers) ? [] : items}
                     className="space-y-1" // Reducir espacio entre filas
-                    isLoading={loading || loadingUsers}
-                    loadingContent={
-                        <div className="w-full h-full flex flex-col gap-2 p-4 bg-white/50 backdrop-blur-sm z-50">
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                        </div>
-                    }
                 >
                     {(item) => (
                         <TableRow

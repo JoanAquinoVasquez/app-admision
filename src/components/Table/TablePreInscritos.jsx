@@ -18,7 +18,7 @@ import {
 import DashboardCard from "../Cards/DashboardCard";
 import axios from "../../axios";
 import { toast } from "react-hot-toast";
-import { FileDown } from "lucide-react";
+import { FileDown, UsersIcon } from "lucide-react";
 
 export const columns = [
     { name: "Grado y Programa", uid: "grado_programa", sortable: true },
@@ -29,13 +29,15 @@ export const columns = [
 ];
 
 export const statusOptions = [
-    { name: "DOCTORADO", uid: "DOC" },
-    { name: "MAESTRÍA", uid: "MAE" },
-    { name: "SEGUNDA ESPECIALIDAD", uid: "SEG" },
+    { name: "Doctorado", uid: "Doctorado" },
+    { name: "Maestria", uid: "Maestria" },
+    { name: "Segunda Especialidad Profesional", uid: "Segunda Especialidad Profesional" },
 ];
 
 export function capitalize(s) {
-    return s || ""; // No forzar minúsculas, respetar nombres de DB
+    if (!s) return "";
+    // Title Case: primera letra de cada palabra en mayúscula, resto en minúscula
+    return s.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 import { SearchIcon, ChevronDownIcon } from "../../components/Table/components/Icons";
@@ -52,19 +54,22 @@ const INITIAL_VISIBLE_COLUMNS = [
     "recaudación",
 ];
 
-const customPreInscritosFilter = (data, { gradoFilter }) => {
-    if (gradoFilter && gradoFilter !== "all" && gradoFilter.size > 0) {
-        return data.filter((user) => {
-            return Array.from(gradoFilter).some(gradoNombre =>
-                user.grado_programa.toLowerCase().includes(gradoNombre.toLowerCase())
-            );
-        });
-    }
-    return data;
-};
+
 
 export default function App({ resumenPreInscripcion, loading: dataLoading, grados = [] }) {
     const [isExporting, setIsExporting] = useState(false);
+
+    // gradoFilter: estado LOCAL (igual que Table.jsx)
+    // Se inicializa vacío y se sincroniza cuando los grados dinámicos del API carguen
+    const [gradoFilter, setGradoFilter] = useState(new Set());
+
+    // Cuando los grados cargan desde el API, activar todos por defecto
+    useEffect(() => {
+        if (grados && grados.length > 0) {
+            setGradoFilter(new Set(grados.map((g) => g.nombre)));
+        }
+    }, [grados]);
+
     // ✅ Aseguramos que `resumenPreInscripcion` tenga datos antes de mapear
     const users = useMemo(() => {
         if (!resumenPreInscripcion || resumenPreInscripcion.length === 0) {
@@ -77,21 +82,36 @@ export default function App({ resumenPreInscripcion, loading: dataLoading, grado
             vacantes: item.vacantes,
             cobertura: item.cobertura,
             facultad: item.facultad,
-            // Agregamos info de grado si es posible parsear, sino string match
         }));
     }, [resumenPreInscripcion]);
+
+    // useCallback: referencia estable para evitar bucle infinito
+    // (customFilter nuevo en cada render → filteredItems nuevo → useEffect → setState → bucle)
+    const gradoCustomFilter = useCallback((data) => {
+        if (
+            gradoFilter instanceof Set &&
+            gradoFilter.size > 0 &&
+            gradoFilter.size < grados.length
+        ) {
+            return data.filter((item) => {
+                const gp = item.grado_programa?.toLowerCase() ?? "";
+                return Array.from(gradoFilter).some((uid) =>
+                    gp.startsWith(uid.toLowerCase())
+                );
+            });
+        }
+        return data;
+    }, [gradoFilter, grados.length]);
 
     const {
         filterValue,
         statusFilter,
-        gradoFilter,
         programaFilter,
         page,
         rowsPerPage,
         sortDescriptor,
         setFilterValue,
         setStatusFilter,
-        setGradoFilter,
         setProgramaFilter,
         setPage,
         setRowsPerPage,
@@ -107,7 +127,7 @@ export default function App({ resumenPreInscripcion, loading: dataLoading, grado
         initialRowsPerPage: 5,
         initialSortColumn: "preinscritos",
         initialSortDirection: "descending",
-        customFilter: customPreInscritosFilter
+        customFilter: gradoCustomFilter,
     });
 
     const handleExport = async () => {
@@ -247,95 +267,106 @@ export default function App({ resumenPreInscripcion, loading: dataLoading, grado
                 id="tabla_resumen_preinscripcion"
             >
                 <div className="flex justify-between gap-3 items-end">
-                    <Input
-                        isClearable
-                        className="w-full sm:max-w-[44%]"
-                        placeholder="Buscar ..."
-                        startContent={<SearchIcon />}
-                        value={filterValue}
-                        onClear={onClear}
-                        onValueChange={onSearchChange}
-                    />
+                    {dataLoading ? (
+                        <Skeleton className="w-full sm:max-w-[44%] h-12 rounded-lg" />
+                    ) : (
+                        <Input
+                            isClearable
+                            className="w-full sm:max-w-[44%] h-12"
+                            placeholder="Buscar ..."
+                            startContent={<SearchIcon />}
+                            value={filterValue}
+                            onClear={onClear}
+                            onValueChange={onSearchChange}
+                        />
+                    )}
                     <div className="flex gap-3">
-                        <Button
-                            onPress={handleExport}
-                            color="primary"
-                            size="md"
-                            variant="flat"
-                            isLoading={isExporting}
-                            startContent={!isExporting && <FileDown className="h-5 w-5" />}
-                            className="flex items-center gap-2 rounded-xl"
-                        >
-                            Exportar
-                        </Button>
-                        {/* Dropdown Grado */}
-                        <Dropdown>
-                            <DropdownTrigger className="w-full sm:w-auto md:flex lg:flex xl:flex">
+                        {dataLoading ? (
+                            <>
+                                <Skeleton className="w-full sm:w-28 h-10 rounded-lg" />
+                                <Skeleton className="w-full sm:w-24 h-10 rounded-lg" />
+                                <Skeleton className="hidden sm:flex w-24 h-10 rounded-lg" />
+                            </>
+                        ) : (
+                            <>
                                 <Button
-                                    endContent={
-                                        <ChevronDownIcon className="text-small" />
-                                    }
-                                    id="grado"
+                                    onPress={handleExport}
+                                    color="primary"
+                                    size="md"
                                     variant="flat"
-                                    className="h-10 w-full"
+                                    isLoading={isExporting}
+                                    startContent={!isExporting && <FileDown className="h-5 w-5" />}
+                                    className="flex items-center gap-2 rounded-xl h-10 w-full sm:w-auto"
                                 >
-                                    Grado
+                                    Exportar
                                 </Button>
-                            </DropdownTrigger>
-                            <DropdownMenu
-                                disallowEmptySelection
-                                aria-label="Filtro de Grados"
-                                closeOnSelect={false}
-                                selectedKeys={gradoFilter}
-                                selectionMode="multiple"
-                                onSelectionChange={setGradoFilter}
-                            >
-                                {grados.map((item) => {
-                                    const nombre = item.nombre;
-                                    const uid = item.nombre;
-                                    return (
-                                        <DropdownItem
-                                            key={uid}
-                                            textValue={nombre}
-                                            className="capitalize"
+                                {/* Dropdown Grado */}
+                                <Dropdown shouldBlockScroll={false}>
+                                    <DropdownTrigger className="w-full sm:w-auto md:flex lg:flex xl:flex">
+                                        <Button
+                                            endContent={<ChevronDownIcon className="text-small" />}
+                                            id="grado"
+                                            variant="flat"
+                                            className="h-10 w-full"
                                         >
-                                            {capitalize(nombre)}
-                                        </DropdownItem>
-                                    );
-                                })}
-                            </DropdownMenu>
-                        </Dropdown>
-
-                        <Dropdown>
-                            <DropdownTrigger className="hidden sm:flex">
-                                <Button
-                                    endContent={
-                                        <ChevronDownIcon className="text-small" />
-                                    }
-                                    variant="flat"
-                                >
-                                    Columnas
-                                </Button>
-                            </DropdownTrigger>
-                            <DropdownMenu
-                                disallowEmptySelection
-                                aria-label="Table Columns"
-                                closeOnSelect={false}
-                                selectedKeys={visibleColumns}
-                                selectionMode="multiple"
-                                onSelectionChange={setVisibleColumns}
-                            >
-                                {columns.map((column) => (
-                                    <DropdownItem
-                                        key={column.uid}
-                                        textValue={column.name}
-                                        className="capitalize"
+                                            Grado
+                                        </Button>
+                                    </DropdownTrigger>
+                                    <DropdownMenu
+                                        disallowEmptySelection
+                                        aria-label="Filtro de Grados"
+                                        closeOnSelect={false}
+                                        selectedKeys={gradoFilter}
+                                        selectionMode="multiple"
+                                        onSelectionChange={setGradoFilter}
                                     >
-                                        {capitalize(column.name)}
-                                    </DropdownItem>
-                                ))}
-                            </DropdownMenu>
-                        </Dropdown>
+                                        {grados.map((item) => {
+                                            const nombre = item.nombre;
+                                            const uid = item.nombre;
+                                            return (
+                                                <DropdownItem
+                                                    key={uid}
+                                                    textValue={nombre}
+                                                    className="capitalize"
+                                                >
+                                                    {capitalize(nombre)}
+                                                </DropdownItem>
+                                            );
+                                        })}
+                                    </DropdownMenu>
+                                </Dropdown>
+
+                                <Dropdown shouldBlockScroll={false}>
+                                    <DropdownTrigger className="hidden sm:flex">
+                                        <Button
+                                            endContent={<ChevronDownIcon className="text-small" />}
+                                            variant="flat"
+                                            className="h-10"
+                                        >
+                                            Columnas
+                                        </Button>
+                                    </DropdownTrigger>
+                                    <DropdownMenu
+                                        disallowEmptySelection
+                                        aria-label="Table Columns"
+                                        closeOnSelect={false}
+                                        selectedKeys={visibleColumns}
+                                        selectionMode="multiple"
+                                        onSelectionChange={setVisibleColumns}
+                                    >
+                                        {columns.map((column) => (
+                                            <DropdownItem
+                                                key={column.uid}
+                                                textValue={column.name}
+                                                className="capitalize"
+                                            >
+                                                {capitalize(column.name)}
+                                            </DropdownItem>
+                                        ))}
+                                    </DropdownMenu>
+                                </Dropdown>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
@@ -348,6 +379,7 @@ export default function App({ resumenPreInscripcion, loading: dataLoading, grado
         onSearchChange,
         onClear,
         grados, // ✅ IMPORTANTE: Re-generar barra de herramientas cuando carguen los grados
+        dataLoading,
     ]);
 
     const bottomContent = useMemo(() => {
@@ -366,6 +398,7 @@ export default function App({ resumenPreInscripcion, loading: dataLoading, grado
     return (
         <DashboardCard
             title="Resumen Preinscripción"
+            icon={<UsersIcon className="w-4 h-4" />}
         >
             <Table
                 aria-label="preinscritos_resumen_table"
@@ -415,24 +448,18 @@ export default function App({ resumenPreInscripcion, loading: dataLoading, grado
                     )}
                 </TableHeader>
                 <TableBody
-                    emptyContent={dataLoading ? (
-                        <div className="flex flex-col gap-2 w-full p-2">
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                        </div>
-                    ) : "No se encontró información"}
-                    items={items}
-                    isLoading={dataLoading}
-                    loadingContent={
-                        <div className="w-full h-full flex flex-col gap-2 p-4 bg-white/50 backdrop-blur-sm z-50">
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                        </div>
+                    emptyContent={
+                        dataLoading ? (
+                            <div className="flex flex-col gap-2 w-full p-2">
+                                <Skeleton className="h-10 w-full rounded-lg" />
+                                <Skeleton className="h-10 w-full rounded-lg" />
+                                <Skeleton className="h-10 w-full rounded-lg" />
+                                <Skeleton className="h-10 w-full rounded-lg" />
+                                <Skeleton className="h-10 w-full rounded-lg" />
+                            </div>
+                        ) : "No se encontró información"
                     }
+                    items={dataLoading ? [] : items}
                     className="space-y-1"
                 >
                     {(item) => (

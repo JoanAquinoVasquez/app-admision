@@ -37,6 +37,7 @@ const DocenteResumenGeneralCard = ({ docente }) => {
                     </div>
                     {/* Progreso Circular */}
                     <CircularProgress
+                        aria-label={`Avance de evaluación: ${avance}%`}
                         color="warning"
                         value={avance}
                         valueLabel={`${avance}%`}

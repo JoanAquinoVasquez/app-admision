@@ -20,7 +20,7 @@ function Navbar() {
         >
             <div className="flex items-center mr-5">
                 {!loading ? (
-                    <Dropdown placement="bottom-end">
+                    <Dropdown placement="bottom-end" shouldBlockScroll={false}>
                         <DropdownTrigger>
                             <User
                                 as="button"
