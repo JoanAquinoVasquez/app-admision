@@ -6,7 +6,7 @@ import voucherPagaloPe from "../../assets/Img/voucher_py.webp";
 import logoBN from "../../assets/Img/logo_bn.webp";
 
 const recursos = [
-    { label: "📖 Más Información", url: "https://epgunprg.edu.pe/admision-epg/prospecto" },
+    { label: "📖 Más Información", url: "https://epgunprg.edu.pe/admision-epg" },
 ];
 
 const VoucherInfo = ({ tipo_pago }) => {

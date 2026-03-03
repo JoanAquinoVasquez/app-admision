@@ -66,30 +66,37 @@ export function useInscritosActions(fetchInscripciones) {
     }, []);
 
     const handleVerConstancia = useCallback(async (postulanteId) => {
+        if (!postulanteId) {
+            toast.error("ID del postulante no encontrado");
+            return;
+        }
         setLoading(true);
 
-        const constanciaPromise = axios.get(
-            `/postulante/constancia/${postulanteId}`,
-            {
-                responseType: "blob",
-            }
-        );
+        const promise = axios.get(`/postulante/constancia/${postulanteId}`, {
+            responseType: "blob",
+        });
 
-        toast.promise(constanciaPromise, {
+        toast.promise(promise, {
             loading: "Generando constancia...",
             success: "Constancia generada con éxito",
-            error: "Error al obtener la constancia",
+            error: "Error al generar la constancia",
         });
 
         try {
-            const response = await constanciaPromise;
+            const response = await promise;
+
+            if (response.data.type === "application/json") {
+                const text = await response.data.text();
+                const errorData = JSON.parse(text);
+                toast.error(errorData.message || "Error al generar constancia");
+                return;
+            }
 
             const file = new Blob([response.data], { type: "application/pdf" });
             const fileURL = URL.createObjectURL(file);
-
             window.open(fileURL, "_blank");
         } catch (error) {
-            // Error managed by toast.promise
+            // Toast captures it
         } finally {
             setLoading(false);
         }
@@ -132,19 +139,28 @@ export function useInscritosActions(fetchInscripciones) {
         }
 
         setIsExporting(true);
-        const exportPromise = axios.get(url, {
+        const promise = axios.get(url, {
             params,
             responseType: "blob",
         });
 
-        toast.promise(exportPromise, {
+        toast.promise(promise, {
             loading: `Generando ${type.toLowerCase()}...`,
             success: "Reporte generado con éxito",
             error: "Error durante la exportación",
         });
 
         try {
-            const response = await exportPromise;
+            const response = await promise;
+
+            // Handle blob error response
+            if (response.data.type === "application/json") {
+                const text = await response.data.text();
+                const errorData = JSON.parse(text);
+                toast.error(errorData.message || "Error al descargar el archivo");
+                setIsExporting(false); // Manually set false here too
+                return;
+            }
 
             const disposition = response.headers["content-disposition"];
             const filename =

@@ -98,7 +98,7 @@ export default function Requirements({ programType }) {
                             href={programType === "MAESTRÍAS" ? "https://drive.google.com/file/d/1G4JNzj2PjLjDdTQ9QJIanU4ZY8wYQJlh/view?usp=sharing" : programType === "DOCTORADOS" ? "https://drive.google.com/file/d/1mUwD4rncBt255WNaiFrkAkm3GxNxScor/view?usp=sharing" : "https://drive.google.com/drive/folders/1AMPzQY5lk_iYP-KYA3PbautzPjT8pl4w?usp=drive_link"}
                         />
 
-                        {programType !== "SEGUNDAS ESPECIALIDADES" && (
+                        {programType !== "SEGUNDAS ESPECIALIDADES" ? (
                             <>
                                 <DownloadCard
                                     title="Solicitud Dirigida al Rector"
@@ -108,31 +108,34 @@ export default function Requirements({ programType }) {
                                     title="Tabla de Evaluación Currículum Vitae"
                                     href="https://drive.google.com/file/d/13OWyVIXaO1ZduP7wA0KezEVIdh24YoyA/view?usp=sharing"
                                 />
+                                {/* Solo se muestra si NO es Maestrías (es decir, para Doctorados) */}
+                                {programType !== "MAESTRÍAS" && (
+                                    <DownloadCard
+                                        title="Tabla de Evaluación Perfil De Proyecto"
+                                        href="https://drive.google.com/file/d/18tZFUHQyehMIgxn-9o25h_JHG-jv-Il3/view?usp=sharing"
+                                    />
+                                )}
+                            </>
+                        ) : (
+                            <>
                                 <DownloadCard
-                                    title="Tabla de Evaluación Perfil De Proyecto"
-                                    href="https://drive.google.com/file/d/1jPuTawyYduA4l-2SAl6bwvIrxkXZvP_q/view?usp=sharing"
+                                    title="Tabla de Evaluación de Entrevista Personal"
+                                    href="https://drive.google.com/file/d/1PW1m0ULnGQOQJVyYX8EUJj7ZFRxDUwzk/view?usp=sharing"
+                                />
+                                <DownloadCard
+                                    title="Tabla de Evaluación de Currículum Vitae"
+                                    href="https://drive.google.com/file/d/1_y0pDbpoxxMJx_DgSmbVr4IThCJaituH/view?usp=sharing"
+                                />
+                                <DownloadCard
+                                    title="Solicitud dirigida Decano FCCBB"
+                                    href="https://drive.google.com/file/d/1-tYfLWPGcVgBq0rj1HBdYOUfNZs4G381/view?usp=sharing"
+                                />
+                                <DownloadCard
+                                    title="Solicitud dirigida Decana FIQIA"
+                                    href="https://drive.google.com/file/d/1Y4rW402Z65GrN8e60YJW62u1Y_vWFpkZ/view?usp=sharing"
                                 />
                             </>
-                        ) || (
-                                <>
-                                    <DownloadCard
-                                        title="Tabla de Evaluación de Entrevista Personal"
-                                        href="https://drive.google.com/file/d/1PW1m0ULnGQOQJVyYX8EUJj7ZFRxDUwzk/view?usp=sharing"
-                                    />
-                                    <DownloadCard
-                                        title="Tabla de Evaluación de Currículum Vitae"
-                                        href="https://drive.google.com/file/d/1_y0pDbpoxxMJx_DgSmbVr4IThCJaituH/view?usp=sharing"
-                                    />
-                                    <DownloadCard
-                                        title="Solicitud dirigida Decano FCCBB"
-                                        href="https://drive.google.com/file/d/1-tYfLWPGcVgBq0rj1HBdYOUfNZs4G381/view?usp=sharing"
-                                    />
-                                    <DownloadCard
-                                        title="Solicitud dirigida Decana FIQIA"
-                                        href="https://drive.google.com/file/d/1Y4rW402Z65GrN8e60YJW62u1Y_vWFpkZ/view?usp=sharing"
-                                    />
-                                </>
-                            )}
+                        )}
                     </div>
                 </div>
             </div>
