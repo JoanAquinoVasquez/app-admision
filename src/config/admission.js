@@ -1,25 +1,25 @@
 export const admissionConfig = {
     cronograma: {
-        examen_admision: 'domingo 19 de Abril',
-        inicio_conceptos: '27 de Abril al 03 de Mayo',
-        fecha_fin_inscricion: '15 de Abril',
+        examen_admision: 'domingo 17 de Mayo',
+        inicio_conceptos: '23 de Mayo',
+        fecha_fin_inscricion: '13 de Mayo',
         periodo: '2026-I',
         etapa_manual: 'INSCRIPCION', // Valores: 'PREINSCRIPCION', 'INSCRIPCION', 'CERRADO', 'STANDBY' o null
         fechas_control: {
             // Preinscripción
-            inicio_preinscripcion: '2025-02-01',
-            fin_preinscripcion: '2025-02-01',
+            inicio_preinscripcion: '2026-02-01',
+            fin_preinscripcion: '2026-02-01',
 
             // Inscripción
-            inicio_inscripcion: '2025-02-02',
-            fin_inscripcion: '2025-04-15',
+            inicio_inscripcion: '2026-02-02',
+            fin_inscripcion: '2026-05-13',
 
             // Evaluación (Examen y Entrevista)
-            inicio_evaluacion: '2025-04-16',
-            fin_evaluacion: '2025-04-19',
+            inicio_evaluacion: '2026-05-14',
+            fin_evaluacion: '2026-05-16',
 
             // Resultados
-            resultados_publicacion: '2025-04-22',
+            resultados_publicacion: '2026-05-20',
         }
     }
 };
