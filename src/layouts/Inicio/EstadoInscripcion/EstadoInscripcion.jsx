@@ -50,19 +50,19 @@ const EstadoInscripcion = ({ estadoInscripcion, loading }) => {
                                     icon: "🎓",
                                     label: "DOC",
                                     color: "text-blue-500",
-                                    value: estadoInscripcion?.grados?.doc || 0,
+                                    value: estadoInscripcion?.grados?.doctorado || 0,
                                 },
                                 {
                                     icon: "📚",
                                     label: "MAE",
                                     color: "text-green-500",
-                                    value: estadoInscripcion?.grados?.mae || 0,
+                                    value: estadoInscripcion?.grados?.maestria || 0,
                                 },
                                 {
                                     icon: "🏅",
                                     label: "SEG",
                                     color: "text-purple-500",
-                                    value: estadoInscripcion?.grados?.seg || 0,
+                                    value: estadoInscripcion?.grados?.segunda_especialidad_profesional || 0,
                                 },
                             ].map((item, idx) => (
                                 <div

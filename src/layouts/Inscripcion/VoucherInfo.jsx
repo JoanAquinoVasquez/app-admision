@@ -42,7 +42,10 @@ const VoucherInfo = ({ tipo_pago }) => {
                         className="max-w-full h-full object-contain cursor-zoom-in transition-transform duration-500 group-hover:scale-105"
                         onClick={() => setIsModalOpen(true)}
                     />
-                    <div className="absolute bottom-2 right-2 bg-black/50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    <div
+                        className="absolute bottom-2 right-2 bg-black/50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                        aria-hidden="true"
+                    >
                         <FaSearchPlus size={14} />
                     </div>
                 </div>
@@ -56,7 +59,10 @@ const VoucherInfo = ({ tipo_pago }) => {
                     onClick={() => setIsVideoOpen(true)}
                     className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl bg-red-600 text-white hover:bg-red-700 shadow-md hover:shadow-lg hover:shadow-red-200 transition-all group"
                 >
-                    <div className="bg-white/20 p-1.5 rounded-full group-hover:scale-110 transition-transform">
+                    <div
+                        className="bg-white/20 p-1.5 rounded-full group-hover:scale-110 transition-transform"
+                        aria-hidden="true"
+                    >
                         <FaYoutube size={16} />
                     </div>
                     <span className="text-xs lg:text-sm 2xl:text-base font-bold tracking-wide">
@@ -86,7 +92,11 @@ const VoucherInfo = ({ tipo_pago }) => {
                     className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/95 backdrop-blur-md p-4"
                     onClick={() => setIsModalOpen(false)}
                 >
-                    <button className="absolute top-6 right-6 text-white/70 hover:text-white transition-colors">
+                    <button
+                        className="absolute top-6 right-6 text-white/70 hover:text-white transition-colors"
+                        onClick={() => setIsModalOpen(false)}
+                        aria-label="Cerrar vista ampliada"
+                    >
                         <FaTimes size={32} />
                     </button>
                     <img
@@ -105,7 +115,11 @@ const VoucherInfo = ({ tipo_pago }) => {
                     className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-300"
                     onClick={() => setIsVideoOpen(false)}
                 >
-                    <button className="absolute top-6 right-6 text-white/70 hover:text-white transition-colors z-50">
+                    <button
+                        className="absolute top-6 right-6 text-white/70 hover:text-white transition-colors z-50"
+                        onClick={() => setIsVideoOpen(false)}
+                        aria-label="Cerrar video tutorial"
+                    >
                         <FaTimes size={32} />
                     </button>
 
