@@ -19,7 +19,6 @@ import {
 import DashboardCard from "../../components/Cards/DashboardCard";
 import { SearchIcon, ChevronDownIcon } from "../../components/Table/components/Icons";
 import TablePagination from "./components/TablePagination";
-import MultiSelect from "../../components/Select/SelectMultiple";
 import axios from "../../axios";
 import { toast } from "react-hot-toast";
 import { FileDown } from "lucide-react";
@@ -68,14 +67,33 @@ export default function TableResultados({ ingresantesPrograma, grados, loading: 
         }));
     }, [ingresantesPrograma]);
 
+    // gradoFilter: estado LOCAL (igual que TableEvaluacion.jsx)
+    const [gradoFilter, setGradoFilter] = useState(
+        new Set(["Doctorado", "Maestria", "Segunda Especialidad Profesional"])
+    );
+
+    const gradoCustomFilter = useCallback((data) => {
+        if (
+            gradoFilter instanceof Set &&
+            gradoFilter.size > 0 &&
+            gradoFilter.size < statusOptions.length
+        ) {
+            return data.filter((item) => {
+                const gp = item.grado_programa?.toLowerCase() ?? "";
+                return Array.from(gradoFilter).some((uid) =>
+                    gp.startsWith(uid.toLowerCase())
+                );
+            });
+        }
+        return data;
+    }, [gradoFilter]);
+
     const {
         filterValue,
-        gradoFilter,
         page,
         rowsPerPage,
         sortDescriptor,
         setFilterValue,
-        setGradoFilter,
         setPage,
         setRowsPerPage,
         setSortDescriptor,
@@ -88,9 +106,7 @@ export default function TableResultados({ ingresantesPrograma, grados, loading: 
         initialRowsPerPage: 5,
         initialSortColumn: "ingresantes_total",
         initialSortDirection: "descending",
-        // Los 3 grados activos por defecto; desmarcar uno filtra la tabla
-        initialGradoFilter: new Set(["Doctorado", "Maestria", "Segunda Especialidad Profesional"]),
-        totalGradoOptions: statusOptions.length,
+        customFilter: gradoCustomFilter,
     });
 
     const handleExport = async () => {
@@ -194,16 +210,72 @@ export default function TableResultados({ ingresantesPrograma, grados, loading: 
     const topContent = useMemo(() => {
         return (
             <div className="flex flex-col gap-4">
-                {/* Top Row: Actions Only */}
-                <div className="flex justify-end items-center gap-2 w-full px-1">
+                {/* Single Row: Search, Filter, and Actions */}
+                <div className="flex flex-wrap items-center gap-2 w-full px-1">
                     {dataLoading ? (
                         <>
-                            <Skeleton className="w-full sm:w-28 h-10 rounded-lg" />
-                            <Skeleton className="w-full sm:w-24 h-10 rounded-lg" />
-                            <Skeleton className="hidden sm:flex w-24 h-10 rounded-lg" />
+                            <Skeleton className="w-full sm:max-w-[250px] h-10 rounded-lg" />
+                            <Skeleton className="w-full sm:max-w-[180px] h-10 rounded-lg" />
+                            <div className="flex-grow" />
+                            <Skeleton className="w-28 h-10 rounded-lg" />
+                            <Skeleton className="w-24 h-10 rounded-lg" />
                         </>
                     ) : (
                         <>
+                            {/* Search Field */}
+                            <Input
+                                isClearable
+                                variant="bordered"
+                                size="sm"
+                                placeholder="Buscar programa..."
+                                startContent={<SearchIcon className="text-slate-400" />}
+                                value={filterValue}
+                                onClear={onClear}
+                                onValueChange={onSearchChange}
+                                className="w-full sm:max-w-[350px]"
+                                classNames={{
+                                    inputWrapper: "bg-white border-slate-200 hover:border-blue-400 focus-within:border-blue-500 transition-colors shadow-sm h-10",
+                                }}
+                            />
+
+                            {/* Dropdown Grado */}
+                            <Dropdown shouldBlockScroll={false}>
+                                <DropdownTrigger>
+                                    <Button
+                                        variant="bordered"
+                                        size="sm"
+                                        endContent={<ChevronDownIcon className="text-slate-400" />}
+                                        className="h-10 w-full sm:w-[300px] justify-between bg-white border-slate-200 hover:border-blue-400 font-normal transition-colors shadow-sm"
+                                    >
+                                        <span className="truncate">
+                                            {gradoFilter.size === statusOptions.length
+                                                ? "Todos los grados"
+                                                : Array.from(gradoFilter).join(", ")}
+                                        </span>
+                                    </Button>
+                                </DropdownTrigger>
+                                <DropdownMenu
+                                    disallowEmptySelection
+                                    aria-label="Filter by Degree"
+                                    closeOnSelect={false}
+                                    selectedKeys={gradoFilter}
+                                    selectionMode="multiple"
+                                    onSelectionChange={setGradoFilter}
+                                >
+                                    {statusOptions.map((status) => (
+                                        <DropdownItem
+                                            key={status.uid}
+                                            textValue={status.name}
+                                            className="capitalize"
+                                        >
+                                            {capitalize(status.name)}
+                                        </DropdownItem>
+                                    ))}
+                                </DropdownMenu>
+                            </Dropdown>
+
+                            <div className="flex-grow" />
+
                             <Button
                                 onPress={handleExport}
                                 color="primary"
@@ -251,48 +323,6 @@ export default function TableResultados({ ingresantesPrograma, grados, loading: 
                     )}
                 </div>
 
-                {/* Filter Section: Optimized Distribution */}
-                <div className="flex flex-col gap-3 bg-slate-50/50 p-4 rounded-2xl border border-slate-100 shadow-sm">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
-                        {dataLoading ? (
-                            <>
-                                <Skeleton className="w-full h-14 rounded-lg" />
-                                <Skeleton className="w-full h-14 rounded-lg" />
-                            </>
-                        ) : (
-                            <>
-                                {/* Search Field */}
-                                <Input
-                                    isClearable
-                                    variant="bordered"
-                                    label="Buscar programa"
-                                    placeholder="Nombre..."
-                                    startContent={<SearchIcon className="text-slate-400" />}
-                                    value={filterValue}
-                                    onClear={onClear}
-                                    onValueChange={onSearchChange}
-                                    classNames={{
-                                        inputWrapper: "bg-white border-slate-200 hover:border-blue-400 focus-within:border-blue-500 transition-colors shadow-sm",
-                                    }}
-                                />
-
-                                {/* MultiSelect Degree */}
-                                <MultiSelect
-                                    label="Filtrar por Grado"
-                                    placeholder="Seleccione uno o varios"
-                                    defaultItems={statusOptions.map((item) => ({
-                                        key: item.uid,
-                                        textValue: item.name,
-                                        ...item,
-                                    }))}
-                                    selectedKeys={gradoFilter}
-                                    onSelectionChange={setGradoFilter}
-                                />
-                            </>
-                        )}
-                    </div>
-                </div>
-
                 {/* Stats and Results Info */}
                 <div className="flex justify-between items-center px-2 py-1 bg-blue-50/50 rounded-lg">
                     <div className="flex items-center gap-2">
@@ -300,23 +330,6 @@ export default function TableResultados({ ingresantesPrograma, grados, loading: 
                         <span className="text-blue-700 text-[11px] font-bold uppercase tracking-wider">
                             {`${filteredItems.length} programas`}
                         </span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        <span className="text-slate-500 text-[11px] font-medium">Filas:</span>
-                        <select
-                            value={rowsPerPage}
-                            onChange={(e) => {
-                                setRowsPerPage(Number(e.target.value));
-                                setPage(1);
-                            }}
-                            className="bg-white border border-slate-200 rounded px-1.5 py-0.5 text-[11px] text-slate-600 outline-none hover:border-blue-300 transition-colors shadow-sm"
-                        >
-                            <option value="5">5</option>
-                            <option value="10">10</option>
-                            <option value="30">30</option>
-                            <option value="50">50</option>
-                        </select>
                     </div>
                 </div>
             </div>

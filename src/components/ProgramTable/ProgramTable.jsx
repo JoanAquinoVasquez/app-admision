@@ -26,52 +26,45 @@ export default function ProgramTable({ programs, showBrochure = false }) {
     }, [programs, searchQuery]);
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="w-full"
-        >
-            {/* Contenedor Unificado */}
-            <div className="overflow-hidden rounded-[2.5rem] border border-gray-200 shadow-xl shadow-gray-100/50 bg-white">
+        <div className="h-full flex flex-col">
+            {/* Header / Buscador integrado (Sin bordes adicionales) */}
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between p-6 bg-gray-50/30 border-b border-gray-100">
+                <Input
+                    isClearable
+                    variant="flat"
+                    radius="full"
+                    placeholder="Buscar programa o facultad..."
+                    className="w-full md:max-w-md"
+                    classNames={{
+                        inputWrapper: "bg-white border border-gray-200 shadow-sm group-data-[focus=true]:border-blue-400 transition-all",
+                        input: "text-sm"
+                    }}
+                    startContent={
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-blue-500">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                        </svg>
+                    }
+                    value={searchQuery}
+                    onValueChange={setSearchQuery}
+                    onClear={() => setSearchQuery("")}
+                />
 
-                {/* Header / Buscador integrado (Sin bordes redondeados inferiores para pegar a la tabla) */}
-                <div className="flex flex-col md:flex-row gap-4 items-center justify-between p-6 bg-gray-50/50 border-b border-gray-100">
-                    <Input
-                        isClearable
-                        variant="flat"
-                        radius="full"
-                        placeholder="Buscar programa o facultad..."
-                        className="w-full md:max-w-md"
-                        classNames={{
-                            inputWrapper: "bg-white border border-gray-200 shadow-sm group-data-[focus=true]:border-blue-400 transition-all",
-                            input: "text-sm"
-                        }}
-                        startContent={
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-blue-500">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                            </svg>
-                        }
-                        value={searchQuery}
-                        onValueChange={setSearchQuery}
-                        onClear={() => setSearchQuery("")}
-                    />
-
-                    <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-full border border-gray-200 shadow-sm">
-                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                        <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">
-                            {filteredPrograms.length} resultados
-                        </span>
-                    </div>
+                <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-full border border-gray-200 shadow-sm">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                    <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">
+                        {filteredPrograms.length} resultados
+                    </span>
                 </div>
+            </div>
 
-                {/* Tabla (Sin bordes adicionales para que parezca parte del mismo bloque) */}
+            {/* Tabla (Ocupa el resto del espacio) */}
+            <div className="flex-grow overflow-auto min-h-0">
                 <Table
                     aria-label="Tabla de programas de posgrado"
                     removeWrapper
                     classNames={{
-                        base: "max-h-[550px] overflow-y-auto",
-                        th: "bg-gray-50/30 text-gray-500 text-[11px] font-bold py-5 first:pl-8 last:pr-8 border-b border-gray-100",
+                        base: "w-full",
+                        th: "bg-white text-gray-500 text-[11px] font-bold py-5 first:pl-8 last:pr-8 border-b border-gray-100 sticky top-0 z-10",
                         td: "py-5 first:pl-8 last:pr-8 group-hover:bg-blue-50/40 transition-all duration-300",
                         tr: "group border-b border-gray-50 last:border-none",
                     }}
@@ -136,7 +129,7 @@ export default function ProgramTable({ programs, showBrochure = false }) {
                     </TableBody>
                 </Table>
             </div>
-        </motion.div>
+        </div>
     );
 }
 

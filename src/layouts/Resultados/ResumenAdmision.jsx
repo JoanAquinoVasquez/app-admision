@@ -1,7 +1,6 @@
 import { Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Skeleton, Select, SelectItem } from "@heroui/react";
-import DashboardCard from "../../components/Cards/DashboardCard";
 import { useState, useEffect } from "react";
 import { formatDisplayValue } from "../../components/Select/utils/formatDisplay";
 
@@ -105,6 +104,8 @@ const ResumenAdmision = ({ resumenGeneral, loading }) => {
     };
 
     const options = {
+        responsive: true,
+        maintainAspectRatio: false,
         plugins: {
             tooltip: {
                 callbacks: {
@@ -116,23 +117,24 @@ const ResumenAdmision = ({ resumenGeneral, loading }) => {
                 },
             },
             legend: {
-                position: "bottom",
-                labels: {
-                    font: { size: 12 },
-                },
+                display: false, // Ocultamos la leyenda nativa para usar una personalizada
             },
         },
-        cutout: "70%",
+        cutout: "78%", // Un poco más delgada para mayor elegancia
+        layout: {
+            padding: {
+                bottom: 0
+            }
+        }
     };
 
     const handleChange = (valor) => {
-        // Si se selecciona vacío, mostramos el resumen combinado
         setGradoSeleccionado(valor === "" ? null : valor);
     };
 
     return (
-        <div className="relative max-w-xs mx-auto p-2">
-            <h2 className="text-center text-lg font-semibold mb-1">
+        <div className="flex flex-col h-full w-full max-w-sm mx-auto px-2">
+            <h2 className="text-center text-lg font-semibold mt-2 mb-1">
                 Estado de Admisión
             </h2>
 
@@ -140,10 +142,14 @@ const ResumenAdmision = ({ resumenGeneral, loading }) => {
                 label="Selecciona el grado"
                 selectedKeys={[gradoSeleccionado || ""]}
                 onChange={(e) => handleChange(e.target.value)}
-                className="mb-2"
+                className="w-full mb-4"
                 disallowEmptySelection={false}
                 placeholder="Todos los grados"
+                size="sm"
             >
+                <SelectItem key="" value="">
+                    Todos
+                </SelectItem>
                 {resumenes.map((item) => (
                     <SelectItem key={item.grado} value={item.grado}>
                         {formatDisplayValue(item.grado)}
@@ -151,19 +157,38 @@ const ResumenAdmision = ({ resumenGeneral, loading }) => {
                 ))}
             </Select>
 
-            <Doughnut
-                data={data}
-                options={options}
-                data-testid="doughnut-chart"
-            />
-            <div style={{ display: "none" }} data-testid="no-admitidos-labels">
-                {data.labels.map((label, index) => (
-                    <span key={label}>{label}</span>
-                ))}
+            {/* Contenedor de la Dona - Ahora centrado perfectamente sin la leyenda de Chart.js */}
+            <div className="relative w-full h-[320px] flex items-center justify-center">
+                <div className="w-full h-full p-2">
+                    <Doughnut
+                        data={data}
+                        options={options}
+                        data-testid="doughnut-chart"
+                    />
+                </div>
+
+                {/* Texto Central - z-10 para estar sobre el gráfico y top-1/2 para centrado real */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none z-10">
+                    <p className="text-gray-500 text-sm font-medium leading-none mb-1">Total inscritos</p>
+                    <p className="text-6xl font-black text-slate-800 tracking-tighter">{total}</p>
+                </div>
             </div>
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
-                <p className="text-sm text-gray-500">Total inscritos</p>
-                <p className="text-xl font-bold text-gray-800">{total}</p>
+
+            {/* Leyenda Personalizada - Pegada abajo y con control total */}
+            <div className="mt-auto pt-4 pb-2">
+                <div className="flex flex-wrap justify-center gap-x-4 gap-y-2">
+                    {data.labels.map((label, index) => (
+                        <div key={index} className="flex items-center gap-1.5">
+                            <div
+                                className="w-3 h-3 rounded-full shadow-sm"
+                                style={{ backgroundColor: data.datasets[0].backgroundColor[index] }}
+                            />
+                            <span className="text-[15px] font-semibold text-slate-600">
+                                {label}
+                            </span>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );

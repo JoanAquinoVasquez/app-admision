@@ -43,44 +43,40 @@ export default function SegundasEspecialidades() {
                 </div>
 
                 {/* 2. Grid de Información y Tabla (Lado a Lado) */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
 
                     {/* COLUMNA IZQUIERDA: Requisitos (Sticky) */}
                     <aside className="lg:col-span-6 xl:col-span-6 space-y-6 lg:sticky lg:top-8">
-                        <div className="overflow-hidden rounded-[2.5rem] bg-white border border-gray-200 shadow-sm">
-                            <div className="p-2">
-                                <Requirements programType="SEGUNDAS ESPECIALIDADES" />
-                            </div>
-                        </div>
+                        <Requirements programType="SEGUNDAS ESPECIALIDADES PROFESIONALES" />
 
                         {/* Flyer informativo adicional */}
                         <div className="hidden lg:block">
-                            <InfoProspecto title="Prospecto de Admisión" />
+                            <InfoProspecto title="Más información" />
                         </div>
                     </aside>
 
                     {/* COLUMNA DERECHA: Buscador y Tabla de Programas */}
-                    <main className="lg:col-span-6 xl:col-span-6">
+                    <main className="lg:col-span-6 xl:col-span-6 lg:h-0 lg:min-h-full">
                         <motion.div
-                            className="w-full"
+                            className="w-full h-full"
                             initial={{ opacity: 0, x: 30 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.6, delay: 0.3 }}
                         >
-                            <div className="overflow-hidden rounded-[2.5rem] border border-gray-200 shadow-xl shadow-gray-100/50 bg-white">
-                                
+                            <div className="overflow-hidden rounded-[2.5rem] border border-gray-200 shadow-xl shadow-gray-100/50 bg-white h-full flex flex-col">
+
                                 {/* Header Integrado de la Tabla */}
-                                <div className="bg-gray-50/50 pt-8 px-8 pb-4">
+                                <div className="bg-gray-50/50 pt-8 px-8 pb-4 border-b border-gray-100">
                                     <h2 className="text-2xl font-bold text-gray-900 tracking-tight">
-                                        Lista de Programas
+                                        Oferta Académica
                                     </h2>
                                     <p className="text-sm text-gray-500 italic">Programas de alta especialización profesional</p>
                                 </div>
 
                                 {/* Estados de Carga y Tabla */}
-                                <div className="min-h-[500px]">
+                                <div className="flex-grow overflow-hidden">
                                     {loading ? (
-                                        <div className="flex flex-col items-center justify-center py-32">
+                                        <div className="flex flex-col items-center justify-center h-full py-32">
                                             <div className="w-12 h-12 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin mb-4"></div>
                                             <p className="text-gray-400 font-medium">Cargando especialidades...</p>
                                         </div>
