@@ -50,7 +50,7 @@ export default function Doctorados() {
                         <Requirements programType="DOCTORADOS" />
 
                         {/* Flyer informativo opcional */}
-                        <div className="hidden lg:block">
+                        <div className="block">
                             <InfoProspecto title="Más información" />
                         </div>
                     </aside>

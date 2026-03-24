@@ -50,7 +50,7 @@ export default function Maestrias() {
                         <Requirements programType="MAESTRÍAS" />
 
                         {/* Opcional: Un Flyer de contacto o info extra aquí quedaría genial */}
-                        <div className="hidden lg:block">
+                        <div className="block">
                             <InfoProspecto title="Más información" />
                         </div>
                     </aside>

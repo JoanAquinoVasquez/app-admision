@@ -46,7 +46,7 @@ export default function InfoProspecto({ title }) {
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                                 </svg>
                             </div>
-                            <h3 className="text-2xl md:text-3xl font-extrabold text-white leading-tight">
+                            <h3 className="text-xl md:text-2xl font-extrabold text-white leading-tight">
                                 {title}
                             </h3>
                         </div>
@@ -95,25 +95,24 @@ export default function InfoProspecto({ title }) {
                 <Modal
                     isOpen={isOpen}
                     onOpenChange={onOpenChange}
-                    size="3xl"
+                    size="4xl"
                     scrollBehavior="inside"
                     backdrop="blur"
-                    className="max-h-[90vh]"
+                    placement="center"
                 >
-                    <ModalContent>
+                    <ModalContent className="bg-white max-h-[95vh]">
                         {(onClose) => (
                             <>
-                                <ModalHeader className="flex flex-col gap-1 text-gray-900 border-b">
+                                <ModalHeader className="flex flex-col gap-1 text-gray-900 border-b border-gray-100 py-3">
                                     Cronograma de Admisión {config.periodo}
                                 </ModalHeader>
-                                <ModalBody className="py-6">
-                                    <div className="rounded-2xl overflow-hidden border border-gray-200 bg-gray-50">
-                                        <img
-                                            src={cronogramaImg}
-                                            alt="Cronograma de Admisión"
-                                            className="w-full h-auto object-contain"
-                                        />
-                                    </div>
+                                <ModalBody className="p-2 sm:p-6 bg-gray-50 flex items-center justify-center overflow-hidden">
+                                    <img
+                                        src={cronogramaImg}
+                                        alt="Cronograma de Admisión"
+                                        className="max-w-full h-auto object-contain shadow-xl rounded-2xl"
+                                        style={{ maxHeight: '85vh' }}
+                                    />
                                 </ModalBody>
                             </>
                         )}

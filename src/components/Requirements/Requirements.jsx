@@ -107,23 +107,24 @@ export default function Requirements({ programType }) {
                 <Modal
                     isOpen={isOpen}
                     onOpenChange={onOpenChange}
-                    size="3xl"
+                    size="4xl"
                     scrollBehavior="inside"
                     backdrop="blur"
-                    className="max-h-[90vh]"
+                    placement="center"
                 >
-                    <ModalContent>
+                    <ModalContent className="bg-white max-h-[95vh]">
                         {(onClose) => (
                             <>
-                                <ModalHeader className="flex flex-col gap-1 text-gray-900">Conceptos de Inscripción {admissionConfig.cronograma.periodo}</ModalHeader>
-                                <ModalBody className="pb-8">
-                                    <div className="rounded-xl overflow-hidden border border-gray-100 shadow-sm">
-                                        <img
-                                            src={conceptosImg}
-                                            alt="Conceptos de Inscripción"
-                                            className="w-full h-auto object-contain"
-                                        />
-                                    </div>
+                                <ModalHeader className="flex flex-col gap-1 text-gray-900 border-b border-gray-100 py-3">
+                                    Conceptos de Inscripción {admissionConfig.cronograma.periodo}
+                                </ModalHeader>
+                                <ModalBody className="p-1 sm:p-4 bg-gray-50 flex items-center justify-center overflow-hidden">
+                                    <img
+                                        src={conceptosImg}
+                                        alt="Conceptos de Inscripción"
+                                        className="max-w-full h-auto object-contain shadow-xl rounded-2xl"
+                                        style={{ maxHeight: '85vh' }}
+                                    />
                                 </ModalBody>
                             </>
                         )}

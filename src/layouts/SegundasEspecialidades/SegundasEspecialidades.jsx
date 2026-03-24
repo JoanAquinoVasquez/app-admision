@@ -50,7 +50,7 @@ export default function SegundasEspecialidades() {
                         <Requirements programType="SEGUNDAS ESPECIALIDADES PROFESIONALES" />
 
                         {/* Flyer informativo adicional */}
-                        <div className="hidden lg:block">
+                        <div className="block">
                             <InfoProspecto title="Más información" />
                         </div>
                     </aside>
