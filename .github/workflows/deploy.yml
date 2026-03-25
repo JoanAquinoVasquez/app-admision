@@ -17,12 +17,23 @@ jobs:
         with:
           node-version: "20"
 
+      - name: Create .env file
+        run: |
+          echo "APP_DEBUG=${{ secrets.APP_DEBUG }}" > .env
+          echo "APP_ENV=${{ secrets.APP_ENV }}" >> .env
+          echo "APP_NAME=${{ secrets.APP_NAME }}" >> .env
+          echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" >> .env
+          echo "VITE_APP_NAME=${{ secrets.VITE_APP_NAME }}" >> .env
+          echo "VITE_GOOGLE_CLIENT_ID=${{ secrets.VITE_GOOGLE_CLIENT_ID }}" >> .env
+          echo "VITE_PERIODO_ADMISION=${{ secrets.VITE_PERIODO_ADMISION }}" >> .env
+
       - name: Install dependencies
         run: npm install
 
       - name: Build project
         run: npm run build
 
+  
       - name: Deploy to Server via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
