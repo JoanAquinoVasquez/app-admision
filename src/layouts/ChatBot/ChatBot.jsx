@@ -91,7 +91,7 @@ const Chatbot = () => {
                                         ) : (
                                             <div dangerouslySetInnerHTML={{
                                                 __html: msg.text
-                                                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                                    .replace(/\*(.*?)\*/g, '<strong>$1</strong>') // Negrita estilo WhatsApp
                                                     .replace(/(^|\n)\*\s/g, '$1• ')
                                                     .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="text-blue-600 underline break-all">$1</a>')
                                                     .replace(/\n/g, '<br />')
