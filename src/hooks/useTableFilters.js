@@ -144,10 +144,26 @@ export const useTableFilters = (data = [], options = {}) => {
         return [...filteredItems].sort((a, b) => {
             const first = a[sortDescriptor.column];
             const second = b[sortDescriptor.column];
-            const cmp = first < second ? -1 : first > second ? 1 : 0;
+
+            // Intentar conversión numérica para el ordenamiento
+            const numA = parseFloat(first);
+            const numB = parseFloat(second);
+
+            let cmp;
+            if (!isNaN(numA) && !isNaN(numB)) {
+                // Si ambos son números, comparar numéricamente
+                cmp = numA < numB ? -1 : numA > numB ? 1 : 0;
+            } else {
+                // Si no, usar comparación de texto (case-insensitive y locale-aware)
+                const strA = (first ?? "").toString().toLowerCase();
+                const strB = (second ?? "").toString().toLowerCase();
+                cmp = strA.localeCompare(strB, undefined, { numeric: true, sensitivity: 'base' });
+            }
+
             return sortDescriptor.direction === "descending" ? -cmp : cmp;
         });
     }, [filteredItems, sortDescriptor]);
+
 
     // ── Paginación ────────────────────────────────────────────────────────────
     const pages = Math.max(1, Math.ceil(filteredItems.length / rowsPerPage));

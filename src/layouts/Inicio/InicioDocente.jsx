@@ -1,4 +1,5 @@
-import { MdDashboard, MdSearch, MdFileDownload, MdSave } from "react-icons/md";
+import { MdDashboard, MdSearch, MdFileDownload, MdSave, MdCalculate } from "react-icons/md";
+
 import { useState, useEffect, useMemo } from "react";
 import axios from "../../axios";
 import { toast } from "react-hot-toast";
@@ -19,9 +20,12 @@ import {
     CardHeader,
     Progress,
     User,
-    Tooltip
+    Tooltip,
+    useDisclosure
 } from "@heroui/react";
+import CVScoreCalculatorModal from "../../components/Modals/CVScoreCalculatorModal";
 import useProgramaDocente from "../../data/Evaluacion/dataProgramaDocente";
+
 
 function InicioDocente() {
     // Estados de Paginación y Datos
@@ -39,6 +43,30 @@ function InicioDocente() {
     const [postulantes, setPostulantes] = useState([]);
     const [programaSeleccionado, setProgramaSeleccionado] = useState(null);
     const [loadingPostulantes, setLoadingPostulantes] = useState(false);
+
+    // Estado paraCalculadora de CV
+    const { isOpen: isCalcOpen, onOpen: onCalcOpen, onClose: onCalcClose } = useDisclosure();
+    const [currentCalcId, setCurrentCalcId] = useState(null);
+
+    const handleOpenCalc = (id) => {
+        setCurrentCalcId(id);
+        onCalcOpen();
+    };
+
+    const handleApplyCalc = async (total) => {
+        if (currentCalcId) {
+            // Asegurar 1 decimal y punto decimal
+            const notaFormateada = total.toFixed(1);
+            handleNotaChange(currentCalcId, notaFormateada);
+            // Guardado automático directo
+            await guardarNota(currentCalcId, notaFormateada);
+        }
+    };
+
+
+
+
+
 
     // Buscadores
     const [searchQuery, setSearchQuery] = useState("");
@@ -103,9 +131,7 @@ function InicioDocente() {
         return programaDocente.find(p => p.id_programa === programaSeleccionado);
     }, [programaDocente, programaSeleccionado]);
 
-    const maxNota = useMemo(() => {
-        return programaActual?.id_grado === 3 ? 20 : 30;
-    }, [programaActual]);
+    const maxNota = 20; // Puntaje máximo para CV (Todos los grados)
 
     // --- EFECTOS ---
     useEffect(() => {
@@ -134,9 +160,12 @@ function InicioDocente() {
             const fotosInit = {};
 
             data.forEach(({ postulante, cv, foto }) => {
-                notasInit[postulante.id] = cv ?? "";
+                // Formatear a 1 decimal al cargar si existe valor
+                const cvNum = parseFloat(cv);
+                notasInit[postulante.id] = (!isNaN(cvNum)) ? cvNum.toFixed(1) : "";
                 fotosInit[postulante.id] = foto ?? "";
             });
+
 
             setNotas(notasInit);
             setFotos(fotosInit);
@@ -151,28 +180,44 @@ function InicioDocente() {
         setNotas(prev => ({ ...prev, [id]: valor }));
     };
 
-    const guardarNota = async (postulante_id) => {
-        const nota = parseFloat(notas[postulante_id]);
+    const guardarNota = async (postulante_id, valor_manual = null) => {
+        // Si viene de la calculadora (valor_manual), usamos ese. Si no, del estado.
+        const notaRaw = valor_manual !== null ? valor_manual : notas[postulante_id];
+        const nota = parseFloat(notaRaw);
 
         if (isNaN(nota)) {
             return toast.error("Ingresa una nota válida");
         }
 
+
         if (nota < 0 || nota > maxNota) {
             return toast.error(`La nota debe estar entre 0 y ${maxNota}`);
         }
-
         try {
+            // Asegurar 1 decimal y punto decimal
+            const notaFinal = nota.toFixed(1);
             await axios.post("/registrar-nota", {
                 postulante_id,
-                notaCv: nota,
+                notaCv: notaFinal,
             });
+            // Actualizamos el estado local con el formato correcto también
+            handleNotaChange(postulante_id, notaFinal);
+
+
             fetchProgramaDocente(); // Actualizar contadores del sidebar
             toast.success("Nota guardada");
+
+
+            // Quitar el foco de cualquier input activo para una experiencia más limpia
+            if (document.activeElement instanceof HTMLElement) {
+                document.activeElement.blur();
+            }
         } catch (error) {
             const message = error.response?.data?.message || "No se pudo guardar";
             toast.error(message);
         }
+
+
     };
 
     // Función genérica para exportar
@@ -358,114 +403,195 @@ function InicioDocente() {
                             )}
                         </CardHeader>
 
-                        <CardBody className="p-0 overflow-hidden flex flex-col">
-                            {loadingPostulantes ? (
-                                <div className="flex flex-col gap-4 p-6 h-full">
-                                    <Skeleton className="h-10 w-full rounded-lg" />
-                                    <Skeleton className="h-16 w-full rounded-lg" />
-                                    <Skeleton className="h-16 w-full rounded-lg" />
-                                    <Skeleton className="h-16 w-full rounded-lg" />
-                                    <Skeleton className="h-16 w-full rounded-lg" />
-                                </div>
-                            ) : !programaSeleccionado ? (
-                                <div className="flex flex-col items-center justify-center h-full text-gray-400">
-                                    <MdDashboard size={48} className="mb-2 opacity-20" />
-                                    <p>Selecciona un programa del menú lateral para comenzar.</p>
-                                </div>
-                            ) : (
-                                <>
-                                    <div className="flex-1 overflow-y-auto min-h-0 overflow-x-auto">
-                                        <div className="min-w-[600px]">
-                                            <Table
-                                                aria-label="Tabla de evaluación"
-                                                shadow="none"
-                                                layout="fixed"
-                                                classNames={{
-                                                    th: "bg-gray-50 text-gray-600 font-semibold",
-                                                    td: "py-2 border-b border-gray-50"
-                                                }}
-                                            >
-                                                <TableHeader aria-label="Encabezado de la tabla">
-                                                    <TableColumn width={50}>N</TableColumn>
-                                                    <TableColumn>POSTULANTE</TableColumn>
-                                                    <TableColumn width={200} align="center">NOTA (0-{maxNota})</TableColumn>
-                                                    <TableColumn width={100} align="center">ACCIÓN</TableColumn>
-                                                </TableHeader>
-                                                <TableBody emptyContent={"No hay postulantes encontrados."}>
-                                                    {postulantesFiltrados
-                                                        .slice((pagePostulantes - 1) * postulantesPorPagina, pagePostulantes * postulantesPorPagina)
-                                                        .map((postulante, idx) => (
-                                                            <TableRow key={postulante.id}>
-                                                                <TableCell aria-label="N">{idx + 1 + (pagePostulantes - 1) * postulantesPorPagina}</TableCell>
-                                                                <TableCell aria-label="Postulante">
-                                                                    <User
-                                                                        name={`${postulante.ap_paterno} ${postulante.ap_materno}, ${postulante.nombres}`}
-                                                                        description={`DNI: ${postulante.num_iden}`}
-                                                                        aria-label="Postulante"
-                                                                        avatarProps={{
-                                                                            src: fotos[postulante.id],
-                                                                            size: "lg",
-                                                                        }}
-                                                                        classNames={{
-                                                                            name: "text-base font-semibold",
-                                                                            description: "text-sm text-gray-500"
-                                                                        }}
-                                                                    />
-                                                                </TableCell>
-                                                                <TableCell aria-label="Nota">
-                                                                    <div className="flex justify-center">
-                                                                        <Input
-                                                                            type="number"
-                                                                            size="lg"
-                                                                            variant="bordered"
-                                                                            placeholder="0.000"
-                                                                            aria-label="Nota del postulante"
-                                                                            className="max-w-[130px]"
-                                                                            value={notas[postulante.id] || ""}
-                                                                            onChange={(e) => handleNotaChange(postulante.id, e.target.value)}
-                                                                            endContent={
-                                                                                <span className="text-gray-400 text-xs">pts</span>
+                        <CardBody className="p-0 overflow-hidden flex flex-col h-[600px] bg-white rounded-b-3xl">
+                            {/* Área de contenido principal (Tabla o Skeletons) con scrollbar siempre reservada */}
+                            <div className="flex-1 overflow-y-scroll min-h-0 overflow-x-auto">
+
+                                {loadingPostulantes ? (
+                                    <div className="min-w-[600px] p-0">
+                                        <Table
+                                            aria-label="Cargando postulantes"
+                                            shadow="none"
+                                            layout="fixed"
+                                            classNames={{
+                                                th: "bg-gray-50 text-gray-600 font-semibold",
+                                                td: "border-b border-gray-50",
+                                                tr: "h-[72px]"
+                                            }}
+                                        >
+                                            <TableHeader>
+                                                <TableColumn width={50}>N</TableColumn>
+                                                <TableColumn>POSTULANTE</TableColumn>
+                                                <TableColumn width={200} align="center">NOTA (0-{maxNota})</TableColumn>
+                                                <TableColumn width={100} align="center">ACCIÓN</TableColumn>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {[1, 2, 3, 4, 5, 6].map((i) => (
+                                                    <TableRow key={i}>
+                                                        <TableCell><Skeleton className="h-4 w-4 rounded" /></TableCell>
+                                                        <TableCell>
+                                                            <div className="flex items-center gap-3">
+                                                                <Skeleton className="h-12 w-12 rounded-full shrink-0" />
+                                                                <div className="flex flex-col gap-2 w-full">
+                                                                    <Skeleton className="h-4 w-3/4 rounded-lg" />
+                                                                    <Skeleton className="h-3 w-1/2 rounded-lg" />
+                                                                </div>
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <div className="flex justify-center h-full items-center">
+                                                                <Skeleton className="h-12 w-32 rounded-xl" />
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <div className="flex justify-center">
+                                                                <Skeleton className="h-10 w-10 rounded-lg" />
+                                                            </div>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
+                                ) : !programaSeleccionado ? (
+                                    <div className="flex flex-col items-center justify-center h-full text-gray-400 p-10">
+                                        <MdDashboard size={48} className="mb-2 opacity-20" />
+                                        <p>Selecciona un programa del menú lateral para comenzar.</p>
+                                    </div>
+                                ) : (
+                                    <div className="min-w-[600px]">
+                                        <Table
+                                            aria-label="Tabla de evaluación"
+                                            shadow="none"
+                                            layout="fixed"
+                                            classNames={{
+                                                th: "bg-gray-50 text-gray-600 font-semibold",
+                                                td: "border-b border-gray-50",
+                                                tr: "h-[72px]"
+                                            }}
+                                        >
+                                            <TableHeader aria-label="Encabezado de la tabla">
+                                                <TableColumn width={50}>N</TableColumn>
+                                                <TableColumn>POSTULANTE</TableColumn>
+                                                <TableColumn width={200} align="center">NOTA (0-{maxNota})</TableColumn>
+                                                <TableColumn width={100} align="center">ACCIÓN</TableColumn>
+                                            </TableHeader>
+
+                                            <TableBody emptyContent={"No hay postulantes encontrados."}>
+                                                {postulantesFiltrados
+                                                    .slice((pagePostulantes - 1) * postulantesPorPagina, pagePostulantes * postulantesPorPagina)
+                                                    .map((postulante, idx) => (
+                                                        <TableRow key={postulante.id}>
+                                                            <TableCell aria-label="N">{idx + 1 + (pagePostulantes - 1) * postulantesPorPagina}</TableCell>
+                                                            <TableCell aria-label="Postulante">
+                                                                <User
+                                                                    name={`${postulante.ap_paterno} ${postulante.ap_materno}, ${postulante.nombres}`}
+                                                                    description={`DNI: ${postulante.num_iden}`}
+                                                                    aria-label="Postulante"
+                                                                    avatarProps={{
+                                                                        src: fotos[postulante.id],
+                                                                        size: "lg",
+                                                                        style: { width: 48, height: 48, minWidth: 48, minHeight: 48, flexShrink: 0 },
+                                                                        ImgComponent: "img",
+                                                                        imgProps: { width: 48, height: 48 }
+                                                                    }}
+                                                                    classNames={{
+                                                                        name: "text-base font-semibold",
+                                                                        description: "text-sm text-gray-500"
+                                                                    }}
+                                                                />
+
+                                                            </TableCell>
+                                                            <TableCell aria-label="Nota">
+                                                                <div className="flex justify-center items-center gap-1">
+                                                                    <Input
+                                                                        type="text"
+                                                                        size="lg"
+                                                                        variant="bordered"
+                                                                        placeholder="0.0"
+                                                                        inputMode="decimal"
+                                                                        aria-label="Nota del postulante"
+                                                                        className="max-w-[130px]"
+                                                                        value={notas[postulante.id] || ""}
+                                                                        onChange={(e) => {
+                                                                            const valInput = e.target.value.replace(',', '.');
+                                                                            if (/^[0-9]*\.?[0-9]{0,1}$/.test(valInput) || valInput === "") {
+                                                                                const numVal = parseFloat(valInput);
+                                                                                if (isNaN(numVal) || numVal <= maxNota) {
+                                                                                    handleNotaChange(postulante.id, valInput);
+                                                                                }
                                                                             }
-                                                                            step={0.001}
-                                                                        />
-                                                                    </div>
-                                                                </TableCell>
-                                                                <TableCell aria-label="Acciones">
-                                                                    <Tooltip content="Guardar Nota">
+                                                                        }}
+                                                                        endContent={
+                                                                            <span className="text-gray-400 text-xs">pts</span>
+                                                                        }
+                                                                    />
+                                                                    <Tooltip content="Calculadora de CV (Guardado Rápido)">
                                                                         <Button
                                                                             isIconOnly
+                                                                            size="lg"
+                                                                            variant="solid"
                                                                             color="primary"
-                                                                            variant="light"
-                                                                            aria-label="Guardar Nota"
-                                                                            onPress={() => guardarNota(postulante.id)}
+                                                                            aria-label="Calculadora de CV"
+                                                                            onPress={() => handleOpenCalc(postulante.id)}
+                                                                            className="min-w-[48px] h-[48px] shadow-sm bg-indigo-600 hover:bg-indigo-700"
                                                                         >
-                                                                            <MdSave size={22} />
+                                                                            <MdCalculate size={24} className="text-white" />
                                                                         </Button>
                                                                     </Tooltip>
-                                                                </TableCell>
-                                                            </TableRow>
-                                                        ))}
-                                                </TableBody>
-                                            </Table>
-                                        </div>
+                                                                </div>
+                                                            </TableCell>
+                                                            <TableCell aria-label="Acciones">
+                                                                <Tooltip content="Guardar Nota">
+                                                                    <Button
+                                                                        isIconOnly
+                                                                        color="primary"
+                                                                        variant="light"
+                                                                        aria-label="Guardar Nota"
+                                                                        onPress={() => guardarNota(postulante.id)}
+                                                                    >
+                                                                        <MdSave size={22} />
+                                                                    </Button>
+                                                                </Tooltip>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                            </TableBody>
+                                        </Table>
                                     </div>
+                                )}
+                            </div>
 
-                                    <div className="flex justify-center py-1 border-t border-gray-100 shrink-0">
-                                        <Pagination
-                                            total={Math.ceil(postulantesFiltrados.length / postulantesPorPagina)}
-                                            page={pagePostulantes}
-                                            onChange={setPagePostulantes}
-                                            color="primary"
-                                            aria-label="Paginación de postulantes"
-                                        />
-                                    </div>
-                                </>
-                            )}
+                            {/* Footer persistente para evitar saltos de altura */}
+                            <div className="flex justify-center py-2 border-t border-gray-100 shrink-0 bg-gray-50/50">
+                                {programaSeleccionado && !loadingPostulantes && postulantesFiltrados.length > 0 ? (
+                                    <Pagination
+                                        total={Math.ceil(postulantesFiltrados.length / postulantesPorPagina)}
+                                        page={pagePostulantes}
+                                        onChange={setPagePostulantes}
+                                        color="primary"
+                                        aria-label="Paginación de postulantes"
+                                        size="sm"
+                                    />
+                                ) : (
+                                    <div className="h-8" title="Espacio reservado para paginación" />
+                                )}
+                            </div>
                         </CardBody>
+
+
                     </Card>
                 </div>
             </div>
+
+            <CVScoreCalculatorModal
+                isOpen={isCalcOpen}
+                onClose={onCalcClose}
+                onApply={handleApplyCalc}
+                initialScore={currentCalcId ? notas[currentCalcId] : 0}
+            />
         </div>
+
     );
 }
 

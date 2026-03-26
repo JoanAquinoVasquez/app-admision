@@ -29,16 +29,9 @@ const GradeModal = ({
     }, [isOpen, initialNota]);
 
     const handleGuardarNota = async () => {
-        // Validar que la nota esté dentro del rango permitido
-        if (gradoSelected && gradoSelected == 3) {
-            if (nota < 0 || nota > 30 || isNaN(nota)) {
-                toast.error("La nota debe estar entre 0 y 30.");
-                return;
-            }
-        }
-
-        if (nota < 0 || nota > 40 || isNaN(nota)) {
-            toast.error("La nota debe estar entre 0 y 40.");
+        const maxEntrevista = 35;
+        if (nota < 0 || nota > maxEntrevista || isNaN(nota)) {
+            toast.error(`La nota debe estar entre 0 y ${maxEntrevista}.`);
             return;
         }
 
@@ -79,7 +72,7 @@ const GradeModal = ({
                         label="Nota"
                         placeholder="Ingrese la nota"
                         min={0}
-                        max={gradoSelected && gradoSelected == 3 ? 30 : 40}
+                        max={35}
                         step="0.01"
                         value={isNaN(Number(nota)) ? "" : nota}
                         onChange={(e) => setNota(e.target.value)}
