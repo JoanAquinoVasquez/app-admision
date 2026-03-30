@@ -19,28 +19,33 @@ const Fondo = ({ children }) => {
     }, [backgrounds.length]);
 
     return (
-        <div className="relative w-full min-h-screen flex flex-col overflow-hidden bg-gray-900">
-            {/* OPTIMIZACIÓN: Renderizamos TODAS las imágenes en el DOM.
-               Controlamos la visibilidad con Opacidad. 
-               Esto permite transiciones suaves (cross-fade) y evita que la imagen
-               tenga que "cargarse" cuando cambia el índice (evita parpadeos).
-            */}
-            <div className="absolute inset-0 z-0">
+        <div className="relative w-full min-h-screen flex flex-col" style={{ isolation: "isolate" }}>
+            {/* Fondo animado: absolute para no salirse del contenedor y tapar el footer */}
+            <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden bg-gray-900">
                 {backgrounds.map((bg, index) => (
                     <div
                         key={index}
-                        className={`absolute inset-0 transition-opacity duration-1000 ease-in-out bg-cover bg-center ${index === currentIndex ? "opacity-100" : "opacity-0"
-                            }`}
-                        style={{ backgroundImage: `url(${bg})` }}
+                        className={`absolute inset-0 bg-cover bg-center ${
+                            index === currentIndex ? "opacity-100" : "opacity-0"
+                        }`}
+                        style={{
+                            backgroundImage: `url(${bg})`,
+                            backgroundRepeat: "no-repeat",
+                            transition: "opacity 1.5s ease-in-out",
+                            WebkitBackfaceVisibility: "hidden",
+                            WebkitTransform: "translateZ(0)",
+                            transform: "translateZ(0)",
+                            willChange: "opacity",
+                        }}
                         aria-hidden="true"
                     />
                 ))}
-                {/* Overlay oscuro constante */}
-                <div className="absolute inset-0 bg-black/40" />
+                {/* Overlay oscuro siempre visible, por encima de las imágenes */}
+                <div className="absolute inset-0 bg-black/40" style={{ zIndex: 1 }} />
             </div>
 
             {/* Barra Superior */}
-            <div className="relative z-10 w-full h-2">
+            <div className="relative z-10 w-full h-2 flex-shrink-0">
                 <img
                     src={topBarImage}
                     alt=""
@@ -49,16 +54,13 @@ const Fondo = ({ children }) => {
                 />
             </div>
 
-
-
             {/* Contenido Principal */}
-            {/* Contenido Principal ajustado */}
-            <main className="relative z-10 flex-grow flex justify-center items-center overflow-hidden p-1 md:p-2">
+            <main className="relative z-10 flex-grow flex flex-col items-center justify-center p-1 md:p-2">
                 {children}
             </main>
 
             {/* Barra Inferior */}
-            <div className="relative z-10 w-full h-2">
+            <div className="relative z-10 w-full h-2 flex-shrink-0">
                 <img
                     src={topBarImage}
                     alt=""
