@@ -100,6 +100,7 @@ export default function App() {
     const [loading, setLoading] = useState(false);
     const [loadingEditar, setLoadingEditar] = useState(false);
 
+
     // ✅ Aseguramos que `inscripciones` tenga datos antes de mapear
     const users = useMemo(() => {
         return dataUsers.map((item) => {
@@ -399,6 +400,7 @@ export default function App() {
                                 >
                                     Editar
                                 </DropdownItem>
+
                             </DropdownMenu>
                         </Dropdown>
                     </div>
@@ -567,6 +569,7 @@ export default function App() {
                     : "habilitar"
                     } este usuario?`}
             />
+
 
             <Modal
                 backdrop="opaque"
