@@ -867,18 +867,18 @@ export default function CargarVoucher() {
                                         onValueChange={(val) => setManualVoucher({ ...manualVoucher, hora_pago: val })}
                                     />
                                     <Input
-                                        label="Agencia"
-                                        placeholder="4 dígitos"
-                                        maxLength={4}
-                                        value={manualVoucher.agencia}
-                                        onValueChange={(val) => setManualVoucher({ ...manualVoucher, agency: val, agencia: val })}
-                                    />
-                                    <Input
                                         label="Cajero"
                                         placeholder="4 dígitos"
                                         maxLength={4}
                                         value={manualVoucher.cajero}
                                         onValueChange={(val) => setManualVoucher({ ...manualVoucher, cajero: val })}
+                                    />
+                                    <Input
+                                        label="Agencia"
+                                        placeholder="4 dígitos"
+                                        maxLength={4}
+                                        value={manualVoucher.agencia}
+                                        onValueChange={(val) => setManualVoucher({ ...manualVoucher, agency: val, agencia: val })}
                                     />
                                 </div>
                             </ModalBody>
