@@ -61,7 +61,7 @@ function Inicio() {
 
         // // Si estamos en Inscripción, los resultados están deshabilitados
         // // (Evaluación queda habilitada porque "suelen estar juntos")
-        if (currentStage === "!INSCRIPCION") return tabKey === "resultados";
+        if (currentStage === "INSCRIPCION") return tabKey === "resultados";
 
         // Si estamos en Preinscripción, todo el resto del proceso está bloqueado
         if (currentStage === "PREINSCRIPCION") {
