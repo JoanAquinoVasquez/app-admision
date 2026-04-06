@@ -532,7 +532,7 @@ export default function App() {
                 <div className="flex flex-col md:flex-row gap-4 w-full">
                     {/* Input de búsqueda */}
                     <div className="w-full md:flex-1">
-                        {dataLoading ? (
+                        {dataLoading && users.length === 0 ? (
                             <Skeleton className="w-full h-12 rounded-lg" />
                         ) : (
                             <Input
@@ -552,7 +552,7 @@ export default function App() {
 
                     {/* Botones de acción derecha */}
                     <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto shrink-0 justify-end">
-                        {dataLoading ? (
+                        {dataLoading && users.length === 0 ? (
                             <>
                                 <Skeleton className="w-full md:w-[220px] h-12 rounded-lg" />
                                 <Skeleton className="w-full sm:w-[120px] h-12 rounded-lg" />
@@ -637,7 +637,7 @@ export default function App() {
 
                 {/* 2) Selector Grado/Programa en nueva fila completa */}
                 <div className="w-full">
-                    {dataLoading ? (
+                    {dataLoading && users.length === 0 ? (
                         <div className="w-full flex md:gap-4 flex-col md:flex-row">
                             <Skeleton className="w-full md:w-[220px] shrink-0 h-12 rounded-lg" />
                             <Skeleton className="w-full md:flex-1 h-12 rounded-lg mt-2 md:mt-0" />
@@ -962,7 +962,7 @@ export default function App() {
                 </TableHeader>
                 <TableBody
                     emptyContent={
-                        dataLoading ? (
+                        dataLoading && users.length === 0 ? (
                             <div className="flex flex-col gap-2 w-full p-2">
                                 <Skeleton className="h-10 w-full rounded-lg" />
                                 <Skeleton className="h-10 w-full rounded-lg" />
@@ -972,7 +972,7 @@ export default function App() {
                             </div>
                         ) : "No se encontró inscripciones pendientes"
                     }
-                    items={dataLoading ? [] : items}
+                    items={dataLoading && users.length === 0 ? [] : items}
                     className="space-y-1"
                 >
                     {(item) => (

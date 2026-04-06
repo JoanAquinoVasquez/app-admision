@@ -559,18 +559,18 @@ export default function App({ resumenInscripcion, loading }) {
                     )}
                 </TableHeader>
                 <TableBody
-                    emptyContent={loading ? <Skeleton className="h-20 w-full rounded-lg" /> : "No se encontró información"}
-                    isLoading={loading}
-                    loadingContent={
-                        <div className="w-full h-full flex flex-col gap-2 p-4 bg-white/50 backdrop-blur-sm z-50">
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                        </div>
+                    emptyContent={
+                        loading ? (
+                            <div className="flex flex-col gap-2 w-full p-2">
+                                <Skeleton className="h-10 w-full rounded-lg" />
+                                <Skeleton className="h-10 w-full rounded-lg" />
+                                <Skeleton className="h-10 w-full rounded-lg" />
+                                <Skeleton className="h-10 w-full rounded-lg" />
+                                <Skeleton className="h-10 w-full rounded-lg" />
+                            </div>
+                        ) : "No se encontró información"
                     }
-                    items={items}
+                    items={loading ? [] : items}
                     className="space-y-1"
                 >
                     {(item) => (

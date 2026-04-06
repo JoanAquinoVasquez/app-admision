@@ -723,16 +723,6 @@ export default function CargarVoucher() {
                     aria-label="Tabla vouchers"
                     layout="auto"
                     isHeaderSticky
-                    isLoading={isFetching}
-                    loadingContent={
-                        <div className="w-full h-full flex flex-col gap-2 p-4 bg-white/50 backdrop-blur-sm z-50">
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                            <Skeleton className="h-10 w-full rounded-lg" />
-                        </div>
-                    }
                     bottomContent={bottomContent}
                     bottomContentPlacement="outside"
                     topContent={topContent}
@@ -763,15 +753,19 @@ export default function CargarVoucher() {
                         )}
                     </TableHeader>
                     <TableBody
-                        items={items}
+                        items={isFetching ? [] : items}
                         className="space-y-1" // Reducir espacio entre filas
-                        emptyContent={isFetching ? (
-                            <div className="flex flex-col gap-2 w-full p-2">
-                                <Skeleton className="h-10 w-full rounded-lg" />
-                                <Skeleton className="h-10 w-full rounded-lg" />
-                                <Skeleton className="h-10 w-full rounded-lg" />
-                            </div>
-                        ) : "No se encontró información sobre vouchers."}
+                        emptyContent={
+                            isFetching ? (
+                                <div className="flex flex-col gap-2 w-full p-2">
+                                    <Skeleton className="h-10 w-full rounded-lg" />
+                                    <Skeleton className="h-10 w-full rounded-lg" />
+                                    <Skeleton className="h-10 w-full rounded-lg" />
+                                    <Skeleton className="h-10 w-full rounded-lg" />
+                                    <Skeleton className="h-10 w-full rounded-lg" />
+                                </div>
+                            ) : "No se encontró información sobre vouchers."
+                        }
                     >
                         {(item) => (
                             <TableRow

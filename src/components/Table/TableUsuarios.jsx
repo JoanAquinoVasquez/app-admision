@@ -187,27 +187,31 @@ export default function App() {
     // API Validar / Toggle estado
     const handleValidar = async (userId) => {
         setIsValidarOpen(false);
-        setLoading(true);
-
-        try {
-            const user = users.find((u) => u.id == userId);
-            if (!user) throw new Error("Usuario no encontrado");
-
-            await axios.post(`/users/${userId}`, {
-                estado: !user.estado, // 🔄 toggle habilitar/inhabilitar
-            });
-            fetchUsers(); // 🔄 refrescar lista
-            toast.success(
-                `Usuario ${!user.estado ? "habilitado" : "inhabilitado"
-                } correctamente`
-            );
-        } catch (error) {
-            toast.error("Error al actualizar usuario");
-            console.error(error);
-        } finally {
-            setLoading(false);
+        const user = users.find((u) => u.id == userId);
+        if (!user) {
+            toast.error("Usuario no encontrado");
+            return;
         }
+
+        const accion = !user.estado ? "Habilitando" : "Inhabilitando";
+        const accionPasado = !user.estado ? "habilitado" : "inhabilitado";
+
+        const promise = axios.post(`/users/${userId}`, {
+            estado: !user.estado,
+        });
+
+        toast.promise(promise, {
+            loading: `${accion} usuario...`,
+            success: () => {
+                fetchUsers();
+                return `Usuario ${accionPasado} correctamente`;
+            },
+            error: (err) => err.response?.data?.message || "Error al actualizar usuario",
+        });
+
+        await promise.catch(() => { });
     };
+
 
     const handleSubmitNuevo = async () => {
         setLoading(true);
@@ -420,7 +424,7 @@ export default function App() {
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-1 w-full">
                         {/* 🔍 Input de búsqueda */}
                         <div className="col-span-1 md:col-span-2">
-                            {loadingUsers ? (
+                            {loadingUsers && users.length === 0 ? (
                                 <Skeleton className="w-full h-12 rounded-lg" />
                             ) : (
                                 <Input
@@ -440,7 +444,7 @@ export default function App() {
 
                         {/* 🧩 Filtros Estado y Columnas */}
                         <div className="col-span-1 md:col-span-2 flex flex-col sm:flex-row gap-2 justify-end w-full">
-                            {loadingUsers ? (
+                            {loadingUsers && users.length === 0 ? (
                                 <>
                                     <Skeleton className="h-12 w-full sm:w-[150px] rounded-lg" />
                                     <Skeleton className="h-12 w-full sm:w-[150px] rounded-lg" />
@@ -724,7 +728,7 @@ export default function App() {
                     )}
                 </TableHeader>
                 <TableBody
-                    emptyContent={(loading || loadingUsers) ? (
+                    emptyContent={(loadingUsers && users.length === 0) ? (
                         <div className="flex flex-col gap-2 w-full p-2">
                             <Skeleton className="h-10 w-full rounded-lg" />
                             <Skeleton className="h-10 w-full rounded-lg" />
@@ -733,7 +737,7 @@ export default function App() {
                             <Skeleton className="h-10 w-full rounded-lg" />
                         </div>
                     ) : "No se encontró usuarios"}
-                    items={(loading || loadingUsers) ? [] : items}
+                    items={(loadingUsers && users.length === 0) ? [] : items}
                     className="space-y-1" // Reducir espacio entre filas
                 >
                     {(item) => (

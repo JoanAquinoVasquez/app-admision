@@ -525,25 +525,19 @@ export default function App() {
                 )}
             </TableHeader>
             <TableBody
-                emptyContent={(dataLoading && !inscripcioNota.length) ? (
-                    <div className="flex flex-col gap-2 w-full p-2">
-                        <Skeleton className="h-10 w-full rounded-lg" />
-                        <Skeleton className="h-10 w-full rounded-lg" />
-                        <Skeleton className="h-10 w-full rounded-lg" />
-                    </div>
-                ) : "No se encontró información"}
-                items={items}
-                className="space-y-1"
-                isLoading={dataLoading && !inscripcioNota.length}
-                loadingContent={
-                    <div className="w-full h-full flex flex-col gap-2 p-4 bg-white/50 backdrop-blur-sm z-50">
-                        <Skeleton className="h-10 w-full rounded-lg" />
-                        <Skeleton className="h-10 w-full rounded-lg" />
-                        <Skeleton className="h-10 w-full rounded-lg" />
-                        <Skeleton className="h-10 w-full rounded-lg" />
-                        <Skeleton className="h-10 w-full rounded-lg" />
-                    </div>
+                emptyContent={
+                    (dataLoading && !inscripcioNota.length) ? (
+                        <div className="flex flex-col gap-2 w-full p-2">
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                        </div>
+                    ) : "No se encontró información"
                 }
+                items={(dataLoading && !inscripcioNota.length) ? [] : items}
+                className="space-y-1"
             >
                 {(item) => (
                     <TableRow
