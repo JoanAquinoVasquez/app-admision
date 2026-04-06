@@ -13,6 +13,7 @@ export function useInscritosActions(fetchInscripciones) {
 
     const handleValidar = useCallback(async (inscripcionId) => {
         setLoading(true);
+        setIsValidarOpen(false);
         const promise = axios.post(`/inscripcion/val-digital`, {
             id: inscripcionId,
             tipoVal: 1,
@@ -26,7 +27,6 @@ export function useInscritosActions(fetchInscripciones) {
 
         try {
             await promise;
-            setIsValidarOpen(false);
             fetchInscripciones();
         } catch (error) {
             // Error managed by toast.promise
@@ -37,6 +37,7 @@ export function useInscritosActions(fetchInscripciones) {
 
     const handleObservar = useCallback(async (inscripcionId, observationText) => {
         setLoading(true);
+        setIsObservarOpen(false);
         const promise = axios.post(`/inscripcion/val-digital`, {
             id: inscripcionId,
             tipoVal: 2,
@@ -51,7 +52,6 @@ export function useInscritosActions(fetchInscripciones) {
 
         try {
             await promise;
-            setIsObservarOpen(false);
             fetchInscripciones();
         } catch (error) {
             // Error managed by toast.promise

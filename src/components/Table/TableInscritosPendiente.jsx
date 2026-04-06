@@ -392,6 +392,7 @@ export default function App() {
         }
 
         const count = programasSeleccionados.length;
+        setIsModalOpen(false);
         const promise = axios.post(
             "/inhabilitar-inscripciones",
             { ids: programasSeleccionados },
@@ -404,7 +405,6 @@ export default function App() {
                 : `Inhabilitando ${count} programas...`,
             success: (response) => {
                 if (response.data.success) {
-                    setIsModalOpen(false);
                     setSelectedProgramas([]); // Limpiar selección
                     fetchProgramasPosibles();
                     refetchProgramasInhabilitados();
@@ -420,6 +420,7 @@ export default function App() {
     };
 
     const handleValidarReserva = async (id) => {
+        setIsValidarOpen(false);
         const promise = axios.get(`/reservas/inscripcion/${id}`, {
             headers: { "Content-Type": "application/json" },
         });
@@ -428,7 +429,6 @@ export default function App() {
             loading: "Confirmando reserva...",
             success: (response) => {
                 if (response.data.success) {
-                    setIsValidarOpen(false);
                     fetchInscripcionesInhabilitadas();
                     return response.data.message || "Reserva confirmada con éxito";
                 }
@@ -441,6 +441,7 @@ export default function App() {
     };
 
     const handleValidarDevolucion = async (id) => {
+        setIsDevolucionOpen(false);
         const promise = axios.get(`/devolucion/inscripcion/${id}`, {
             headers: { "Content-Type": "application/json" },
         });
@@ -449,7 +450,6 @@ export default function App() {
             loading: "Confirmando devolución...",
             success: (response) => {
                 if (response.data.success) {
-                    setIsDevolucionOpen(false);
                     fetchInscripcionesInhabilitadas();
                     return response.data.message || "Devolución confirmada con éxito";
                 }
@@ -462,6 +462,7 @@ export default function App() {
     };
 
     const handleObservarCambio = async (id, programaId) => {
+        setIsCambioOpen(false);
         const payload = { programa_id: parseInt(programaId) };
         const promise = axios.post(`/programa-cambio/${id}`, payload, {
             headers: { "Content-Type": "application/json" },
@@ -471,7 +472,6 @@ export default function App() {
             loading: "Procesando cambio de programa...",
             success: (response) => {
                 if (response.data.success) {
-                    setIsCambioOpen(false);
                     fetchInscripcionesInhabilitadas();
                     return response.data.message || "Cambio de programa realizado con éxito";
                 }
@@ -484,6 +484,7 @@ export default function App() {
     };
 
     const handleCancelarReserva = async (id) => {
+        setIsValidarOpen(false);
         const promise = axios.get(`/reservas/inscripcion/${id}/cancelar`, {
             headers: { "Content-Type": "application/json" },
         });
@@ -492,7 +493,6 @@ export default function App() {
             loading: "Cancelando reserva...",
             success: (response) => {
                 if (response.data.success) {
-                    setIsValidarOpen(false);
                     fetchInscripcionesInhabilitadas();
                     return response.data.message || "Reserva cancelada con éxito";
                 }
@@ -505,6 +505,7 @@ export default function App() {
     };
 
     const handleCancelarDevolucion = async (id) => {
+        setIsDevolucionOpen(false);
         const promise = axios.get(`/devolucion/inscripcion/${id}/cancelar`, {
             headers: { "Content-Type": "application/json" },
         });
@@ -513,7 +514,6 @@ export default function App() {
             loading: "Cancelando devolución...",
             success: (response) => {
                 if (response.data.success) {
-                    setIsDevolucionOpen(false);
                     fetchInscripcionesInhabilitadas();
                     return response.data.message || "Devolución cancelada con éxito";
                 }
