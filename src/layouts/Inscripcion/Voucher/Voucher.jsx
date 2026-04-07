@@ -187,9 +187,9 @@ export default function CargarVoucher() {
 
     const sortedItems = useMemo(() => {
         return [...filteredItems].sort((a, b) => {
-            const first = a[sortDescriptor.column];
-            const second = b[sortDescriptor.column];
-            const cmp = first < second ? -1 : first > second ? 1 : 0;
+            const first = a[sortDescriptor.column] ?? "";
+            const second = b[sortDescriptor.column] ?? "";
+            const cmp = first.toString().localeCompare(second.toString(), undefined, { numeric: true, sensitivity: 'base' });
             return sortDescriptor.direction === "descending" ? -cmp : cmp;
         });
     }, [sortDescriptor, filteredItems]);

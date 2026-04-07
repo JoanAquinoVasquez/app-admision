@@ -409,14 +409,11 @@ export default function App() {
 
     const sortedItems = useMemo(() => {
         return [...filteredItems].sort((a, b) => {
-            const valueA = a[sortDescriptor.column];
-            const valueB = b[sortDescriptor.column];
-
-            if (valueA < valueB)
-                return sortDescriptor.direction === "ascending" ? -1 : 1;
-            if (valueA > valueB)
-                return sortDescriptor.direction === "ascending" ? 1 : -1;
-            return 0;
+            const valueA = a[sortDescriptor.column] ?? "";
+            const valueB = b[sortDescriptor.column] ?? "";
+            
+            const cmp = valueA.toString().localeCompare(valueB.toString(), undefined, { numeric: true, sensitivity: 'base' });
+            return sortDescriptor.direction === "descending" ? -cmp : cmp;
         });
     }, [filteredItems, sortDescriptor]);
 

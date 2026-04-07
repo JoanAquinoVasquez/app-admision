@@ -242,16 +242,13 @@ export default function App({ resumenInscripcion, loading }) {
 
     const sortedItems = useMemo(() => {
         return [...filteredItems].sort((a, b) => {
-            const valueA = a[sortDescriptor.column];
-            const valueB = b[sortDescriptor.column];
+            const rawA = a[sortDescriptor.column] ?? "";
+            const rawB = b[sortDescriptor.column] ?? "";
 
-            if (valueA < valueB)
-                return sortDescriptor.direction === "ascending" ? -1 : 1;
-            if (valueA > valueB)
-                return sortDescriptor.direction === "ascending" ? 1 : -1;
-            return 0;
+            const cmp = rawA.toString().localeCompare(rawB.toString(), undefined, { numeric: true, sensitivity: 'base' });
+            return sortDescriptor.direction === "descending" ? -cmp : cmp;
         });
-    }, [filteredItems, sortDescriptor]);
+    }, [sortDescriptor, filteredItems]);
 
     const pages = Math.ceil(filteredItems.length / rowsPerPage);
 
@@ -329,7 +326,7 @@ export default function App({ resumenInscripcion, loading }) {
                         </p>
                     </div>
                 );
-            case "recaudacion":
+            case "recaudación":
                 return (
                     <div className="flex flex-col">
                         <p className="text-bold text-small capitalize">
