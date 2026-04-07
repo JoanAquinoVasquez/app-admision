@@ -170,19 +170,23 @@ export default function App() {
         }
     }, [getSelectedPostulanteIds]);
 
-    // API Validar
     const handleValidar = async (inscripcionId) => {
         setIsValidarOpen(false);
         setLoading(true);
+
+        const validatePromise = axios.get(`/inscripcion/val-fisica/${inscripcionId}`);
+
+        toast.promise(validatePromise, {
+            loading: "Validando expediente físico...",
+            success: (response) => response.data?.message || "Expediente validado correctamente",
+            error: "Error al validar el expediente",
+        });
+
         try {
-            const response = await axios.get(
-                `/inscripcion/val-fisica/${inscripcionId}`
-            );
-            setIsValidarOpen(false);
+            await validatePromise;
             fetchInscripciones();
-            toast.success(response.data.message);
         } catch (error) {
-            toast.error("Error al validar:", error);
+            console.error("Error al validar:", error);
         } finally {
             setLoading(false);
         }
