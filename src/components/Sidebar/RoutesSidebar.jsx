@@ -90,6 +90,12 @@ const useRoutes = () => {
             text: "Gestión Usuarios",
             roles: ["super-admin"],
         },
+        {
+            to: "gestionar-docentes",
+            icon: <UserCogIcon className="text-xl" />,
+            text: "Gestión Docentes",
+            roles: ["super-admin", "admin"],
+        },
     ];
 
     return {

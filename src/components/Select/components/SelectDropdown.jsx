@@ -48,7 +48,7 @@ const SelectDropdown = ({ items, selectedKey, onSelect, coords, dropdownRef, loa
                                 onSelect(item);
                             }}
                             className={`flex items-center px-3 py-2 mx-0.5 my-0.5 text-sm rounded-lg cursor-pointer transition-colors
-                                ${selectedKey != null && item.key == selectedKey
+                                ${selectedKey !== null && selectedKey !== undefined && String(item.key) === String(selectedKey)
                                     ? "bg-primary-100 text-primary font-semibold"
                                     : "text-gray-700 hover:bg-gray-100"
                                 }`}

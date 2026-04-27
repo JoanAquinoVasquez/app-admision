@@ -21,6 +21,7 @@ const SelectInput = ({
     onChange,
     onFocus,
     onBlur,
+    onClick,
     onKeyDown,
     onClear,
     onToggle,
@@ -39,12 +40,10 @@ const SelectInput = ({
                     ? "bg-white border-primary shadow-sm"
                     : "bg-gray-100 border-transparent hover:bg-gray-200"
                 }`}
-            onClick={() => !disabled && onFocus()}
         >
             {/* Label flotante */}
             {label && (
-                <label
-                    htmlFor={inputId}
+                <span
                     className={`absolute left-3 transition-all duration-200 pointer-events-none z-10 ${labelIsFloating
                         ? "text-[11px] font-medium top-1 text-primary"
                         : "text-sm text-gray-500 top-1/2 -translate-y-1/2"
@@ -52,8 +51,9 @@ const SelectInput = ({
                 >
                     {label}
                     {isRequired && <span className="text-red-500 ml-0.5">*</span>}
-                </label>
+                </span>
             )}
+
 
             {/* Input de búsqueda */}
             <input
@@ -61,12 +61,18 @@ const SelectInput = ({
                 id={inputId}
                 name={inputId}
                 type="text"
+                aria-label={label}
                 value={value}
+
                 onChange={onChange}
-                onFocus={onFocus}
-                onBlur={() => {
-                    // Delay para que el onMouseDown del dropdown se ejecute primero
-                    setTimeout(() => { if (onBlur) onBlur(); }, 150);
+                onFocus={(e) => {
+                    if (!disabled && onFocus) onFocus(e);
+                }}
+                onBlur={(e) => {
+                    if (onBlur) onBlur(e);
+                }}
+                onClick={(e) => {
+                    if (!disabled && onClick) onClick(e);
                 }}
                 onKeyDown={onKeyDown}
                 disabled={disabled}
@@ -77,6 +83,7 @@ const SelectInput = ({
                 style={{ height: "48px" }}
             />
 
+
             {/* Botón limpiar */}
             {value && !disabled && (
                 <button
@@ -84,7 +91,8 @@ const SelectInput = ({
                     aria-label="Limpiar selección"
                     onMouseDown={(e) => {
                         e.preventDefault();
-                        onClear();
+                        e.stopPropagation();
+                        if (onClear) onClear();
                     }}
                     className="absolute right-9 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                 >
@@ -100,7 +108,8 @@ const SelectInput = ({
                     tabIndex={-1}
                     onMouseDown={(e) => {
                         e.preventDefault();
-                        onToggle();
+                        e.stopPropagation();
+                        if (onToggle) onToggle();
                     }}
                     className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                 >
@@ -113,5 +122,6 @@ const SelectInput = ({
         </div>
     );
 };
+
 
 export default SelectInput;

@@ -7,15 +7,27 @@ const DocenteResumenGeneralCard = ({ docente }) => {
     const avance =
         parseFloat(resumen_general.avance_general.replace("%", "")) || 0;
 
+    const isEntrevista = info.tipo === 'entrevista';
+
     return (
         <Card
             shadow="sm"
-            className="rounded-2xl border border-gray-100 hover:shadow-md transition-all"
+            className={`rounded-2xl border transition-all hover:shadow-md ${isEntrevista ? 'border-purple-100 bg-purple-50/10' : 'border-blue-100 bg-blue-50/10'}`}
         >
             <CardBody className="flex flex-col">
                 {/* Cabecera */}
-                <div className="text-center">
-                    <h3 className="text-md font-bold text-gray-800 uppercase">
+                <div className="text-center relative">
+                    <div className="absolute top-0 right-0">
+                        <Chip 
+                            size="sm" 
+                            variant="shadow" 
+                            color={isEntrevista ? "secondary" : "primary"}
+                            className="text-[9px] font-bold h-4"
+                        >
+                            {isEntrevista ? 'ENTREVISTA' : 'CV'}
+                        </Chip>
+                    </div>
+                    <h3 className="text-md font-bold text-gray-800 uppercase pr-8">
                         {info.nombre}
                     </h3>
                     <p className="text-sm text-gray-500 flex items-center justify-center gap-1">
@@ -24,25 +36,23 @@ const DocenteResumenGeneralCard = ({ docente }) => {
                 </div>
 
                 {/* Sección de contenido central compacta */}
-                <div className="flex items-center justify-center gap-8">
+                <div className="flex items-center justify-center gap-8 mt-2">
                     {/* Chips */}
                     <div className="flex flex-col gap-1">
-                        <Chip variant="bordered" color="success" size="sm" aria-label="CV’s Evaluados por cada docente">
+                        <Chip variant="bordered" color={isEntrevista ? "secondary" : "success"} size="sm" aria-label="Postulantes Evaluados">
                             Evaluados: {resumen_general.evaluados} /{" "}
                             {resumen_general.total_postulantes}
                         </Chip>
-                        <Chip variant="bordered" color="danger" size="sm" aria-label="CV’s Pendientes por cada docente">
+                        <Chip variant="bordered" color="danger" size="sm" aria-label="Postulantes Pendientes">
                             Pendientes: {resumen_general.pendientes}
                         </Chip>
                     </div>
                     {/* Progreso Circular */}
                     <CircularProgress
                         aria-label={`Avance de evaluación: ${avance}%`}
-                        color="warning"
+                        color={isEntrevista ? "secondary" : "warning"}
                         value={avance}
-                        valueLabel={`${avance}%`}
-                        maxValue={100}
-                        showValueLabel
+                        showValueLabel={true}
                         classNames={{
                             svg: "w-20 h-20",
                             value: "text-xs text-gray-800 font-semibold",

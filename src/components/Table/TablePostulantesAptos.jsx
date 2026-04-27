@@ -22,6 +22,7 @@ import {
     Dropdown,
     DropdownMenu,
     DropdownItem,
+    Chip,
 } from "@heroui/react";
 import useInscripcioNota from "../../data/Inscripcion/dataInscripcionNota";
 import Select from "../../components/Select/Select";
@@ -172,13 +173,15 @@ export default function App() {
 
 
     const notaStats = useMemo(() => {
-        const conNota = filteredItems.filter((item) => {
+        const conNotaCv = filteredItems.filter((item) => {
             return !isNaN(parseFloat(item.nota_expediente));
         }).length;
 
-        const sinNota = filteredItems.length - conNota;
+        const conNotaEntrevista = filteredItems.filter((item) => {
+            return !isNaN(parseFloat(item.nota_entrevista));
+        }).length;
 
-        return { conNota, sinNota };
+        return { conNotaCv, conNotaEntrevista };
     }, [filteredItems]);
 
     const onExport = (type) => {
@@ -423,9 +426,16 @@ export default function App() {
                 {/* 3) Info de resultados y paginación en el mismo layout limpio */}
                 <div className="flex justify-between items-center w-full mt-2">
                     <div className="flex items-center">
-                        <span className="text-default-400 text-small font-semibold">
-                            {`${notaStats.conNota} de ${filteredItems.length} evaluados`}
-                        </span>
+                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-6">
+                            <span className="text-default-400 text-small font-semibold">
+                                <Chip size="sm" variant="flat" color="primary" className="mr-2">CV</Chip>
+                                {`${notaStats.conNotaCv} de ${filteredItems.length} evaluados`}
+                            </span>
+                            <span className="text-default-400 text-small font-semibold">
+                                <Chip size="sm" variant="flat" color="secondary" className="mr-2">Entrevista</Chip>
+                                {`${notaStats.conNotaEntrevista} de ${filteredItems.length} evaluados`}
+                            </span>
+                        </div>
                     </div>
 
                     <div className="flex items-center">

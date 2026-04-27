@@ -8,6 +8,8 @@ import {
     ModalFooter,
     Button,
     Input,
+    Select,
+    SelectItem,
 } from "@heroui/react";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai"; // Importa los íconos de ojo
 
@@ -18,6 +20,7 @@ const M_NewDocente = ({ isOpen, onClose, onSave }) => {
     const [dni, setDni] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [tipo, setTipo] = useState("cv");
     const [showPassword, setShowPassword] = useState(false); // Estado para mostrar/ocultar la contraseña
 
     useEffect(() => {
@@ -29,6 +32,7 @@ const M_NewDocente = ({ isOpen, onClose, onSave }) => {
             setDni("");
             setEmail("");
             setPassword("");
+            setTipo("cv");
             setShowPassword(false);
         }
     }, [isOpen]);
@@ -54,6 +58,7 @@ const M_NewDocente = ({ isOpen, onClose, onSave }) => {
             dni,
             email,
             password,
+            tipo,
         });
         // La responsabilidad de cerrar el modal ahora recae en el onSave del padre si es exitoso
     };
@@ -164,6 +169,21 @@ const M_NewDocente = ({ isOpen, onClose, onSave }) => {
                                 )}
                             </button>
                         </div>
+                        <Select
+                            label="Tipo de Docente / Función"
+                            placeholder="Seleccione un rol"
+                            selectedKeys={new Set([tipo])}
+                            onSelectionChange={(keys) => setTipo(Array.from(keys)[0])}
+                            isRequired={true}
+                            variant="bordered"
+                        >
+                            <SelectItem key="cv" textValue="Evaluador de Expediente (CV)">
+                                Evaluador de Expediente (CV)
+                            </SelectItem>
+                            <SelectItem key="entrevista" textValue="Evaluador de Entrevista">
+                                Evaluador de Entrevista
+                            </SelectItem>
+                        </Select>
                     </form>
                 </ModalBody>
 

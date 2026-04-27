@@ -17,6 +17,7 @@ const GestionUsuarios = lazy(() => import("../Usuarios/GestionUsuarios/GestionUs
 const Voucher = lazy(() => import("../Inscripcion/Voucher/Voucher"));
 const Bitacora = lazy(() => import("../Bitacora/Bitacora"));
 const AsignarDocente = lazy(() => import("../Docente/Docente/AsignarDocente"));
+const GestionDocentes = lazy(() => import("../Docente/Docente/GestionDocentes"));
 
 // Helper for cleaner JSX
 const SuspenseWrapper = ({ children }) => (
@@ -158,6 +159,17 @@ const Dashboard = () => {
                         <ProtectedRoute allowedRoles={["super-admin"]}>
                             <SuspenseWrapper>
                                 <GestionUsuarios />
+                            </SuspenseWrapper>
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="gestionar-docentes"
+                    element={
+                        <ProtectedRoute allowedRoles={["super-admin", "admin"]}>
+                            <SuspenseWrapper>
+                                <GestionDocentes />
                             </SuspenseWrapper>
                         </ProtectedRoute>
                     }

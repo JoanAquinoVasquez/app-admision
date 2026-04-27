@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useEffect } from "react";
+import { useRef, useState, useCallback, useEffect, useMemo } from "react";
 import SelectInput from "./components/SelectInput";
 import SelectDropdown from "./components/SelectDropdown";
 import useSelectState from "./hooks/useSelectState";
@@ -7,24 +7,7 @@ import useClickOutside from "./hooks/useClickOutside";
 import { formatDisplayValue } from "./utils/formatDisplay";
 
 /**
- * Select – componente unificado con búsqueda integrada y texto completo.
- *
- * Principios aplicados:
- *  - SRP: cada hook / subcomponente tiene una única responsabilidad.
- *  - OCP: agregar comportamiento (ej. grupos, íconos) sin tocar este archivo.
- *  - DIP: depende de abstracciones (hooks), no de implementaciones concretas.
- *  - ISP: props mínimas y específicas para cada subcomponente.
- *
- * Props:
- *  @param {string}   label           - Etiqueta flotante del campo
- *  @param {string}   className       - Clases extra del wrapper
- *  @param {Array}    defaultItems    - [{ key: string, textValue: string }]
- *  @param {string}   selectedKey     - Key seleccionado actualmente (controlled)
- *  @param {Function} onSelectionChange - (key: string|null) => void
- *  @param {boolean}  isRequired      - Marca el campo como requerido
- *  @param {boolean}  disabled        - Deshabilita el componente
- *  @param {string}   idPrefix        - Prefijo para el id/name del input (evita duplicados)
- *  @param {boolean}  loading         - Indica si se está cargando información
+ * Select – componente con estado derivado puro: sincronización perfecta e instantánea.
  */
 const Select = ({
     label,
@@ -41,29 +24,34 @@ const Select = ({
     const dropdownRef = useRef(null);
     const inputRef = useRef(null);
 
-    // Estado de posición del dropdown (calculado dinámicamente)
+    // ── Hooks de estado ──────────────────────────────────────────────────────
+    const { isOpen, open, close, toggle } = useSelectState();
+    
+    // Solo usamos estado local para la BÚSQUEDA activa.
+    const { filteredItems, searchQuery, setSearchQuery, resetFilter } = useSelectFilter(defaultItems);
+    
     const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
 
-    // ── Hook: estado de selección y apertura ──────────────────────────────────
-    const {
-        displayValue,
-        setDisplayValue,
-        isOpen,
-        open,
-        close,
-        toggle,
-        selectOption,
-        clearSelection,
-    } = useSelectState(defaultItems, selectedKey, onSelectionChange);
+    // ── Valor de la Tabla (Fuente de Verdad) ─────────────────────────────────
+    const selectedItem = useMemo(() =>
+        defaultItems.find(item => String(item.key) === String(selectedKey)),
+    [selectedKey, defaultItems]);
+    
+    const derivedValueFromProp = selectedItem ? formatDisplayValue(selectedItem.textValue) : "";
 
-    // ── Hook: filtrado de opciones por búsqueda ───────────────────────────────
-    const { filteredItems, searchQuery, setSearchQuery, resetFilter } =
-        useSelectFilter(defaultItems);
+    // ── Lógica de Visualización (Derived State) ──────────────────────────────
+    // Si el menú está abierto y el usuario ha escrito algo en el buscador, mostramos eso.
+    // En el momento en que se cierra, o si no hay búsqueda activa, mostramos la verdad de la tabla.
+    const displayValue = (isOpen && searchQuery !== "") ? searchQuery : derivedValueFromProp;
 
-    // ── Hook: cerrar al clic fuera ────────────────────────────────────────────
-    useClickOutside(containerRef, dropdownRef, isOpen, close);
+    // Resetear búsqueda al cerrar
+    useEffect(() => {
+        if (!isOpen) {
+            resetFilter();
+        }
+    }, [isOpen, resetFilter]);
 
-    // ── Cálculo de coordenadas del dropdown ───────────────────────────────────
+    // ── Utilidades ──────────────────────────────────────────────────────────
     const recalcCoords = useCallback(() => {
         if (!containerRef.current) return;
         const rect = containerRef.current.getBoundingClientRect();
@@ -71,118 +59,56 @@ const Select = ({
         const dropdownMaxHeight = 260;
 
         if (spaceBelow < dropdownMaxHeight) {
-            // No hay espacio abajo → mostrar arriba
-            setCoords({
-                bottom: window.innerHeight - rect.top,
-                left: rect.left,
-                width: rect.width,
-                top: undefined,
-            });
+            setCoords({ bottom: window.innerHeight - rect.top, left: rect.left, width: rect.width, top: undefined });
         } else {
-            setCoords({
-                top: rect.bottom + 4,
-                left: rect.left,
-                width: rect.width,
-                bottom: undefined,
-            });
+            setCoords({ top: rect.bottom + 4, left: rect.left, width: rect.width, bottom: undefined });
         }
     }, []);
 
-    // ── Actualización de coords en scroll / resize ────────────────────────────
-    useEffect(() => {
-        if (!isOpen) return;
-        const handleScrollOrResize = (e) => {
-            // Ignorar el propio scroll interno de la lista desplegable
-            if (dropdownRef.current && dropdownRef.current.contains(e.target)) return;
-            recalcCoords();
-        };
-
-        // El parámetro 'true' (useCapture) permite interceptar eventos de scroll en contenedores overflow.
-        window.addEventListener("scroll", handleScrollOrResize, true);
-        window.addEventListener("resize", handleScrollOrResize);
-
-        return () => {
-            window.removeEventListener("scroll", handleScrollOrResize, true);
-            window.removeEventListener("resize", handleScrollOrResize);
-        };
-    }, [isOpen, recalcCoords]);
+    useClickOutside(containerRef, dropdownRef, isOpen, close);
 
     // ── Handlers ──────────────────────────────────────────────────────────────
     const handleFocus = () => {
         if (disabled) return;
         recalcCoords();
-        open();
-        // Al abrir, si hay un valor de searchQuery previo del usuario, lo mantenemos
-        // pero si el campo muestra un item seleccionado, vaciamos para buscar
-        if (selectedKey && !searchQuery) {
-            setDisplayValue("");
+        if (!isOpen) {
+            resetFilter();
+            open();
         }
+        setTimeout(() => {
+            if (inputRef.current) inputRef.current.select();
+        }, 10);
     };
 
     const handleInputChange = (e) => {
-        const newValue = e.target.value;
-        setDisplayValue(newValue);   // lo que ve el usuario mientras escribe
-        setSearchQuery(newValue);    // filtra las opciones
-        if (!isOpen) {
-            recalcCoords();
-            open();
-        }
+        setSearchQuery(e.target.value);
+        if (!isOpen) open();
     };
-
-    const handleKeyDown = (e) => {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            if (filteredItems.length > 0 && isOpen) {
-                handleSelect(filteredItems[0]);
-            }
-        }
-        if (e.key === "Escape") {
-            close();
-            restoreDisplayValue();
-            resetFilter();
-        }
-    };
-
-    // ── Prevenir clausuras obsoletas en onBlur (setTimeout 150ms) ──
-    const latestProps = useRef({ selectedKey, defaultItems });
-    useEffect(() => {
-        latestProps.current = { selectedKey, defaultItems };
-    }, [selectedKey, defaultItems]);
-
-    // Restaura el displayValue al item seleccionado (o vacío si no hay ninguno)
-    const restoreDisplayValue = useCallback(() => {
-        const { selectedKey: currentKey, defaultItems: currentItems } = latestProps.current;
-        if (currentKey !== null && currentKey !== undefined && currentKey !== "") {
-            // Usamos == para tolerar tipos mixtos número/string
-            const found = currentItems.find((i) => i.key == currentKey);
-            setDisplayValue(found ? formatDisplayValue(found.textValue) : "");
-        } else {
-            setDisplayValue("");
-        }
-        resetFilter();
-    }, [setDisplayValue, resetFilter]);
 
     const handleSelect = (item) => {
+        // Al seleccionar, notificamos al padre e inmediatamente 
+        // limpiamos la búsqueda local para que el input muestre el nuevo prop.
         resetFilter();
-        selectOption(item);   // setDisplayValue + close + callback
+        if (onSelectionChange) onSelectionChange(item.key);
+        close();
     };
 
     const handleClear = () => {
         resetFilter();
-        clearSelection();
-        recalcCoords();
-        open();
+        if (onSelectionChange) onSelectionChange(null);
         if (inputRef.current) inputRef.current.focus();
     };
 
-    const handleToggle = () => {
-        recalcCoords();
-        toggle();
+    const handleKeyDown = (e) => {
+        if (e.key === "Enter" && isOpen) {
+            e.preventDefault();
+            if (filteredItems.length > 0) handleSelect(filteredItems[0]);
+        }
+        if (e.key === "Escape") close();
     };
 
     return (
         <div ref={containerRef} className={`relative w-full ${className}`}>
-            {/* ── Trigger: input con label flotante ──────────────────────── */}
             <SelectInput
                 label={label}
                 idPrefix={idPrefix}
@@ -193,13 +119,15 @@ const Select = ({
                 inputRef={inputRef}
                 onChange={handleInputChange}
                 onFocus={handleFocus}
-                onBlur={restoreDisplayValue}
+                onClick={handleFocus}
                 onKeyDown={handleKeyDown}
                 onClear={handleClear}
-                onToggle={handleToggle}
+                onToggle={() => {
+                    recalcCoords();
+                    toggle();
+                }}
             />
 
-            {/* ── Dropdown flotante (vía portal) ─────────────────────────── */}
             {isOpen && !disabled && (
                 <SelectDropdown
                     items={filteredItems}
