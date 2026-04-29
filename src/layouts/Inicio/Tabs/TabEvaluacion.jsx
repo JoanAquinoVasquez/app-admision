@@ -50,7 +50,7 @@ export default function TabEvaluacion() {
                         <p className="text-[10px] xl:text-[12px] font-bold text-green-600 uppercase">Avance Entr.</p>
                         <h3 className="text-xl xl:text-3xl 2xl:text-4xl font-black text-slate-800 leading-none">{loadingEvaluacion ? <Skeleton className="h-6 xl:h-9 w-20 xl:w-32" /> : `${metricas.ent}/${metricas.aptos}`}</h3>
                     </div>
-                    <CircularProgress size="md" value={metricas.porcEnt} color="secondary" showValueLabel={true} classNames={{ value: "text-[10px] xl:text-[12px] font-bold" }} />
+                    <CircularProgress size="md" value={metricas.porcEnt} color="success" showValueLabel={true} classNames={{ value: "text-[10px] xl:text-[12px] font-bold" }} />
                 </Card>
             </div>
 
