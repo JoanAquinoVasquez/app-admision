@@ -18,10 +18,13 @@ const EstadoGeneralEvaluacion = ({ docenteResumen, loading }) => {
     const avanceGeneral = totalPostulantes ? Math.round((totalEvaluados / totalPostulantes) * 100) : 0;
 
     return (
-        <div className="flex flex-col">
+        <div className="flex flex-col h-full" aria-label="Avance de Evaluación">
+            <div className="flex items-center gap-2 text-sm font-semibold mb-1 px-1 invisible">
+                <span>Spacer</span>
+            </div>
             <Card
                 shadow="sm"
-                className="mt-6 rounded-2xl border border-gray-100 hover:shadow-md transition-all p-6 flex flex-col items-center justify-center gap-4 min-h-[300px]"
+                className="rounded-2xl border border-gray-100 hover:shadow-md transition-all p-6 flex flex-col items-center justify-center gap-4 h-[420px] flex-shrink-0"
             >
                 {loading ? (
                     <div className="flex flex-col items-center justify-center gap-4 w-full h-full">

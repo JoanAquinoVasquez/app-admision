@@ -8,7 +8,7 @@ const DashboardLayout = () => (
         <SidebarMenu />
         <div className="flex-1 overflow-auto h-full flex flex-col relative w-full pt-0">
             <Navbar />
-            <div className="px-3 sm:px-3 md:px-3 h-auto flex-1 shrink-0 mb-4 min-w-0">
+            <div className="px-3 sm:px-3 md:px-3 flex-1 flex flex-col shrink-0 mb-4 min-w-0">
                 <Outlet />
             </div>
             <div className="mt-auto shrink-0 w-full">

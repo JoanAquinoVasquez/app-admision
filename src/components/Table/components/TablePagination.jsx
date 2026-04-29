@@ -51,6 +51,7 @@ export default function TablePagination({
                 page={page}
                 total={Math.max(pages, 1)}
                 onChange={setPage}
+                aria-label="Controles de navegación de página"
             />
 
             <div className="hidden sm:flex w-[30%] justify-end gap-2">

@@ -381,6 +381,7 @@ export default function App({ resumenInscripcion, loading }) {
                             isClearable
                             className="w-full sm:max-w-[44%]"
                             placeholder="Buscar por nombre..."
+                            aria-label="Filtrar inscripciones"
                             startContent={<SearchIcon />}
                             value={filterValue}
                             onClear={() => onClear()}
@@ -423,7 +424,7 @@ export default function App({ resumenInscripcion, loading }) {
                                     </DropdownTrigger>
                                     <DropdownMenu
                                         disallowEmptySelection
-                                        aria-label="Table Columns"
+                                        aria-label="Filtrar por grado académico"
                                         closeOnSelect={false}
                                         selectedKeys={gradoFilter}
                                         selectionMode="multiple"
@@ -455,7 +456,7 @@ export default function App({ resumenInscripcion, loading }) {
                                     </DropdownTrigger>
                                     <DropdownMenu
                                         disallowEmptySelection
-                                        aria-label="Table Columns"
+                                        aria-label="Visibilidad de columnas"
                                         closeOnSelect={false}
                                         selectedKeys={visibleColumns}
                                         selectionMode="multiple"
@@ -507,9 +508,10 @@ export default function App({ resumenInscripcion, loading }) {
         <DashboardCard
             title={`Resumen Proc. Admisión ${config.periodo}`}
             icon={<UsersIcon className="text-blue-500 h-4" />}
+            titleId="inscripcion-table-title"
         >
             <Table
-                aria-label="Example table"
+                aria-labelledby="inscripcion-table-title"
                 layout="fixed" // Usa fixed para que se respeten los anchos definidos
                 isHeaderSticky
                 bottomContent={bottomContent}

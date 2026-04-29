@@ -72,14 +72,19 @@ function Inicio() {
     };
 
     return (
-        <>
+        <div className="flex-1 flex flex-col min-h-full w-full max-w-none p-0">
             <Tabs
                 selectedKey={selectedTab}
                 onSelectionChange={handleTabChange}
                 variant="bordered"
                 aria-label="Dashboard Tabs"
                 color="primary"
-                className="w-full max-w-4xl mx-auto text-2xl flex justify-center mb-6"
+                className="w-full max-w-none text-2xl mb-6"
+                classNames={{
+                    tabList: "mx-auto",
+                    panel: "w-full max-w-none p-0 h-full flex-1 min-h-0",
+                    base: "w-full max-w-none"
+                }}
                 size="lg"
             >
                 <Tab
@@ -130,7 +135,7 @@ function Inicio() {
                     )}
                 </Tab>
             </Tabs>
-        </>
+        </div>
     );
 }
 

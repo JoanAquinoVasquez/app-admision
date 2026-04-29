@@ -228,6 +228,7 @@ export default function TableResultados({ ingresantesPrograma, grados, loading: 
                                 variant="bordered"
                                 size="sm"
                                 placeholder="Buscar programa..."
+                                aria-label="Buscar programa en resultados"
                                 startContent={<SearchIcon className="text-slate-400" />}
                                 value={filterValue}
                                 onClear={onClear}
@@ -302,7 +303,7 @@ export default function TableResultados({ ingresantesPrograma, grados, loading: 
                                 </DropdownTrigger>
                                 <DropdownMenu
                                     disallowEmptySelection
-                                    aria-label="Table Columns"
+                                    aria-label="Seleccionar columnas visibles"
                                     closeOnSelect={false}
                                     selectedKeys={visibleColumns}
                                     selectionMode="multiple"
@@ -366,9 +367,10 @@ export default function TableResultados({ ingresantesPrograma, grados, loading: 
     return (
         <DashboardCard
             title={`Resumen Resultados`}
+            titleId="results-table-title"
         >
             <Table
-                aria-label="Example table"
+                aria-labelledby="results-table-title"
                 layout="fixed" // Usa fixed para que se respeten los anchos definidos
                 isHeaderSticky
                 bottomContent={bottomContent}

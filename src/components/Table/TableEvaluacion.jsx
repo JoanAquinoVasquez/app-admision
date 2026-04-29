@@ -1,446 +1,238 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
-import { admissionConfig } from "../../config/admission";
-import { useTableFilters } from "../../hooks/useTableFilters";
-import { Progress, Skeleton } from "@heroui/react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import {
-    Table,
-    TableHeader,
-    TableColumn,
-    TableBody,
-    TableRow,
-    TableCell,
-    Input,
-    Button,
-    DropdownTrigger,
-    Dropdown,
-    DropdownMenu,
-    DropdownItem,
+    Table, TableHeader, TableColumn, TableBody, TableRow, TableCell,
+    Input, Button, DropdownTrigger, Dropdown, DropdownMenu, DropdownItem,
+    Skeleton, Progress
 } from "@heroui/react";
 import DashboardCard from "../../components/Cards/DashboardCard";
-
-export const columns = [
-    { name: "Grado y Programa", uid: "grado_programa", sortable: true },
-    { name: "Inscritos", uid: "inscritos", sortable: true },
-    { name: "Aptos", uid: "aptos", sortable: true },
-    { name: "Evaluados", uid: "evaluados", sortable: true },
-    { name: "Cobertura", uid: "cobertura", sortable: true },
-    { name: "Facultad", uid: "facultad" },
-    { name: "Docente", uid: "docente", sortable: true },
-];
-
-export const statusOptions = [
-    { name: "Doctorado", uid: "Doctorado" },
-    { name: "Maestria", uid: "Maestria" },
-    { name: "Segunda Especialidad Profesional", uid: "Segunda Especialidad Profesional" },
-];
-
-export function capitalize(s) {
-    return s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : "";
-}
-
 import { SearchIcon, ChevronDownIcon } from "../../components/Table/components/Icons";
 import TablePagination from "./components/TablePagination";
+import { admissionConfig } from "../../config/admission";
+import { MdOutlineAssignmentInd, MdFactCheck } from "react-icons/md";
 
-const INITIAL_VISIBLE_COLUMNS = [
-    "grado_programa",
-    "inscritos",
-    "aptos",
-    "evaluados",
-    "cobertura",
-    "facultad",
-    "docente",
+const columns = [
+    { name: "Grado y Programa", uid: "grado_programa", sortable: true },
+    { name: "Facultad", uid: "facultad", sortable: true },
+    { name: "CV", uid: "evaluados_cv", sortable: true },
+    { name: "Entrevistas", uid: "evaluados_entrevista", sortable: true },
 ];
 
-export default function App({ resumenEvaluacion, grados, loading: dataLoading }) {
-    // ✅ Aseguramos que `resumenEvaluacion` tenga datos antes de mapear
+const INITIAL_VISIBLE_COLUMNS = ["grado_programa", "facultad", "evaluados_cv", "evaluados_entrevista"];
+
+// Colores por índice para badges de facultad
+const FACULTY_COLORS = [
+    "bg-blue-100 text-blue-700",
+    "bg-purple-100 text-purple-700",
+    "bg-green-100 text-green-700",
+    "bg-amber-100 text-amber-700",
+    "bg-rose-100 text-rose-700",
+    "bg-cyan-100 text-cyan-700",
+    "bg-indigo-100 text-indigo-700",
+    "bg-teal-100 text-teal-700",
+    "bg-orange-100 text-orange-700",
+    "bg-pink-100 text-pink-700",
+];
+const facultyColorMap = {};
+let facultyColorIndex = 0;
+const getFacultyColor = (facultad) => {
+    if (!facultyColorMap[facultad]) {
+        facultyColorMap[facultad] = FACULTY_COLORS[facultyColorIndex % FACULTY_COLORS.length];
+        facultyColorIndex++;
+    }
+    return facultyColorMap[facultad];
+};
+
+export default function TableEvaluacionComponent({ resumenEvaluacion, loading }) {
+    const [filterValue, setFilterValue] = useState("");
+    const [visibleColumns, setVisibleColumns] = useState(new Set(INITIAL_VISIBLE_COLUMNS));
+    // Rows por página responsivo: 8 en monitor (xl ≥ 1280px), 5 en laptop
+    const [rowsPerPage, setRowsPerPage] = useState(() =>
+        typeof window !== "undefined" && window.innerWidth >= 1280 ? 7 : 5
+    );
+
+    useEffect(() => {
+        const mq = window.matchMedia("(min-width: 1280px)");
+        const handler = (e) => setRowsPerPage(e.matches ? 8 : 5);
+        mq.addEventListener("change", handler);
+        return () => mq.removeEventListener("change", handler);
+    }, []);
+
+    const [sortDescriptor, setSortDescriptor] = useState({
+        column: "evaluados_cv",
+        direction: "descending",
+    });
+    const [page, setPage] = useState(1);
+
     const users = useMemo(() => {
-        if (!resumenEvaluacion || resumenEvaluacion.length === 0) {
-            return []; // Evita errores si aún no hay datos
-        }
-        return resumenEvaluacion.map((item) => ({
-            grado_programa: item.grado_programa,
-            inscritos: item.inscritos,
-            aptos: item.aptos,
-            evaluados: item.evaluados,
-            cobertura: item.cobertura,
-            facultad: item.facultad,
-            grado_id: item.grado_id,
-            docente: item.docente,
-            docente_apellidos: item.docente_apellidos,
-            docente_id: item.docente_id,
+        if (!resumenEvaluacion || !Array.isArray(resumenEvaluacion)) return [];
+
+        const formatName = (apellidos) => {
+            if (!apellidos) return 'No asignado';
+            return apellidos.toLowerCase().replace(/(^\w|\s\w|ó|í|á|é|ú|ñ)/g, m => m.toUpperCase());
+        };
+
+        return resumenEvaluacion.map((item, index) => ({
+            id: `${item.id || 'item'}-${index}`,
+            grado_programa: String(item.grado_programa || ""),
+            facultad: String(item.facultad || "Sin Área"),
+            aptos: Number(item.aptos || 0),
+            evaluados_cv: Number(item.evaluados_cv || 0),
+            evaluados_entrevista: Number(item.evaluados_entrevista || 0),
+            cobertura_cv: Number(item.cobertura_cv || 0),
+            cobertura_entrevista: Number(item.cobertura_entrevista || 0),
+            docente_cv: formatName(item.docente_cv_apellidos),
+            docente_entrevista: formatName(item.docente_entrevista_apellidos),
         }));
     }, [resumenEvaluacion]);
 
-    // gradoFilter: estado LOCAL (igual que Table.jsx) — los 3 activos por defecto
-    const [gradoFilter, setGradoFilter] = useState(
-        new Set(["Doctorado", "Maestria", "Segunda Especialidad Profesional"])
-    );
-
-    // useCallback: la referencia de gradoCustomFilter solo cambia cuando gradoFilter cambia.
-    // Esto evita el bucle infinito: customFilter nuevo → filteredItems nuevo → useEffect → setState → render → …
-    const gradoCustomFilter = useCallback((data) => {
-        if (
-            gradoFilter instanceof Set &&
-            gradoFilter.size > 0 &&
-            gradoFilter.size < statusOptions.length
-        ) {
-            return data.filter((item) => {
-                const gp = item.grado_programa?.toLowerCase() ?? "";
-                return Array.from(gradoFilter).some((uid) =>
-                    gp.startsWith(uid.toLowerCase())
-                );
-            });
-        }
-        return data;
-    }, [gradoFilter]);
-
-    const {
-        filterValue,
-        statusFilter,
-        programaFilter,
-        page,
-        rowsPerPage,
-        sortDescriptor,
-        setFilterValue,
-        setStatusFilter,
-        setProgramaFilter,
-        setPage,
-        setRowsPerPage,
-        setSortDescriptor,
-        sortedItems,
-        items,
-        pages,
-        onSearchChange,
-        onClear,
-        onRowsPerPageChange,
-        filteredItems,
-    } = useTableFilters(users, {
-        initialRowsPerPage: 5,
-        initialSortColumn: "inscritos",
-        initialSortDirection: "descending",
-        customFilter: gradoCustomFilter,
-    });
-
-    const [selectedKeys, setSelectedKeys] = useState(new Set([]));
-    const [visibleColumns, setVisibleColumns] = useState(
-        new Set(INITIAL_VISIBLE_COLUMNS)
-    );
-
-    const [selectedPostulantes, setSelectedPostulantes] = useState([]);
-
-    const headerColumns = useMemo(() => {
-        if (visibleColumns === "all") return columns;
-
-        return columns.filter((column) =>
-            Array.from(visibleColumns).includes(column.uid)
-        );
-    }, [visibleColumns]);
-
-    useEffect(() => {
-        if (selectedKeys === "all") {
-            // Si se seleccionan todos, extraer todos los `postulante_id` de filteredItems
-            setSelectedPostulantes(
-                filteredItems.map((item) => item.postulante_id)
-            );
-        } else {
-            // Si hay una selección específica, convertir el Set a Array y buscar los IDs correctos
-            setSelectedPostulantes(
-                Array.from(selectedKeys)
-                    .map((key) => {
-                        const item = filteredItems.find((i) => i.id == key);
-                        return item ? item.postulante_id : null;
-                    })
-                    .filter(Boolean) // Filtrar cualquier `null` accidental
+    const filteredItems = useMemo(() => {
+        let filtered = [...users];
+        if (filterValue) {
+            const q = filterValue.toLowerCase();
+            filtered = filtered.filter((user) =>
+                user.grado_programa.toLowerCase().includes(q) ||
+                user.facultad.toLowerCase().includes(q) ||
+                user.docente_cv.toLowerCase().includes(q) ||
+                user.docente_entrevista.toLowerCase().includes(q)
             );
         }
-    }, [selectedKeys, filteredItems]);
+        return filtered;
+    }, [users, filterValue]);
+
+    const sortedItems = useMemo(() => {
+        return [...filteredItems].sort((a, b) => {
+            const first = a[sortDescriptor.column];
+            const second = b[sortDescriptor.column];
+            const cmp = first < second ? -1 : first > second ? 1 : 0;
+            return sortDescriptor.direction === "descending" ? -cmp : cmp;
+        });
+    }, [filteredItems, sortDescriptor]);
+
+    const items = useMemo(() => {
+        const start = (page - 1) * rowsPerPage;
+        return sortedItems.slice(start, start + rowsPerPage);
+    }, [page, sortedItems, rowsPerPage]);
 
     const renderCell = useCallback((user, columnKey) => {
         const cellValue = user[columnKey];
-
         switch (columnKey) {
             case "grado_programa":
                 return (
-                    <div className="flex flex-col">
-                        <p className="text-bold text-small">{cellValue}</p>
+                    <div className="flex flex-col py-1">
+                        <p className="text-[13px] text-slate-700 leading-tight">{cellValue}</p>
                     </div>
                 );
-            case "inscritos":
+            case "evaluados_cv":
+            case "evaluados_entrevista":
+                const isCV = columnKey === "evaluados_cv";
+                const progressValue = isCV ? user.cobertura_cv : user.cobertura_entrevista;
+                const docente = isCV ? user.docente_cv : user.docente_entrevista;
+                const icon = isCV ? <MdOutlineAssignmentInd className="text-blue-500" /> : <MdFactCheck className="text-emerald-600" />;
+
                 return (
-                    <div className="flex flex-col">
-                        <p className="text-bold text-small capitalize">
-                            {cellValue}
-                        </p>
-                    </div>
-                );
-            case "validados":
-                return (
-                    <div className="flex flex-col">
-                        <p className="text-bold text-small capitalize">
-                            {cellValue}
-                        </p>
-                    </div>
-                );
-            case "aptos":
-                return (
-                    <div className="flex flex-col">
-                        <p className="text-bold text-small capitalize">
-                            {cellValue}
-                        </p>
-                    </div>
-                );
-            case "evaluados":
-                return (
-                    <div className="flex flex-col">
-                        <p className="text-bold text-small capitalize">
-                            {cellValue}
-                        </p>
-                    </div>
-                );
-            case "cobertura":
-                return (
-                    <div className="flex flex-col">
-                        <p className="text-sm capitalize">{cellValue}%</p>
+                    <div className="flex flex-col gap-4 pr-4">
+                        <div className="flex justify-between items-end">
+                            <div className="flex items-center gap-2">
+                                {icon}
+                                <span className={`text-[12px] font-bold ${isCV ? 'text-blue-700' : 'text-emerald-700'} truncate max-w-[140px]`}>
+                                    {docente}
+                                </span>
+                            </div>
+                            <span className="text-[12px] font-black text-slate-600">{cellValue}/{user.aptos} ({progressValue}%)</span>
+                        </div>
                         <Progress
-                            aria-label="Avance"
-                            color="primary"
+                            aria-label={`Prog ${user.id}-${columnKey}`}
+                            value={progressValue}
                             size="md"
-                            value={cellValue}
-                            className="w-full"
-                            classNames={{
-                                value: "text-sm m-0 leading-tight",
-                                track: "m-0",
-                            }}
+                            radius="md"
+                            color={isCV ? "primary" : "success"}
+                            classNames={{ track: "bg-slate-100", base: "h-2" }}
                         />
-                    </div>
-                );
-            case "facultad":
-                return (
-                    <div className="flex flex-col">
-                        <p className="text-bold text-small capitalize">
-                            {cellValue}
-                        </p>
-                    </div>
-                );
-            case "docente":
-                return (
-                    <div className="flex flex-col">
-                        <p className="text-sm text-default-400">
-                            {user.docente_apellidos}
-                        </p>
-                        <p className="font-medium capitalize text-sm text-default-500">
-                            {cellValue}
-                        </p>
                     </div>
                 );
             default:
-                return cellValue;
+                return <span className="text-[10px]">{cellValue}</span>;
         }
     }, []);
 
-
-
-    const topContent = useMemo(() => {
-        return (
-            <div className="flex flex-col gap-4">
-                <div className="flex justify-between gap-3 items-end">
-                    {dataLoading ? (
-                        <Skeleton className="w-full sm:max-w-[44%] h-10 rounded-lg" />
-                    ) : (
-                        <Input
-                            isClearable
-                            className="w-full sm:max-w-[44%]"
-                            placeholder="Buscar por nombre..."
-                            startContent={<SearchIcon />}
-                            value={filterValue}
-                            onClear={() => onClear()}
-                            onValueChange={onSearchChange}
-                        />
-                    )}
-                    <div className="flex gap-3 text-small text-default-400 items-center">
-                        {dataLoading ? (
-                            <>
-                                <Skeleton className="w-full sm:w-28 h-10 rounded-lg" />
-                                <Skeleton className="hidden sm:flex w-24 h-10 rounded-lg" />
-                            </>
-                        ) : (
-                            <>
-                                {/* No hay export configurado aún para esta tabla específica */}
-                                {/* Dropdown Grado */}
-                                <Dropdown shouldBlockScroll={false}>
-                                    <DropdownTrigger className="w-full sm:w-auto md:flex lg:flex xl:flex">
-                                        <Button
-                                            aria-label="lista_grados"
-                                            endContent={<ChevronDownIcon className="text-small" />}
-                                            variant="flat"
-                                            className="h-10 w-full"
-                                        >
-                                            Grado
-                                        </Button>
-                                    </DropdownTrigger>
-                                    <DropdownMenu
-                                        disallowEmptySelection
-                                        aria-label="Table Columns"
-                                        closeOnSelect={false}
-                                        selectedKeys={gradoFilter}
-                                        selectionMode="multiple"
-                                        onSelectionChange={setGradoFilter}
-                                    >
-                                        {statusOptions.map((status) => (
-                                            <DropdownItem
-                                                key={status.uid}
-                                                textValue={status.name}
-                                                className="capitalize"
-                                            >
-                                                {capitalize(status.name)}
-                                            </DropdownItem>
-                                        ))}
-                                    </DropdownMenu>
-                                </Dropdown>
-
-                                <Dropdown shouldBlockScroll={false}>
-                                    <DropdownTrigger className="hidden sm:flex">
-                                        <Button
-                                            aria-label="lista_columnas"
-                                            endContent={<ChevronDownIcon className="text-small" />}
-                                            variant="flat"
-                                        >
-                                            Columnas
-                                        </Button>
-                                    </DropdownTrigger>
-                                    <DropdownMenu
-                                        disallowEmptySelection
-                                        aria-label="Table Columns"
-                                        closeOnSelect={false}
-                                        selectedKeys={visibleColumns}
-                                        selectionMode="multiple"
-                                        onSelectionChange={setVisibleColumns}
-                                    >
-                                        {columns.map((column) => (
-                                            <DropdownItem
-                                                key={column.uid}
-                                                textValue={column.name}
-                                                className="capitalize"
-                                            >
-                                                {capitalize(column.name)}
-                                            </DropdownItem>
-                                        ))}
-                                    </DropdownMenu>
-                                </Dropdown>
-                            </>
-                        )}
-                    </div>
-                </div>
-            </div>
-        );
-    }, [
-        filterValue,
-        gradoFilter,
-        statusFilter,
-        visibleColumns,
-        onRowsPerPageChange,
-        users.length,
-        onSearchChange,
-        dataLoading,
-    ]);
-
-    const bottomContent = useMemo(() => {
-        return (
-            <TablePagination
-                page={page}
-                pages={pages}
-                setPage={setPage}
-                filteredItemsLength={filteredItems.length}
-                selectedKeys={selectedKeys}
-                hasSelection={false}
-            />
-        );
-    }, [page, pages, filteredItems.length, setPage, selectedKeys]);
-
     return (
         <DashboardCard
-            title={`Resumen Evaluación Proc. Admisión ${admissionConfig.cronograma.periodo}`}
-            icon={<ChevronDownIcon className="text-green-500" />}
+            className="h-full flex flex-col overflow-hidden shadow-none border border-slate-100"
+            noHeader={true} // Eliminamos el header del Card para ganar espacio
         >
-            <Table
-                aria-label="Tabla de resumen de evaluación"
-                layout="fixed" // Usa fixed para que se respeten los anchos definidos
+            <div className="p-2 flex flex-col h-full">
+                {/* Header compacto con buscador */}
+                <div className="flex items-center justify-between mb-2 px-1">
+                    <div className="flex items-baseline gap-2">
+                        <h2 className="text-[12px] font-black text-slate-800 uppercase tracking-tighter">Resumen Evaluación</h2>
+                        <span className="text-[10px] text-slate-400 font-medium">{admissionConfig.cronograma.periodo}</span>
+                    </div>
+                    <div className="flex gap-2">
+                        <Input
+                            isClearable
+                            className="w-[200px]"
+                            placeholder="Buscar programa..."
+                            size="sm"
+                            startContent={<SearchIcon className="text-slate-400" />}
+                            value={filterValue}
+                            onValueChange={(v) => { setFilterValue(v); setPage(1); }}
+                            classNames={{ inputWrapper: "h-8 min-h-8 bg-slate-50 border-none shadow-none" }}
+                        />
+                        <Button size="sm" variant="flat" isIconOnly radius="full" className="h-8 w-8 min-w-8">
+                            <ChevronDownIcon />
+                        </Button>
+                    </div>
+                </div>
 
-                isHeaderSticky
-                bottomContent={bottomContent}
-                bottomContentPlacement="outside"
-                classNames={{
-                    wrapper:
-                        "flex-1 overflow-auto w-full p-2 m-0",
-                }}
-                selectedKeys={selectedKeys}
-                sortDescriptor={sortDescriptor}
-                topContent={topContent}
-                topContentPlacement="outside"
-                onSelectionChange={setSelectedKeys}
-                onSortChange={setSortDescriptor}
-            >
-                <TableHeader columns={headerColumns}>
-                    {(column) => (
-                        <TableColumn
-                            key={column.uid}
-                            aria-label={column.uid}
-                            align={
-                                column.uid === "grado_programa"
-                                    ? "start"
-                                    : "center"
-                            }
-                            allowsSorting={column.sortable}
-                            // Aplica estilos en línea para forzar el ancho y evitar el wrapping
-                            style={
-                                column.uid === "grado_programa"
-                                    ? { width: "310px" } // Grado y Programa
-                                    : column.uid === "docente"
-                                        ? { width: "150px" }
-                                        : column.uid === "cobertura"
-                                            ? { width: "62px" } // Cobertura o docente
-                                            : column.uid === "facultad"
-                                                ? { width: "59px" }
-                                                : { width: "50px" } // Otras columnas
-                            }
-                            className="text-xs"
-                            scope="col"
-                        >
-                            {column.name}
-                        </TableColumn>
-                    )}
-                </TableHeader>
-                <TableBody
-                    emptyContent={
-                        dataLoading ? (
-                            <div className="flex flex-col gap-2 w-full p-2">
-                                <Skeleton className="h-10 w-full rounded-lg" />
-                                <Skeleton className="h-10 w-full rounded-lg" />
-                                <Skeleton className="h-10 w-full rounded-lg" />
-                                <Skeleton className="h-10 w-full rounded-lg" />
-                                <Skeleton className="h-10 w-full rounded-lg" />
-                            </div>
-                        ) : "No se encontró información"
-                    }
-                    items={dataLoading ? [] : items}
-                    className="space-y-1"
-                    aria-label="Cuerpo de la tabla"
+                <Table
+                    aria-label="Tabla de Evaluación"
+                    layout="fixed"
+                    isHeaderSticky
+                    classNames={{
+                        base: "flex-1 min-h-0 flex flex-col overflow-hidden",
+                        wrapper: "flex-1 overflow-auto w-full p-0.5 m-0 shadow-none border-none",
+                        th: "bg-slate-50/50 text-slate-500 font-bold uppercase text-[9px] py-1 border-b border-slate-100 h-8",
+                        td: "py-2 border-b border-slate-50/50"
+                    }}
+                    sortDescriptor={sortDescriptor}
+                    onSortChange={setSortDescriptor}
                 >
-                    {(item) => (
-                        <TableRow
-                            key={item.grado_programa}
-                            aria-label={item.grado_programa}
-                            className="p-1 text-sm leading-tight"
-                        >
-                            {(columnKey) => (
-                                <TableCell className="p-1 text-sm">
-                                    {renderCell(item, columnKey)}
-                                </TableCell>
-                            )}
-                        </TableRow>
-                    )}
-                </TableBody>
-            </Table>
+                    <TableHeader columns={columns}>
+                        {(column) => (
+                            <TableColumn
+                                key={column.uid}
+                                allowsSorting={column.sortable}
+                                width={
+                                    column.uid === "grado_programa" ? "35%" :
+                                        column.uid === "facultad" ? "10%" : "27.5%"
+                                }
+                            >
+                                {column.name}
+                            </TableColumn>
+                        )}
+                    </TableHeader>
+                    <TableBody
+                        items={loading ? [] : items}
+                        emptyContent={loading ? "Cargando..." : "No hay datos"}
+                    >
+                        {(item) => (
+                            <TableRow key={item.id}>
+                                {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
+
+                {/* Paginador como footer fijo — siempre visible al fondo */}
+                <div className="shrink-0 border-t border-slate-100">
+                    <TablePagination
+                        page={page}
+                        pages={Math.ceil(filteredItems.length / rowsPerPage)}
+                        setPage={setPage}
+                        filteredItemsLength={filteredItems.length}
+                    />
+                </div>
+            </div>
         </DashboardCard>
     );
 }
