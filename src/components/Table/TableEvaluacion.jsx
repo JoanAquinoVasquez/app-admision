@@ -123,7 +123,7 @@ export default function TableEvaluacionComponent({ resumenEvaluacion, loading })
                     </div>
                 );
             case "evaluados_cv":
-            case "evaluados_entrevista":
+            case "evaluados_entrevista": {
                 const isCV = columnKey === "evaluados_cv";
                 const progressValue = isCV ? user.cobertura_cv : user.cobertura_entrevista;
                 const docente = isCV ? user.docente_cv : user.docente_entrevista;
@@ -150,6 +150,7 @@ export default function TableEvaluacionComponent({ resumenEvaluacion, loading })
                         />
                     </div>
                 );
+            }
             default:
                 return <span className="text-[10px]">{cellValue}</span>;
         }
