@@ -30,7 +30,7 @@ const ReusableInput = ({
         if (onlyNumbers && !/^\d*$/.test(inputValue)) {
             return;
         }
-        if (onlyLetters && !/^[a-zA-Z\s]*$/.test(inputValue)) {
+        if (onlyLetters && !/^[a-zA-Z\sÁÉÍÓÚáéíóúñÑ]*$/.test(inputValue)) {
             return;
         }
 

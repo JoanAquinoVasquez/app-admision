@@ -33,7 +33,7 @@ function InscripcionForm({ datosPago }) {
             ap_paterno: postulante.ap_paterno || "",
             ap_materno: postulante.ap_materno || "",
             email: postulante.email || "",
-            celular: postulante.celular || "",
+            celular: (postulante.celular || "").replace(/\s/g, ""),
             fecha_nacimiento: postulante.fecha_nacimiento || "",
             sexo: postulante.sexo || "",
         };
@@ -77,6 +77,12 @@ function InscripcionForm({ datosPago }) {
             if (!formData[field]) {
                 return `El campo ${field.replace("_", " ")} es obligatorio.`;
             }
+        }
+
+        // Validar formato de celular (9 dígitos exactos, sin espacios)
+        const phoneRegex = /^[0-9]{9}$/;
+        if (!phoneRegex.test(formData.celular)) {
+            return "El número de celular debe tener exactamente 9 dígitos numéricos (sin espacios ni guiones).";
         }
 
         if (formData.fecha_nacimiento) {
