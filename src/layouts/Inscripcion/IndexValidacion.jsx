@@ -174,12 +174,14 @@ function InscripcionForm({ datosPago }) {
                 } else if (message) {
                     errorMessage = message;
                 }
+            } else if (error.message === "Network Error") {
+                errorMessage = "Error de Red: No se pudo conectar con el servidor. Por favor, verifique su conexión a internet o asegúrese de que sus archivos no sean demasiado pesados (máximo 10MB por archivo y 30MB en total).";
             } else if (error.message) {
                 errorMessage = error.message;
             }
 
             setProgressText(errorMessage);
-            toast.error(errorMessage);
+            toast.error(errorMessage, { duration: 6000 });
         } finally {
             loadingBarRef.current?.complete();
         }
