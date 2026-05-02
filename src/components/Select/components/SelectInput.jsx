@@ -26,9 +26,9 @@ const SelectInput = ({
     onClear,
     onToggle,
 }) => {
-    const inputId = label
-        ? `${idPrefix}${label.replace(/\s+/g, "-").toLowerCase()}`
-        : `${idPrefix}select`;
+    const inputId = idPrefix 
+        ? idPrefix 
+        : `select-${label.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")}`;
 
     const labelIsFloating = isOpen || !!value;
 

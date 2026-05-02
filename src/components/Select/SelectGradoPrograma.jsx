@@ -72,7 +72,7 @@ const SelectGradoPrograma = ({
                         selectedKey={gradoId ? gradoId.toString() : ""}
                         onSelectionChange={handleGradoChange}
                         isRequired
-                        idPrefix={idPrefix}
+                        idPrefix={idPrefix ? `${idPrefix}-grado` : "seleccionar-grado"}
                     />
                 </FormControl>
             )}
@@ -90,7 +90,7 @@ const SelectGradoPrograma = ({
                         onSelectionChange={handleProgramaChange}
                         isRequired
                         disabled={!gradoId} // Deshabilitar si no hay grado seleccionado
-                        idPrefix={idPrefix}
+                        idPrefix={idPrefix ? `${idPrefix}-programa` : "seleccionar-programa"}
                     />
                 </FormControl>
             )}
