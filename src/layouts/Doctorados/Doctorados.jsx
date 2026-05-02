@@ -8,7 +8,7 @@ import InfoProspecto from "../../components/InfoProspecto/InfoProspecto";
 import { useProgramasLanding } from "../../hooks/useProgramasLanding";
 import doctoradosImg from "../../assets/Img/doctorados.webp";
 import Chatbot from "../ChatBot/ChatBot";
-import SEO from "../../components/Seo/Seo";
+import SEO from "../../components/SEO/SEO";
 
 export default function Doctorados() {
     // Fetch doctorados from API (grado_id = 1)

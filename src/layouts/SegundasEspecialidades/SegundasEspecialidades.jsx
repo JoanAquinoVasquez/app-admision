@@ -8,7 +8,7 @@ import InfoProspecto from "../../components/InfoProspecto/InfoProspecto";
 import { useProgramasLanding } from "../../hooks/useProgramasLanding";
 import segundasEspecialidadesImg from "../../assets/Img/segundas-especialidades.webp";
 import Chatbot from "../ChatBot/ChatBot";
-import SEO from "../../components/Seo/Seo";
+import SEO from "../../components/SEO/SEO";
 
 export default function SegundasEspecialidades() {
     // Fetch segundas especialidades from API (grado_id = 3)

@@ -9,7 +9,7 @@ import {
     CardHeader,
     Chip,
 } from "@heroui/react";
-import SEO from "../../components/Seo/Seo";
+import SEO from "../../components/SEO/SEO";
 import ChatBot from "../../layouts/ChatBot/ChatBot";
 import logoWithTextImage from "../../assets/Isotipos/isotipo_color_epg.webp";
 import Fondo from "../Fondo/Fondo";
