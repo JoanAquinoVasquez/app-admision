@@ -8,6 +8,7 @@ import InfoProspecto from "../../components/InfoProspecto/InfoProspecto";
 import { useProgramasLanding } from "../../hooks/useProgramasLanding";
 import segundasEspecialidadesImg from "../../assets/Img/segundas-especialidades.webp";
 import Chatbot from "../ChatBot/ChatBot";
+import SEO from "../../components/Seo/Seo";
 
 export default function SegundasEspecialidades() {
     // Fetch segundas especialidades from API (grado_id = 3)
@@ -26,6 +27,12 @@ export default function SegundasEspecialidades() {
 
     return (
         <Fondo>
+            <SEO
+                title="Segundas Especialidades"
+                description="Segundas Especialidades Profesionales en la Escuela de Posgrado UNPRG. Actualización y especialización para profesionales."
+                keywords="segunda especialidad UNPRG, posgrado segunda especialidad, especialización profesional Lambayeque"
+                canonicalUrl="/segundas-especialidades"
+            />
             <Chatbot />
             {/* Contenedor con ancho máximo extendido para el layout de dos columnas */}
             <div className="w-full max-w-[1900px] mx-auto px-4 md:px-6 lg:px-8 py-6">

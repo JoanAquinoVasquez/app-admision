@@ -4,6 +4,7 @@ import { Download, FileText, Calendar, CheckCircle, CreditCard } from "lucide-re
 import Fondo from "../Fondo/Fondo";
 import HeroSection from "../../components/HeroSection/HeroSection";
 import PageHeader from "../../components/PageHeader/PageHeader";
+import SEO from "../../components/Seo/Seo";
 import banner_epg from "../../assets/Img/banner_epg.webp";
 import prospectoImg from "../../assets/Img/2026-PROSPECTO.webp";
 import { admissionConfig } from "../../config/admission";

@@ -26,6 +26,12 @@ export default function Maestrias() {
 
     return (
         <Fondo>
+            <SEO
+                title="Maestrías"
+                description="Programas de Maestría en la Escuela de Posgrado UNPRG. Conoce las especialidades disponibles, requisitos y proceso de admisión."
+                keywords="maestría UNPRG, posgrado maestría, maestría Lambayeque, programas de maestría, segunda especialización"
+                canonicalUrl="/maestrias"
+            />
             <Chatbot />
             {/* Contenedor fluido con ancho máximo amplio */}
             <div className="w-full max-w-[1900px] mx-auto px-4 md:px-6 lg:px-8 py-6">

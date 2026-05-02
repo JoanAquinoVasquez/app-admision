@@ -9,6 +9,7 @@ import {
     CardHeader,
     Chip,
 } from "@heroui/react";
+import SEO from "../../components/Seo/Seo";
 import ChatBot from "../../layouts/ChatBot/ChatBot";
 import logoWithTextImage from "../../assets/Isotipos/isotipo_color_epg.webp";
 import Fondo from "../Fondo/Fondo";
@@ -56,6 +57,13 @@ export default function Index() {
 
     return (
         <Fondo>
+            <SEO
+                title="Admisión 2026-I"
+                description="Matrícula, preinscripción e inscripción para programas de Maestría, Doctorado y Segundas Especialidades en la Escuela de Posgrado UNPRG."
+                keywords="admisión 2026, posgrado UNPRG, maestría, doctorado, segunda especialidad, inscripción, preinscripción, matricula"
+                ogTitle="Admisión EPG UNPRG 2026-I | Maestría, Doctorado y Segundas Especialidades"
+                ogDescription="Matrícula y proceso de admisión para programas de posgrado. Conoce los requisitos, cronograma y pasos para inscribirte en la EPG UNPRG."
+            />
             <ChatBot />
 
             <motion.div

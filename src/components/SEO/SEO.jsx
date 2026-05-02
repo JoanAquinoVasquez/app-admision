@@ -1,80 +1,76 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { Helmet } from 'react-helmet-async';
+import { useEffect } from 'react';
 
-/**
- * SEO Component for managing page metadata
- * Improves search engine optimization and social sharing
- */
-export const SEO = ({
-    title = 'Admisión - EPG',
-    description = 'Sistema de Admisión de la Escuela de Posgrado Universidad Nacional Pedro Ruiz Gallo',
-    keywords = 'admisión, posgrado, UNPRG, maestría, doctorado',
-    author = 'Universidad Nacional Pedro Ruiz Gallo',
-    ogTitle,
-    ogDescription,
-    ogImage,
-    ogUrl,
-    canonical,
+const SEO = ({
+  title,
+  description,
+  keywords,
+  ogTitle,
+  ogDescription,
+  ogImage,
+  ogUrl,
+  twitterCard = 'summary_large_image',
+  canonicalUrl,
+  noIndex = false,
+  noFollow = false
 }) => {
-    const siteUrl = window.location.origin;
-    const currentUrl = window.location.href;
+  const defaultTitle = 'Admisión EPG - Universidad Nacional Pedro Ruiz Gallo';
+  const defaultDescription = 'Sistema de Admisión de la Escuela de Posgrado UNPRG. Programas de Maestría, Doctorado y Segundas Especialidades.';
+  const baseUrl = 'https://epgunprg.edu.pe/admision-epg';
 
-    return (
-        <Helmet>
-            {/* Primary Meta Tags */}
-            <title>{title}</title>
-            <meta name="title" content={title} />
-            <meta name="description" content={description} />
-            <meta name="keywords" content={keywords} />
-            <meta name="author" content={author} />
+  const robotsContent = [
+    noIndex ? 'noindex' : 'index',
+    noFollow ? 'nofollow' : 'follow'
+  ].join(', ');
 
-            {/* Canonical URL */}
-            <link rel="canonical" href={canonical || currentUrl} />
+  useEffect(() => {
+    document.title = title ? `${title} | ${defaultTitle}` : defaultTitle;
 
-            {/* Open Graph / Facebook */}
-            <meta property="og:type" content="website" />
-            <meta property="og:url" content={ogUrl || currentUrl} />
-            <meta property="og:title" content={ogTitle || title} />
-            <meta property="og:description" content={ogDescription || description} />
-            {ogImage && <meta property="og:image" content={ogImage} />}
+    const updateMeta = (name, content) => {
+      let element = document.querySelector(`meta[name="${name}"]`);
+      if (!element) {
+        element = document.createElement('meta');
+        element.name = name;
+        document.head.appendChild(element);
+      }
+      element.content = content;
+    };
 
-            {/* Twitter */}
-            <meta property="twitter:card" content="summary_large_image" />
-            <meta property="twitter:url" content={ogUrl || currentUrl} />
-            <meta property="twitter:title" content={ogTitle || title} />
-            <meta property="twitter:description" content={ogDescription || description} />
-            {ogImage && <meta property="twitter:image" content={ogImage} />}
+    const updateOgMeta = (property, content) => {
+      let element = document.querySelector(`meta[property="${property}"]`);
+      if (!element) {
+        element = document.createElement('meta');
+        element.property = property;
+        document.head.appendChild(element);
+      }
+      element.content = content;
+    };
 
-            {/* Additional SEO Meta Tags */}
-            <meta name="robots" content="index, follow" />
-            <meta name="language" content="Spanish" />
-            <meta name="revisit-after" content="7 days" />
+    updateMeta('description', description || defaultDescription);
+    updateMeta('robots', robotsContent);
+    if (keywords) updateMeta('keywords', keywords);
 
-            {/* Structured Data for Organization */}
-            <script type="application/ld+json">
-                {JSON.stringify({
-                    '@context': 'https://schema.org',
-                    '@type': 'EducationalOrganization',
-                    name: 'Universidad Nacional Pedro Ruiz Gallo - Escuela de Posgrado',
-                    description: description,
-                    url: siteUrl,
-                })}
-            </script>
-        </Helmet>
-    );
-};
+    updateOgMeta('og:title', ogTitle || title || defaultTitle);
+    updateOgMeta('og:description', ogDescription || description || defaultDescription);
+    updateOgMeta('og:url', ogUrl || canonicalUrl || window.location.href);
+    if (ogImage) updateOgMeta('og:image', ogImage);
 
-SEO.propTypes = {
-    title: PropTypes.string,
-    description: PropTypes.string,
-    keywords: PropTypes.string,
-    author: PropTypes.string,
-    ogTitle: PropTypes.string,
-    ogDescription: PropTypes.string,
-    ogImage: PropTypes.string,
-    ogUrl: PropTypes.string,
-    canonical: PropTypes.string,
+    updateMeta('twitter:card', twitterCard);
+    updateMeta('twitter:title', ogTitle || title || defaultTitle);
+    updateMeta('twitter:description', ogDescription || description || defaultDescription);
+    if (ogImage) updateMeta('twitter:image', ogImage);
+
+    if (canonicalUrl) {
+      let canonicalLink = document.querySelector('link[rel="canonical"]');
+      if (!canonicalLink) {
+        canonicalLink = document.createElement('link');
+        canonicalLink.rel = 'canonical';
+        document.head.appendChild(canonicalLink);
+      }
+      canonicalLink.href = canonicalUrl.startsWith('http') ? canonicalUrl : `${baseUrl}${canonicalUrl}`;
+    }
+  }, [title, description, keywords, ogTitle, ogDescription, ogImage, ogUrl, twitterCard, canonicalUrl, robotsContent]);
+
+  return null;
 };
 
 export default SEO;
