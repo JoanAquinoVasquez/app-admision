@@ -22,6 +22,12 @@ export default function Prospecto() {
 
     return (
         <Fondo>
+            <SEO
+                title="Prospecto de Admisión 2026"
+                description="Descargar prospecto de admisión 2026-I de la Escuela de Posgrado UNPRG. Contiene información completa sobre programas, requisitos, cronograma y costos."
+                keywords="prospecto admision 2026, descargar prospecto EPG UNPRG, requisitos admisión posgrado, cronograma posgrado"
+                canonicalUrl="/prospecto"
+            />
             <div className="w-full max-w-[1600px] mx-auto px-4 md:px-6 lg:px-8 py-6">
 
                 {/* Header y Hero (Consistente con Maestrías/Doctorados) */}
