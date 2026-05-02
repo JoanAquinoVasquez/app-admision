@@ -8,6 +8,7 @@ import InfoProspecto from "../../components/InfoProspecto/InfoProspecto";
 import { useProgramasLanding } from "../../hooks/useProgramasLanding";
 import maestriasImg from "../../assets/Img/maestrias.webp";
 import Chatbot from "../ChatBot/ChatBot";
+import SEO from "../../components/SEO/SEO";
 
 export default function Maestrias() {
     // Fetch maestrías from API (grado_id = 2) - optimized endpoint
