@@ -29,9 +29,10 @@ export default function SegundasEspecialidades() {
         <Fondo>
             <SEO
                 title="Segundas Especialidades"
-                description="Segundas Especialidades Profesionales en la Escuela de Posgrado UNPRG. Actualización y especialización para profesionales."
+                description="Especialízate con los programas de Segunda Especialidad Profesional de la EPG-UNPRG. Actualización constante para el éxito en tu carrera."
                 keywords="segunda especialidad UNPRG, posgrado segunda especialidad, especialización profesional Lambayeque"
                 canonicalUrl="/segundas-especialidades"
+                ogImage={segundasEspecialidadesImg}
             />
             <Chatbot />
             {/* Contenedor con ancho máximo extendido para el layout de dos columnas */}

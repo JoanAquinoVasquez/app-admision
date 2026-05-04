@@ -30,6 +30,8 @@ const SegundasEspecialidades = lazy(() => import("./layouts/SegundasEspecialidad
 import { DocenteProvider } from "./services/UserContextDocente.jsx";
 import { UserProvider } from "./services/UserContext.jsx";
 
+import { HelmetProvider } from "react-helmet-async";
+
 const rootElement = document.getElementById("root");
 
 const MainFooter = () => {
@@ -43,9 +45,10 @@ const App = () => {
 
     return (
         <StrictMode>
-            <Toaster position="top-center" containerStyle={{ zIndex: 99999 }} />
-            <HeroUIProvider>
-                <BrowserRouter basename="/admision-epg">
+            <HelmetProvider>
+                <Toaster position="top-center" containerStyle={{ zIndex: 99999 }} />
+                <HeroUIProvider>
+                    <BrowserRouter basename="/admision-epg">
                     <div
                         style={{
                             display: "flex",
@@ -123,8 +126,9 @@ const App = () => {
                     </div>
                 </BrowserRouter>
             </HeroUIProvider>
-        </StrictMode>
-    );
+        </HelmetProvider>
+    </StrictMode>
+);
 };
 
 if (rootElement) {

@@ -41,7 +41,8 @@ function Login() {
                 setIsAuthenticating(false);
             }
         } catch (error) {
-            toast.error("Error al iniciar sesión.");
+            const message = error.response?.data?.message || "Error al iniciar sesión.";
+            toast.error(message);
             setIsAuthenticating(false);
         }
     };

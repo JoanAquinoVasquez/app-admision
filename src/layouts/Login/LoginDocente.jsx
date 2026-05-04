@@ -62,7 +62,7 @@ function LoginDocente() {
                 toast.error("Error al iniciar sesión");
             }
         } catch (error) {
-            const errorMsg = error.response?.data?.error || "Credenciales incorrectas.";
+            const errorMsg = error.response?.data?.message || "Credenciales incorrectas.";
             toast.error(errorMsg);
         } finally {
             setLoading(false);

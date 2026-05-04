@@ -29,9 +29,10 @@ export default function Doctorados() {
         <Fondo>
             <SEO
                 title="Doctorados"
-                description="Programas de Doctorado en la Escuela de Posgrado UNPRG. Investigación académica y doctor's degree en diversas especialidades."
+                description="Alcanza el máximo grado académico con los Doctorados de la EPG-UNPRG. Programas de investigación de alto impacto en diversas áreas del conocimiento."
                 keywords="doctorado UNPRG, posgrado doctorado, doctorado Lambayeque, programas de doctorado, PhD"
                 canonicalUrl="/doctorados"
+                ogImage={doctoradosImg}
             />
             <Chatbot />
             {/* Contenedor fluido extra ancho para simular dashboard */}
