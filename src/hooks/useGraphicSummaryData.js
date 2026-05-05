@@ -13,24 +13,27 @@ export const useGraphicSummaryData = (preInscripciones, grados, showAccumulated,
 
         const grouped = preInscripciones.reduce((acc, pre) => {
             const dateObj = new Date(pre.created_at);
-            if (isNaN(dateObj)) return acc;
+            if (isNaN(dateObj.getTime())) return acc;
 
-            dateObj.setHours(dateObj.getHours() - 5);
-            const date = `${dateObj.getDate()}/${dateObj.getMonth() + 1}`;
+            // Group by local YYYY-MM-DD to avoid UTC shifting
+            const dateKey = `${dateObj.getFullYear()}-${String(
+                dateObj.getMonth() + 1
+            ).padStart(2, "0")}-${String(dateObj.getDate()).padStart(
+                2,
+                "0"
+            )}`;
             const grado = pre.programa?.grado?.nombre ?? "Sin Grado";
 
-            acc[date] ??= { date, conteo_total: 0 };
-            acc[date][grado] = (acc[date][grado] || 0) + 1;
-            acc[date].conteo_total += 1;
+            acc[dateKey] ??= { date: dateKey, conteo_total: 0 };
+            acc[dateKey][grado] = (acc[dateKey][grado] || 0) + 1;
+            acc[dateKey].conteo_total += 1;
 
             return acc;
         }, {});
 
-        const dates = Object.keys(grouped).sort((a, b) => {
-            const [dA, mA] = a.split("/").map(Number);
-            const [dB, mB] = b.split("/").map(Number);
-            return new Date(2025, mA - 1, dA) - new Date(2025, mB - 1, dB);
-        });
+        const dates = Object.keys(grouped).sort(
+            (a, b) => new Date(a) - new Date(b)
+        );
 
         const gradoNames = grados.map(g => g.nombre || g);
         const allGrados = [...gradoNames, "conteo_total"];

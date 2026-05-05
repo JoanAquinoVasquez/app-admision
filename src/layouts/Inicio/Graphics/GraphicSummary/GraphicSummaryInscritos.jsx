@@ -8,6 +8,7 @@ import {
     Tooltip,
     Legend,
     ResponsiveContainer,
+    Brush,
 } from "recharts";
 import {
     Dropdown,
@@ -81,52 +82,33 @@ export default function GraphicSummaryInscritos({ inscripciones, loading }) {
 
         // Agrupamos las inscripciones por fecha (`created_at`) y por programa
         const grouped = inscripciones.reduce((acc, inscripcion) => {
-
             const gradoName = inscripcion.programa?.grado?.nombre;
-            // Verificar fecha y nombre del grado.
-            if (!inscripcion.created_at || !gradoName) {
-                return acc;
-            }
+            if (!inscripcion.created_at || !gradoName) return acc;
 
-            // 🚀 SOLUCIÓN: Usar la cadena ISO directamente en el constructor de Date
-            let dateObj = new Date(inscripcion.created_at);
+            const dateObj = new Date(inscripcion.created_at);
+            if (isNaN(dateObj.getTime())) return acc;
 
-            // 💡 Si tu base de datos guarda la hora en UTC y quieres la hora local
-            // Puedes intentar compensar si la fecha es inválida o si necesitas un ajuste específico.
-            // PERO la mejor práctica es dejarlo como está si es ISO 8601 válido.
+            // Group by local YYYY-MM-DD to avoid UTC shifting
+            const dateKey = `${dateObj.getFullYear()}-${String(
+                dateObj.getMonth() + 1
+            ).padStart(2, "0")}-${String(dateObj.getDate()).padStart(
+                2,
+                "0"
+            )}`;
 
-            // Tu código anterior hacía un ajuste de -5 horas. Si ese es tu objetivo:
-            dateObj.setHours(dateObj.getHours() - 5);
+            if (!acc[dateKey]) acc[dateKey] = { date: dateKey, conteo_total: 0 };
+            if (!acc[dateKey][gradoName]) acc[dateKey][gradoName] = 0;
 
-
-            if (isNaN(dateObj.getTime())) {
-                // Si aún así es inválido (por un formato raro), saltar.
-                return acc;
-            }
-
-            // Formatear a 'Día/Mes' (Ej: 18/11)
-            const date = `${dateObj.getDate()}/${dateObj.getMonth() + 1}`;
-
-            if (!acc[date]) acc[date] = { date, conteo_total: 0 };
-            if (!acc[date][gradoName]) acc[date][gradoName] = 0;
-
-            acc[date][gradoName] += 1;
-            acc[date].conteo_total += 1;
+            acc[dateKey][gradoName] += 1;
+            acc[dateKey].conteo_total += 1;
 
             return acc;
         }, {});
-        // Obtener todas las fechas disponibles antes de ordenar
-        const allDates = Object.keys(grouped);
 
-        // Ordena las fechas de manera ascendente
-        const dates = allDates.sort((a, b) => {
-            const [dayA, monthA] = a.split("/").map(Number);
-            const [dayB, monthB] = b.split("/").map(Number);
-            return (
-                new Date(2025, monthA - 1, dayA) -
-                new Date(2025, monthB - 1, dayB)
-            );
-        });
+        // Obtener todas las fechas disponibles y ordenarlas cronológicamente
+        const dates = Object.keys(grouped).sort(
+            (a, b) => new Date(a) - new Date(b)
+        );
 
         // Genera el array final de datos con todas las fechas y programas
         const allGrados = [...grados, "conteo_total"];
@@ -268,6 +250,12 @@ export default function GraphicSummaryInscritos({ inscripciones, loading }) {
                                     tickLine={false}
                                     tick={{ fontSize: 11, fill: '#94a3b8' }}
                                     dy={10}
+                                    tickFormatter={(str) => {
+                                        const date = new Date(str + "T12:00:00"); // Use noon to avoid day shifts
+                                        const day = date.getDate().toString().padStart(2, "0");
+                                        const month = (date.getMonth() + 1).toString().padStart(2, "0");
+                                        return `${day}/${month}`;
+                                    }}
                                 />
                                 <YAxis
                                     allowDecimals={false}
@@ -275,8 +263,28 @@ export default function GraphicSummaryInscritos({ inscripciones, loading }) {
                                     tickLine={false}
                                     tick={{ fontSize: 11, fill: '#94a3b8' }}
                                 />
-                                <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                                <Tooltip
+                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                    labelFormatter={(str) => {
+                                        const date = new Date(str + "T12:00:00");
+                                        const day = date.getDate().toString().padStart(2, "0");
+                                        const month = (date.getMonth() + 1).toString().padStart(2, "0");
+                                        return `${day}/${month}`;
+                                    }}
+                                />
                                 <Legend iconType="circle" />
+                                <Brush
+                                    dataKey="date"
+                                    height={30}
+                                    stroke="#3b82f6"
+                                    startIndex={Math.max(0, filteredData.length - 15)}
+                                    tickFormatter={(str) => {
+                                        const date = new Date(str + "T12:00:00");
+                                        const day = date.getDate().toString().padStart(2, "0");
+                                        const month = (date.getMonth() + 1).toString().padStart(2, "0");
+                                        return `${day}/${month}`;
+                                    }}
+                                />
                                 <Line
                                     type="monotone"
                                     dataKey="conteo_total"

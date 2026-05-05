@@ -9,6 +9,7 @@ import {
     Tooltip,
     Legend,
     ResponsiveContainer,
+    Brush,
 } from "recharts";
 import {
     Dropdown,
@@ -136,6 +137,12 @@ export default function GraphicSummary({ preInscripciones, grados, loading }) {
                                     tickLine={false}
                                     tick={{ fontSize: 11, fill: '#94a3b8' }}
                                     dy={10}
+                                    tickFormatter={(str) => {
+                                        const date = new Date(str + "T12:00:00");
+                                        const day = date.getDate().toString().padStart(2, "0");
+                                        const month = (date.getMonth() + 1).toString().padStart(2, "0");
+                                        return `${day}/${month}`;
+                                    }}
                                 />
                                 <YAxis
                                     allowDecimals={false}
@@ -145,8 +152,26 @@ export default function GraphicSummary({ preInscripciones, grados, loading }) {
                                 />
                                 <Tooltip
                                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                    labelFormatter={(str) => {
+                                        const date = new Date(str + "T12:00:00");
+                                        const day = date.getDate().toString().padStart(2, "0");
+                                        const month = (date.getMonth() + 1).toString().padStart(2, "0");
+                                        return `${day}/${month}`;
+                                    }}
                                 />
                                 <Legend iconType="circle" />
+                                <Brush
+                                    dataKey="date"
+                                    height={30}
+                                    stroke="#3b82f6"
+                                    startIndex={Math.max(0, filteredData.length - 15)}
+                                    tickFormatter={(str) => {
+                                        const date = new Date(str + "T12:00:00");
+                                        const day = date.getDate().toString().padStart(2, "0");
+                                        const month = (date.getMonth() + 1).toString().padStart(2, "0");
+                                        return `${day}/${month}`;
+                                    }}
+                                />
                                 <Line
                                     type="monotone"
                                     dataKey="conteo_total"
