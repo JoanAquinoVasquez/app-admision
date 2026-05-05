@@ -15,16 +15,16 @@ export const useGraphicSummaryData = (preInscripciones, grados, showAccumulated,
             const dateObj = new Date(pre.created_at);
             if (isNaN(dateObj.getTime())) return acc;
 
-            // Group by local YYYY-MM-DD to avoid UTC shifting
             const dateKey = `${dateObj.getFullYear()}-${String(
                 dateObj.getMonth() + 1
             ).padStart(2, "0")}-${String(dateObj.getDate()).padStart(
                 2,
                 "0"
             )}`;
-            const grado = pre.programa?.grado?.nombre ?? "Sin Grado";
 
-            acc[dateKey] ??= { date: dateKey, conteo_total: 0 };
+            if (!acc[dateKey]) acc[dateKey] = { date: dateKey, conteo_total: 0 };
+
+            const grado = pre.programa?.grado?.nombre ?? "Sin Grado";
             acc[dateKey][grado] = (acc[dateKey][grado] || 0) + 1;
             acc[dateKey].conteo_total += 1;
 
@@ -44,14 +44,18 @@ export const useGraphicSummaryData = (preInscripciones, grados, showAccumulated,
         });
 
         if (showAccumulated) {
-            return filled.map((d, i) => {
-                if (i === 0) return d;
-                const prev = filled[i - 1];
+            let runningTotal = 0;
+            const runningGrados = Object.fromEntries(gradoNames.map(g => [g, 0]));
+
+            return filled.map((d) => {
+                runningTotal += d.conteo_total;
+                gradoNames.forEach(g => runningGrados[g] += (d[g] || 0));
+
                 return {
                     ...d,
-                    conteo_total: d.conteo_total + prev.conteo_total,
+                    conteo_total: runningTotal,
                     ...Object.fromEntries(
-                        gradoNames.map((g) => [g, d[g] + (prev[g] || 0)])
+                        gradoNames.map((g) => [g, runningGrados[g]])
                     ),
                 };
             });

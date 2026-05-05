@@ -54,23 +54,23 @@ export default function GraphicSummary({ preInscripciones, grados, loading }) {
                         <FaFilter className="text-default-500" />
                     </Button>
                 </DropdownTrigger>
-                <DropdownMenu>
-                    <DropdownItem key="diario" textValue="Diario">
+                <DropdownMenu aria-label="Filtros de Gráfico">
+                    <DropdownItem key="diario" textValue="diario">
                         <label className="flex items-center cursor-pointer">
                             <Checkbox
                                 isSelected={!showAccumulated}
                                 onValueChange={() => setShowAccumulated(false)}
                             />
-                            <p className="text-sm text-gray-500 ml-2">Diario</p>
+                            <p className="text-sm text-gray-500 ml-2">Vista Diaria</p>
                         </label>
                     </DropdownItem>
                     <DropdownItem key="acumulado" textValue="Acumulado">
                         <label className="flex items-center cursor-pointer">
                             <Checkbox
                                 isSelected={showAccumulated}
-                                onValueChange={() => setShowAccumulated(true)}
+                                onValueChange={setShowAccumulated}
                             />
-                            <p className="text-sm text-gray-500 ml-2">Acumulado</p>
+                            <p className="text-sm text-gray-500 ml-2">Vista Acumulada</p>
                         </label>
                     </DropdownItem>
                 </DropdownMenu>
@@ -175,6 +175,7 @@ export default function GraphicSummary({ preInscripciones, grados, loading }) {
                                 <Line
                                     type="monotone"
                                     dataKey="conteo_total"
+                                    name="Preinscritos"
                                     stroke="#3b82f6"
                                     strokeWidth={3}
                                     dot={{ r: 4, fill: '#3b82f6', strokeWidth: 2, stroke: '#fff' }}

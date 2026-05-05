@@ -41,12 +41,14 @@ const COLORS = [
 export default function GraphicSummaryInscritos({ inscripciones, loading }) {
     const [selectedGrados, setSelectedGrados] = useState(new Set()); // Cambiado a Set
     const [showAccumulated, setShowAccumulated] = useState(false); // Estado para mostrar acumulados
+    const [showInscriptions, setShowInscriptions] = useState(true); // Estado para mostrar inscritos
+    const [showPayments, setShowPayments] = useState(false); // Estado para mostrar pagos
 
     const grados = useMemo(() => {
         const gradosSet = new Set(
-            inscripciones.map(
-                (inscripcion) => inscripcion.programa.grado.nombre
-            )
+            inscripciones
+                .filter((i) => i.type === "inscripcion" && i.programa?.grado?.nombre)
+                .map((inscripcion) => inscripcion.programa.grado.nombre)
         );
         return Array.from(gradosSet);
     }, [inscripciones]);
@@ -81,14 +83,10 @@ export default function GraphicSummaryInscritos({ inscripciones, loading }) {
         if (inscripciones.length === 0) return [];
 
         // Agrupamos las inscripciones por fecha (`created_at`) y por programa
-        const grouped = inscripciones.reduce((acc, inscripcion) => {
-            const gradoName = inscripcion.programa?.grado?.nombre;
-            if (!inscripcion.created_at || !gradoName) return acc;
-
-            const dateObj = new Date(inscripcion.created_at);
+        const grouped = inscripciones.reduce((acc, item) => {
+            const dateObj = new Date(item.created_at);
             if (isNaN(dateObj.getTime())) return acc;
 
-            // Group by local YYYY-MM-DD to avoid UTC shifting
             const dateKey = `${dateObj.getFullYear()}-${String(
                 dateObj.getMonth() + 1
             ).padStart(2, "0")}-${String(dateObj.getDate()).padStart(
@@ -96,11 +94,18 @@ export default function GraphicSummaryInscritos({ inscripciones, loading }) {
                 "0"
             )}`;
 
-            if (!acc[dateKey]) acc[dateKey] = { date: dateKey, conteo_total: 0 };
-            if (!acc[dateKey][gradoName]) acc[dateKey][gradoName] = 0;
+            if (!acc[dateKey]) acc[dateKey] = { date: dateKey, conteo_total: 0, total_pagos: 0 };
 
-            acc[dateKey][gradoName] += 1;
-            acc[dateKey].conteo_total += 1;
+            if (item.type === "pago") {
+                acc[dateKey].total_pagos += 1;
+            } else {
+                const gradoName = item.programa?.grado?.nombre;
+                if (gradoName) {
+                    if (!acc[dateKey][gradoName]) acc[dateKey][gradoName] = 0;
+                    acc[dateKey][gradoName] += 1;
+                    acc[dateKey].conteo_total += 1;
+                }
+            }
 
             return acc;
         }, {});
@@ -111,29 +116,35 @@ export default function GraphicSummaryInscritos({ inscripciones, loading }) {
         );
 
         // Genera el array final de datos con todas las fechas y programas
-        const allGrados = [...grados, "conteo_total"];
-        const filledData = fillMissingDates(
-            Object.values(grouped),
-            dates,
-            allGrados
-        );
+        const allGrados = [...grados, "conteo_total", "total_pagos"];
+        const filled = dates.map((date) => {
+            const data = { ...grouped[date] };
+            allGrados.forEach((g) => (data[g] ??= 0));
+            return data;
+        });
 
-        // Si se selecciona mostrar acumulado, calcular la suma acumulada
         if (showAccumulated) {
-            return filledData.map((data, index) => {
-                if (index > 0) {
-                    // Acumular el conteo total y por grado
-                    const previousData = filledData[index - 1];
-                    data.conteo_total += previousData.conteo_total;
-                    grados.forEach((grado) => {
-                        data[grado] += previousData[grado] || 0;
-                    });
-                }
-                return data;
+            let runningTotal = 0;
+            let runningPagos = 0;
+            const runningGrados = Object.fromEntries(grados.map((g) => [g, 0]));
+
+            return filled.map((d) => {
+                runningTotal += d.conteo_total;
+                runningPagos += d.total_pagos || 0;
+                grados.forEach((g) => (runningGrados[g] += d[g] || 0));
+
+                return {
+                    ...d,
+                    conteo_total: runningTotal,
+                    total_pagos: runningPagos,
+                    ...Object.fromEntries(
+                        grados.map((g) => [g, runningGrados[g]])
+                    ),
+                };
             });
         }
 
-        return filledData;
+        return filled;
     }, [inscripciones, grados, showAccumulated]);
 
     // Filtrar datos según grados seleccionados
@@ -146,6 +157,7 @@ export default function GraphicSummaryInscritos({ inscripciones, loading }) {
             const filteredData = {
                 date: data.date,
                 conteo_total: data.conteo_total,
+                total_pagos: data.total_pagos,
             };
 
             selectedGrados.forEach((grado) => {
@@ -166,23 +178,46 @@ export default function GraphicSummaryInscritos({ inscripciones, loading }) {
                         <FaFilter className="text-default-500" />
                     </Button>
                 </DropdownTrigger>
-                <DropdownMenu aria-label="Acumulado Selection">
+                <DropdownMenu aria-label="Filtros de Gráfico">
+                    <DropdownItem key="inscritos" textValue="Ver Inscritos">
+                        <label className="flex items-center cursor-pointer">
+                            <Checkbox
+                                isSelected={showInscriptions}
+                                onValueChange={setShowInscriptions}
+                            />
+                            <p className="text-sm text-gray-500 ml-2">Ver Inscritos</p>
+                        </label>
+                    </DropdownItem>
+                    <DropdownItem key="pagos" textValue="Ver Pagos">
+                        <label className="flex items-center cursor-pointer">
+                            <Checkbox
+                                isSelected={showPayments}
+                                onValueChange={setShowPayments}
+                            />
+                            <p className="text-sm text-gray-500 ml-2">Ver Pagos</p>
+                        </label>
+                    </DropdownItem>
+                    <DropdownItem key="separator" isReadOnly className="opacity-50">
+                        <hr className="my-1 border-gray-200" />
+                    </DropdownItem>
                     <DropdownItem key="diario" textValue="diario">
                         <label className="flex items-center cursor-pointer">
                             <Checkbox
                                 isSelected={!showAccumulated}
                                 onValueChange={() => setShowAccumulated(false)}
                             />
-                            <p className="text-sm text-gray-500 ml-2">Diario</p>
+                            <p className="text-sm text-gray-500 ml-2">Vista Diaria</p>
                         </label>
                     </DropdownItem>
-                    <DropdownItem key="acumulado" textValue="acumulado">
+                    <DropdownItem key="acumulado" textValue="Acumulado">
                         <label className="flex items-center cursor-pointer">
                             <Checkbox
                                 isSelected={showAccumulated}
-                                onValueChange={() => setShowAccumulated(true)}
+                                onValueChange={setShowAccumulated}
                             />
-                            <p className="text-sm text-gray-500 ml-2">Acumulado</p>
+                            <p className="text-sm text-gray-500 ml-2">
+                                Vista Acumulada
+                            </p>
                         </label>
                     </DropdownItem>
                 </DropdownMenu>
@@ -285,14 +320,28 @@ export default function GraphicSummaryInscritos({ inscripciones, loading }) {
                                         return `${day}/${month}`;
                                     }}
                                 />
-                                <Line
-                                    type="monotone"
-                                    dataKey="conteo_total"
-                                    stroke="#2563eb"
-                                    strokeWidth={3}
-                                    dot={{ r: 4, fill: '#2563eb', strokeWidth: 2, stroke: '#fff' }}
-                                    activeDot={{ r: 6, strokeWidth: 0 }}
-                                />
+                                {showInscriptions && (
+                                    <Line
+                                        type="monotone"
+                                        dataKey="conteo_total"
+                                        name="Inscritos"
+                                        stroke="#3b82f6"
+                                        strokeWidth={3}
+                                        dot={{ r: 4, fill: '#3b82f6', strokeWidth: 2, stroke: '#fff' }}
+                                        activeDot={{ r: 6, strokeWidth: 0 }}
+                                    />
+                                )}
+                                {showPayments && (
+                                    <Line
+                                        type="monotone"
+                                        dataKey="total_pagos"
+                                        name="Pagos"
+                                        stroke="#10b981"
+                                        strokeWidth={3}
+                                        dot={{ r: 4, fill: '#10b981', strokeWidth: 2, stroke: '#fff' }}
+                                        activeDot={{ r: 6, strokeWidth: 0 }}
+                                    />
+                                )}
                                 {[...selectedGrados].map((grado, index) => (
                                     <Line
                                         key={grado}
