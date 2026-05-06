@@ -91,6 +91,7 @@ export default function App() {
     } = useTableFilters(users, {
         initialRowsPerPage: 10,
         initialSortColumn: "id",
+        initialGradoFilter: "all",
     });
 
     const [selectedKeys, setSelectedKeys] = useState(new Set([]));
@@ -124,11 +125,8 @@ export default function App() {
         isExporting,
     } = useInscritosActions(fetchInscripciones);
 
-    // Effects
     useEffect(() => {
-        if (gradoFilter !== "all") {
-            filterByGrado(gradoFilter);
-        }
+        filterByGrado(gradoFilter === "all" ? null : gradoFilter);
     }, [gradoFilter, filterByGrado]);
 
     // Render Cell Logic

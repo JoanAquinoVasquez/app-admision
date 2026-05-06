@@ -102,6 +102,7 @@ export default function App() {
     } = useTableFilters(users, {
         initialRowsPerPage: 10,
         initialSortColumn: "id",
+        initialGradoFilter: "all",
     });
 
     const [selectedKeys, setSelectedKeys] = useState(new Set([]));
@@ -397,9 +398,7 @@ export default function App() {
 
     // Filtrar programas en la tabla cuando cambia el grado seleccionado
     useEffect(() => {
-        if (gradoFilter !== "all") {
-            filterByGrado(gradoFilter);
-        }
+        filterByGrado(gradoFilter === "all" ? null : gradoFilter);
     }, [gradoFilter, filterByGrado]);
 
 

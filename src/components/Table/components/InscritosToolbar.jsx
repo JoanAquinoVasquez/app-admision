@@ -173,7 +173,7 @@ export default function InscritosToolbar({
                         <Select
                             label="Programa"
                             className="w-full h-12 text-sm"
-                            disabled={gradoFilter === "all"}
+                            disabled={gradoFilter === "all" || filteredProgramas.length === 0}
                             defaultItems={filteredProgramas.map((item) => ({
                                 key: item.id.toString(),
                                 textValue: item.nombre,
