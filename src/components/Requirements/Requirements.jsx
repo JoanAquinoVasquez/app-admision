@@ -208,12 +208,10 @@ export default function Requirements({ programType }) {
                                         title="Rúbrica de Evaluación del CV"
                                         href="https://drive.google.com/file/d/13OWyVIXaO1ZduP7wA0KezEVIdh24YoyA/view?usp=sharing"
                                     />
-                                    {programType !== "MAESTRÍAS" && (
-                                        <DownloadCard
-                                            title="Perfil de Proyecto"
-                                            href="https://drive.google.com/file/d/18tZFUHQyehMIgxn-9o25h_JHG-jv-Il3/view?usp=sharing"
-                                        />
-                                    )}
+                                    <DownloadCard
+                                        title="Perfil de Proyecto"
+                                        href="https://drive.google.com/file/d/18tZFUHQyehMIgxn-9o25h_JHG-jv-Il3/view?usp=sharing"
+                                    />
                                 </>
                             ) : (
                                 <>
