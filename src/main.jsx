@@ -31,8 +31,10 @@ import { DocenteProvider } from "./services/UserContextDocente.jsx";
 import { UserProvider } from "./services/UserContext.jsx";
 
 import { HelmetProvider } from "react-helmet-async";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const rootElement = document.getElementById("root");
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 const MainFooter = () => {
     const { pathname } = useLocation();
@@ -42,99 +44,100 @@ const MainFooter = () => {
 };
 
 const App = () => {
-
     return (
         <StrictMode>
             <HelmetProvider>
                 <Toaster position="top-center" containerStyle={{ zIndex: 99999 }} />
                 <HeroUIProvider>
                     <BrowserRouter basename="/admision-epg">
-                    <div
-                        style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            minHeight: "100vh",
-                        }}
-                    >
-                        <main style={{ flex: 1 }}>
-                            <Suspense fallback={<Spinner fullScreen={true} label="Cargando..." />}>
-                                <Routes>
-                                    {/* Rutas públicas (Sin check-auth innecesario) */}
-                                    <Route path="/" element={<Index />} />
-                                    <Route
-                                        path="/inscripcion"
-                                        element={<IndexInscripcion />}
-                                    />
-                                    <Route
-                                        path="/preinscripcion"
-                                        element={<IndexPreInscripcion />}
-                                    />
-                                    <Route
-                                        path="/inscripcion/confirmacion"
-                                        element={<IndexValidacion />}
-                                    />
-
-                                    {/* Landing pages de posgrado */}
-                                    <Route path="/maestrias" element={<Maestrias />} />
-                                    <Route path="/doctorados" element={<Doctorados />} />
-                                    <Route path="/prospecto" element={<Prospecto />} />
-                                    <Route path="/segundas-especialidades" element={<SegundasEspecialidades />} />
-
-                                    {/* Zona de Usuarios / Admin (Con UserProvider) */}
-                                    <Route element={
-                                        <Suspense fallback={<Spinner fullScreen={true} label="Cargando Usuario..." />}>
-                                            <UserProvider><Outlet /></UserProvider>
-                                        </Suspense>
-                                    }>
-                                        <Route path="/login" element={<Login />} />
+                        <div
+                            style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                minHeight: "100vh",
+                            }}
+                        >
+                            <main style={{ flex: 1 }}>
+                                <Suspense fallback={<Spinner fullScreen={true} label="Cargando..." />}>
+                                    <Routes>
+                                        {/* Rutas públicas */}
+                                        <Route path="/" element={<Index />} />
                                         <Route
-                                            path="/auth/*"
-                                            element={
-                                                <Dashboard />
-                                            }
-                                        />
-                                    </Route>
-
-                                    {/* Zona de Docentes (Con DocenteProvider) */}
-                                    <Route element={
-                                        <Suspense fallback={<Spinner fullScreen={true} label="Cargando Docente..." />}>
-                                            <DocenteProvider><Outlet /></DocenteProvider>
-                                        </Suspense>
-                                    }>
-                                        <Route
-                                            path="/iniciar-sesion"
-                                            element={<LoginDocente />}
+                                            path="/inscripcion"
+                                            element={<IndexInscripcion />}
                                         />
                                         <Route
-                                            path="/docente/*"
-                                            element={
-                                                <Suspense fallback={<Spinner label="Cargando..." />}>
-                                                    <ProtectedRouteDocente>
-                                                        <DashboardDocente />
-                                                    </ProtectedRouteDocente>
-                                                </Suspense>
-                                            }
+                                            path="/preinscripcion"
+                                            element={<IndexPreInscripcion />}
                                         />
-                                    </Route>
+                                        <Route
+                                            path="/inscripcion/confirmacion"
+                                            element={<IndexValidacion />}
+                                        />
 
-                                    {/* Página 404 al final */}
-                                    <Route path="*" element={<Notfound />} />
-                                </Routes>
-                            </Suspense>
-                        </main>
-                        <MainFooter />
-                    </div>
-                </BrowserRouter>
-            </HeroUIProvider>
-        </HelmetProvider>
-    </StrictMode>
-);
+                                        {/* Landing pages de posgrado */}
+                                        <Route path="/maestrias" element={<Maestrias />} />
+                                        <Route path="/doctorados" element={<Doctorados />} />
+                                        <Route path="/prospecto" element={<Prospecto />} />
+                                        <Route path="/segundas-especialidades" element={<SegundasEspecialidades />} />
+
+                                        {/* Zona de Usuarios / Admin (Con UserProvider) */}
+                                        <Route element={
+                                            <Suspense fallback={<Spinner fullScreen={true} label="Cargando Usuario..." />}>
+                                                <UserProvider><Outlet /></UserProvider>
+                                            </Suspense>
+                                        }>
+                                            <Route path="/login" element={<Login />} />
+                                            <Route
+                                                path="/auth/*"
+                                                element={
+                                                    <Dashboard />
+                                                }
+                                            />
+                                        </Route>
+
+                                        {/* Zona de Docentes (Con DocenteProvider) */}
+                                        <Route element={
+                                            <Suspense fallback={<Spinner fullScreen={true} label="Cargando Docente..." />}>
+                                                <DocenteProvider><Outlet /></DocenteProvider>
+                                            </Suspense>
+                                        }>
+                                            <Route
+                                                path="/iniciar-sesion"
+                                                element={<LoginDocente />}
+                                            />
+                                            <Route
+                                                path="/docente/*"
+                                                element={
+                                                    <Suspense fallback={<Spinner label="Cargando..." />}>
+                                                        <ProtectedRouteDocente>
+                                                            <DashboardDocente />
+                                                        </ProtectedRouteDocente>
+                                                    </Suspense>
+                                                }
+                                            />
+                                        </Route>
+
+                                        {/* Página 404 al final */}
+                                        <Route path="*" element={<Notfound />} />
+                                    </Routes>
+                                </Suspense>
+                            </main>
+                            <MainFooter />
+                        </div>
+                    </BrowserRouter>
+                </HeroUIProvider>
+            </HelmetProvider>
+        </StrictMode>
+    );
 };
 
 if (rootElement) {
-    if (!window._root) {
-        window._root = ReactDOM.createRoot(rootElement);
-    }
-    window._root.render(<App />);
+    const root = ReactDOM.createRoot(rootElement);
+    root.render(
+        <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+            <App />
+        </GoogleOAuthProvider>
+    );
 }
 

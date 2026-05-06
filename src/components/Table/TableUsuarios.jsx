@@ -215,35 +215,37 @@ export default function App() {
 
     const handleSubmitNuevo = async () => {
         setLoading(true);
+        const promise = axios.post("/users", {
+            name: nombres,
+            email: email,
+            rol: rol,
+            estado: estado,
+        });
+
+        toast.promise(promise, {
+            loading: "Creando usuario...",
+            success: (response) => {
+                setIsModalOpen(false);
+                fetchUsers();
+                setNombres("");
+                setEmail("");
+                setRol("");
+                setEstado(true);
+                return response.data.message || "Usuario creado exitosamente.";
+            },
+            error: (error) => {
+                if (error.response?.data?.errors) {
+                    const errores = error.response.data.errors;
+                    return Object.values(errores).flat().join(", ");
+                }
+                return error.response?.data?.error || "Hubo un error al crear el usuario.";
+            },
+        });
+
         try {
-            const response = await axios.post("/users", {
-                name: nombres,
-                email: email,
-                rol: rol,
-                estado: estado,
-            });
-            toast.success(
-                response.data.message || "Usuario creado exitosamente."
-            );
-            setIsModalOpen(false);
-            fetchUsers(); // Refrescar la lista de usuarios
-            setNombres("");
-            setEmail("");
-            setRol("");
-            setEstado(true);
+            await promise;
         } catch (error) {
-            if (error.response?.data?.errors) {
-                // Backend devolvió validaciones
-                const errores = error.response.data.errors;
-                Object.values(errores).forEach((mensajes) => {
-                    mensajes.forEach((msg) => toast.error(msg));
-                });
-            } else if (error.response?.data?.error) {
-                // Error de backend
-                toast.error(error.response.data.error);
-            } else {
-                toast.error("Hubo un error al crear el usuario.");
-            }
+            // Error manejado por toast.promise
         } finally {
             setLoading(false);
         }
@@ -263,22 +265,30 @@ export default function App() {
                 setLoading(false);
                 return;
             }
-            await axios.post(`/users/${userId}`, Object.fromEntries(formData));
-            toast.success("Usuario actualizado correctamente.");
-            setIsModalOpen(false);
-            fetchUsers(); // Refrescar la lista de usuarios
-            setNombres("");
-            setEmail("");
-            setRol("");
-            setEstado(true);
-            fetchUsers(); // Refrescar la lista de usuarios
-            formDataRef.current = new FormData(); // Resetear formData
-            setOriginalData({}); // Resetear datos originales
+
+            const promise = axios.post(`/users/${userId}`, Object.fromEntries(formData));
+
+            toast.promise(promise, {
+                loading: "Actualizando usuario...",
+                success: () => {
+                    setIsModalOpen(false);
+                    fetchUsers();
+                    setNombres("");
+                    setEmail("");
+                    setRol("");
+                    setEstado(true);
+                    formDataRef.current = new FormData();
+                    setOriginalData({});
+                    return "Usuario actualizado correctamente.";
+                },
+                error: (error) => {
+                    return error.response?.data?.email || "Hubo un error al actualizar el usuario.";
+                },
+            });
+
+            await promise;
         } catch (error) {
-            toast.error(
-                error.response?.data?.email ||
-                "Hubo un error al actualizar el usuario."
-            );
+            // Error manejado por toast.promise
         } finally {
             setLoading(false);
         }
@@ -679,6 +689,7 @@ export default function App() {
                         </Button>
                         <Button
                             color="primary"
+                            isLoading={loading}
                             onPress={() =>
                                 modo === "editar"
                                     ? handleSubmitEditar(selectedUserId)
