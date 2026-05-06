@@ -783,7 +783,7 @@ export default function CargarVoucher() {
                 </Table>
             </div>
 
-            <Modal shouldBlockScroll={false} isDismissable={false} isOpen={isOpen} onOpenChange={onOpenChange} size="2xl">
+            <Modal scrollBehavior="outside" placement="top-center" shouldBlockScroll={true} isDismissable={false} isOpen={isOpen} onOpenChange={onOpenChange} size="2xl">
                 <ModalContent>
                     {(onClose) => (
                         <>
@@ -872,7 +872,7 @@ export default function CargarVoucher() {
                                         placeholder="4 dígitos"
                                         maxLength={4}
                                         value={manualVoucher.agencia}
-                                        onValueChange={(val) => setManualVoucher({ ...manualVoucher, agency: val, agencia: val })}
+                                        onValueChange={(val) => setManualVoucher({ ...manualVoucher, agencia: val })}
                                     />
                                 </div>
                             </ModalBody>
