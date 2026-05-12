@@ -1,4 +1,5 @@
 import { useMemo, useCallback, useState, useEffect } from "react";
+import { MdReceiptLong, MdEdit } from "react-icons/md";
 import Breadcrumb from "../../../components/Breadcrumb/Breadcrumb.jsx";
 import {
     Table,
@@ -46,6 +47,7 @@ export const columns = [
     { name: "Agencia", uid: "agencia" },
     { name: "Fecha de Pago", uid: "fecha_pago", sortable: true },
     { name: "Estado", uid: "estado", sortable: true },
+    { name: "Acciones", uid: "actions" },
 ];
 
 export const ChevronDownIcon = ({ strokeWidth = 1.5, ...otherProps }) => {
@@ -119,6 +121,7 @@ const INITIAL_VISIBLE_COLUMNS = [
     "cajero",
     "agencia",
     "estado",
+    "actions",
 ];
 
 export default function CargarVoucher() {
@@ -155,6 +158,9 @@ export default function CargarVoucher() {
         agencia: "0000",
         cajero: "0000",
     });
+    const [isEditing, setIsEditing] = useState(false);
+    const [selectedVoucherId, setSelectedVoucherId] = useState(null);
+
     const headerColumns = useMemo(() => {
         return visibleColumns === "all"
             ? columns
@@ -263,6 +269,26 @@ export default function CargarVoucher() {
         }));
     };
 
+
+
+    const handleEdit = (voucher) => {
+        setIsEditing(true);
+        setSelectedVoucherId(voucher.id);
+        setManualVoucher({
+            num_iden: voucher.num_iden.trim() === "" ? "" : voucher.num_iden,
+            nombre_completo: voucher.nombre_completo,
+            concepto_pago_id: voucher.concepto_pago_id.toString(),
+            numero: voucher.numero,
+            monto: voucher.monto.toString(),
+            fecha_pago: voucher.fecha_pago.split(" ")[0],
+            hora_pago: voucher.hora_pago,
+            agencia: voucher.agencia,
+            cajero: voucher.cajero,
+        });
+        setTipoPago(voucher.numero.length === 7 ? "BN" : "PAGALO");
+        onOpen();
+    };
+
     const handleSaveManual = async () => {
         // Validaciones básicas
         if (!manualVoucher.num_iden || manualVoucher.num_iden.length !== 8) {
@@ -312,12 +338,14 @@ export default function CargarVoucher() {
             numero: finalNumero,
         };
 
-        const savePromise = axios.post("/vouchers", dataToSend);
+        const savePromise = isEditing
+            ? axios.put(`/vouchers/${selectedVoucherId}`, dataToSend)
+            : axios.post("/vouchers", dataToSend);
 
         toast.promise(savePromise, {
-            loading: "Registrando voucher...",
-            success: "Voucher registrado exitosamente",
-            error: (err) => "Error al registrar: " + (err.response?.data?.message || err.message)
+            loading: isEditing ? "Actualizando voucher..." : "Registrando voucher...",
+            success: isEditing ? "Voucher actualizado exitosamente" : "Voucher registrado exitosamente",
+            error: (err) => (isEditing ? "Error al actualizar: " : "Error al registrar: ") + (err.response?.data?.message || err.message)
         });
 
         try {
@@ -337,6 +365,8 @@ export default function CargarVoucher() {
                 cajero: "0000",
             });
             setTipoPago("BN");
+            setIsEditing(false);
+            setSelectedVoucherId(null);
         } catch (error) {
             // Managed by toast
         } finally {
@@ -471,7 +501,7 @@ export default function CargarVoucher() {
             return (
                 <div className="flex flex-col">
                     <div className="font-medium capitalize text-sm text-default-500">
-                        {vouchers.num_iden || "Sin asignar"}
+                        {vouchers.num_iden?.trim() ? vouchers.num_iden : "Sin asignar"}
                     </div>
                 </div>
             );
@@ -499,6 +529,24 @@ export default function CargarVoucher() {
                     <div className="text-sm text-default-400">
                         {vouchers.hora_pago || "Sin asignar"}
                     </div>
+                </div>
+            );
+        } else if (columnKey === "actions") {
+            const canEdit = vouchers.num_iden?.trim() === "";
+            return (
+                <div className="flex justify-center gap-2">
+                    {canEdit && (
+                        <Button
+                            isIconOnly
+                            size="sm"
+                            variant="light"
+                            onPress={() => handleEdit(vouchers)}
+                            className="text-blue-600 hover:text-blue-700"
+                            title="Editar Voucher"
+                        >
+                            <MdEdit size={18} />
+                        </Button>
+                    )}
                 </div>
             );
         }
@@ -559,7 +607,21 @@ export default function CargarVoucher() {
                                 <Button
                                     color="success"
                                     variant="flat"
-                                    onPress={onOpen}
+                                    onPress={() => {
+                                        setIsEditing(false);
+                                        setManualVoucher({
+                                            num_iden: "",
+                                            nombre_completo: "",
+                                            concepto_pago_id: "",
+                                            numero: "",
+                                            monto: "",
+                                            fecha_pago: "",
+                                            hora_pago: "00:00:00",
+                                            agencia: "0000",
+                                            cajero: "0000",
+                                        });
+                                        onOpen();
+                                    }}
                                 >
                                     Registrar Voucher Manual
                                 </Button>
@@ -787,7 +849,9 @@ export default function CargarVoucher() {
                 <ModalContent>
                     {(onClose) => (
                         <>
-                            <ModalHeader className="flex flex-col gap-1">Registrar Voucher Manual</ModalHeader>
+                            <ModalHeader className="flex flex-col gap-1">
+                                {isEditing ? "Editar Voucher" : "Registrar Voucher Manual"}
+                            </ModalHeader>
                             <ModalBody>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <Input
@@ -804,6 +868,7 @@ export default function CargarVoucher() {
                                     <Input
                                         label="Nombre Completo"
                                         placeholder="Ingrese Nombre Completo"
+                                        isReadOnly={isEditing}
                                         value={manualVoucher.nombre_completo}
                                         onValueChange={(val) => setManualVoucher({ ...manualVoucher, nombre_completo: val })}
                                     />
@@ -811,6 +876,7 @@ export default function CargarVoucher() {
                                         <Select
                                             label="Tipo de Pago"
                                             selectedKey={tipoPago}
+                                            isDisabled={isEditing}
                                             onSelectionChange={(val) => {
                                                 setTipoPago(val || "");
                                             }}
@@ -824,6 +890,7 @@ export default function CargarVoucher() {
                                         <Select
                                             label="Concepto de Pago"
                                             selectedKey={manualVoucher.concepto_pago_id?.toString() || ""}
+                                            isDisabled={isEditing}
                                             onSelectionChange={(val) => {
                                                 handleConceptoChange(val);
                                             }}
@@ -837,6 +904,7 @@ export default function CargarVoucher() {
                                         label="Número de Voucher"
                                         placeholder={tipoPago === "BN" ? "7 dígitos" : "6 dígitos"}
                                         maxLength={tipoPago === "BN" ? 7 : 6}
+                                        isReadOnly={isEditing}
                                         value={manualVoucher.numero}
                                         onValueChange={(val) => setManualVoucher({ ...manualVoucher, numero: val })}
                                     />
@@ -844,12 +912,14 @@ export default function CargarVoucher() {
                                         label="Monto"
                                         type="number"
                                         placeholder="0.00"
+                                        isReadOnly={isEditing}
                                         value={manualVoucher.monto}
                                         onValueChange={(val) => setManualVoucher({ ...manualVoucher, monto: val })}
                                     />
                                     <Input
                                         label="Fecha de Pago"
                                         type="date"
+                                        isReadOnly={isEditing}
                                         value={manualVoucher.fecha_pago}
                                         onChange={(e) => setManualVoucher({ ...manualVoucher, fecha_pago: e.target.value })}
                                     />
@@ -857,6 +927,7 @@ export default function CargarVoucher() {
                                         label="Hora de Pago"
                                         type="time"
                                         step="1"
+                                        isReadOnly={isEditing}
                                         value={manualVoucher.hora_pago}
                                         onValueChange={(val) => setManualVoucher({ ...manualVoucher, hora_pago: val })}
                                     />
@@ -864,6 +935,7 @@ export default function CargarVoucher() {
                                         label="Cajero"
                                         placeholder="4 dígitos"
                                         maxLength={4}
+                                        isReadOnly={isEditing}
                                         value={manualVoucher.cajero}
                                         onValueChange={(val) => setManualVoucher({ ...manualVoucher, cajero: val })}
                                     />
@@ -871,6 +943,7 @@ export default function CargarVoucher() {
                                         label="Agencia"
                                         placeholder="4 dígitos"
                                         maxLength={4}
+                                        isReadOnly={isEditing}
                                         value={manualVoucher.agencia}
                                         onValueChange={(val) => setManualVoucher({ ...manualVoucher, agencia: val })}
                                     />
@@ -881,7 +954,7 @@ export default function CargarVoucher() {
                                     Cancelar
                                 </Button>
                                 <Button color="primary" onPress={handleSaveManual} isLoading={isSaving}>
-                                    Registrar Voucher
+                                    {isEditing ? "Actualizar Voucher" : "Registrar Voucher"}
                                 </Button>
                             </ModalFooter>
                         </>
