@@ -84,7 +84,17 @@ export default function GraphicSummaryInscritos({ inscripciones, loading }) {
 
         // Agrupamos las inscripciones por fecha (`created_at`) y por programa
         const grouped = inscripciones.reduce((acc, item) => {
-            const dateObj = new Date(item.created_at);
+            let dateObj;
+            const dateStr = item.created_at;
+
+            // Si es un string de fecha simple (10 caracteres YYYY-MM-DD),
+            // forzamos el mediodía para evitar saltos de día por zona horaria
+            if (typeof dateStr === "string" && dateStr.length === 10 && !dateStr.includes("T")) {
+                dateObj = new Date(`${dateStr}T12:00:00`);
+            } else {
+                dateObj = new Date(dateStr);
+            }
+
             if (isNaN(dateObj.getTime())) return acc;
 
             const dateKey = `${dateObj.getFullYear()}-${String(
