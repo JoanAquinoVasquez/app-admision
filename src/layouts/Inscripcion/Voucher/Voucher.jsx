@@ -234,9 +234,9 @@ export default function CargarVoucher() {
 
         try {
             setIsSearchingDni(true);
-            const response = await dniApi.search(dni);
-            if (response.success && response.data) {
-                const { nombres, apellidoPaterno, apellidoMaterno } = response.data;
+            const data = await dniApi.search(dni);
+            if (data && data.nombres) {
+                const { nombres, apellidoPaterno, apellidoMaterno } = data;
                 setManualVoucher((prev) => ({
                     ...prev,
                     nombre_completo: `${nombres} ${apellidoPaterno} ${apellidoMaterno}`.trim(),
