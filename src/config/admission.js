@@ -1,8 +1,7 @@
 export const admissionConfig = {
     cronograma: {
-        examen_admision: 'domingo 17 de Mayo',
-        inicio_conceptos: '23 de Mayo',
-        fecha_fin_inscricion: '13 de Mayo',
+        examen_admision: 'domingo 28 de Junio',
+        fecha_fin_inscricion: '24 de Junio',
         periodo: '2026-I',
         etapa_manual: 'INSCRIPCION', // Valores: 'PREINSCRIPCION', 'INSCRIPCION', 'CERRADO', 'STANDBY' o null
         fechas_control: {
@@ -12,14 +11,14 @@ export const admissionConfig = {
 
             // Inscripción
             inicio_inscripcion: '2026-02-02',
-            fin_inscripcion: '2026-05-13',
+            fin_inscripcion: '2026-06-24',
 
             // Evaluación (Examen y Entrevista)
-            inicio_evaluacion: '2026-05-14',
-            fin_evaluacion: '2026-05-16',
+            inicio_evaluacion: '2026-06-24',
+            fin_evaluacion: '2026-06-28',
 
             // Resultados
-            resultados_publicacion: '2026-05-20',
+            resultados_publicacion: '2026-06-30',
         }
     }
 };
