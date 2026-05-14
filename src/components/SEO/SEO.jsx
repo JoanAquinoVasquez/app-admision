@@ -51,10 +51,21 @@ const SEO = ({
   ].join(', ');
 
   // Final Canonical URL
+  const baseAppPath = '/admision-epg';
   const currentPath = window.location.pathname;
-  const finalCanonical = canonicalUrl 
-    ? (canonicalUrl.startsWith('http') ? canonicalUrl : `${productionDomain}${canonicalUrl.startsWith('/') ? '' : '/admision-epg/'}${canonicalUrl}`)
-    : `${productionDomain}${currentPath}`;
+  
+  let finalCanonical = canonicalUrl;
+  if (finalCanonical) {
+      if (!finalCanonical.startsWith('http')) {
+          // Si no tiene el baseAppPath, se lo agregamos
+          if (!finalCanonical.startsWith(baseAppPath)) {
+              finalCanonical = `${baseAppPath}${finalCanonical.startsWith('/') ? '' : '/'}${finalCanonical}`;
+          }
+          finalCanonical = `${productionDomain}${finalCanonical}`;
+      }
+  } else {
+      finalCanonical = `${productionDomain}${currentPath}`;
+  }
 
   return (
     <Helmet>

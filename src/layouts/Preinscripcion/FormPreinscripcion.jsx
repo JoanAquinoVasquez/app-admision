@@ -21,6 +21,7 @@ import fecha_examen from "../../assets/Img/fecha_examen.webp";
 import logoWithTextImage from "../../assets/Isotipos/isotipo_color_epg.webp";
 import { useMemo } from "react";
 import { admissionConfig, getAdmissionStage } from "../../config/admission";
+import SEO from "../../components/SEO/SEO";
 
 // DATOS ESTÁTICOS (Slides del Carrusel)
 
@@ -201,6 +202,11 @@ export default function FormularioUnificado({ isAdmin = false, isModal = false }
 
     return (
         <Fondo>
+            <SEO
+                title="Preinscripción de Postulante"
+                description="Inicia tu proceso de admisión realizando la preinscripción en línea. Elige tu programa de interés y registra tus datos preliminares."
+                canonicalUrl="/preinscripcion"
+            />
             {content}
             <Chatbot />
         </Fondo>

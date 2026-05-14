@@ -61,6 +61,7 @@ export default function Index() {
                 title="Admisión 2026-I"
                 description="Matrícula, preinscripción e inscripción para programas de Maestría, Doctorado y Segundas Especialidades en la Escuela de Posgrado UNPRG."
                 keywords="admisión 2026, posgrado UNPRG, maestría, doctorado, segunda especialidad, inscripción, preinscripción, matricula"
+                canonicalUrl="/"
                 ogTitle="Admisión EPG UNPRG 2026-I | Maestría, Doctorado y Segundas Especialidades"
                 ogDescription="Matrícula y proceso de admisión para programas de posgrado. Conoce los requisitos, cronograma y pasos para inscribirte en la EPG UNPRG."
             />

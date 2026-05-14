@@ -14,6 +14,7 @@ import conceptos_inscripcion from "../../assets/Img/conceptos_inscripcion.webp";
 import InscripcionForm from "./IndexValidacion";
 import { StepIndicator } from "../Preinscripcion/components/StepIndicator";
 import { admissionConfig, getAdmissionStage } from "../../config/admission";
+import SEO from "../../components/SEO/SEO";
 
 // Componentes extraídos
 import VistaFinalizada from "./components/VistaFinalizada";
@@ -56,6 +57,11 @@ export default function FormularioInscripcion() {
 
     return (
         <Fondo>
+            <SEO
+                title="Inscripción de Postulante"
+                description="Realiza tu inscripción oficial al proceso de admisión de la Escuela de Posgrado UNPRG. Valida tu pago y registra tus datos de postulante."
+                canonicalUrl="/inscripcion"
+            />
             <ChatBot />
 
             <div className="relative flex flex-col md:flex-row bg-white rounded-xl shadow-2xl w-[98%] max-w-[1600px] mx-auto overflow-hidden my-auto min-h-[92vh] lg:h-[92vh] transition-all">
