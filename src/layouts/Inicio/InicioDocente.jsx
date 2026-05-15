@@ -105,7 +105,11 @@ function InicioDocente() {
                 setPostulantesPorPagina(5);  // Pantallas compactas
             }
 
-            setProgramasPorPagina(5);
+            if (alto > 850) {
+                setProgramasPorPagina(8); // Monitor grande
+            } else {
+                setProgramasPorPagina(5); // Laptop
+            }
         };
 
         actualizarCapacidad();
@@ -172,13 +176,13 @@ function InicioDocente() {
             const res = await axios.get(`/postulantes-programa/${id}`);
             const data = res.data.data;
             const postulantesMapeados = data.map(item => item.postulante);
-            
+
             // Ordenar alfabéticamente de forma estricta por Apellidos y Nombres (limpiando espacios)
             postulantesMapeados.sort((a, b) => {
                 const cleanName = (p) => `${p.ap_paterno || ''} ${p.ap_materno || ''} ${p.nombres || ''}`.replace(/\s+/g, ' ').trim().toLowerCase();
                 return cleanName(a).localeCompare(cleanName(b), 'es', { sensitivity: 'base' });
             });
-            
+
             setPostulantes(postulantesMapeados);
 
             // Mapear notas y fotos
@@ -318,7 +322,7 @@ function InicioDocente() {
                                         <Skeleton className="h-4 w-1/2 rounded-md mt-1" />
                                     </div>
                                 </div>
-                                
+
                                 {/* Skeleton Métricas */}
                                 <div className="flex-1 px-6 py-6 lg:px-8 bg-slate-50 border-t border-slate-100 flex flex-col justify-center gap-4">
                                     <Skeleton className="h-20 lg:h-24 w-full rounded-2xl" />
@@ -467,29 +471,28 @@ function InicioDocente() {
                                                     <div
                                                         key={prog.id_programa}
                                                         onClick={() => handleSeleccionarPrograma(prog.id_programa)}
-                                                        className={`p-2 rounded-xl cursor-pointer transition-all border-l-6 ${isSelected
-                                                            ? "bg-blue-50 border-blue-600 shadow-md"
-                                                            : "bg-white border-transparent hover:bg-gray-100"
+                                                        className={`p-3 rounded-lg cursor-pointer transition-all border-l-4 ${isSelected
+                                                            ? "bg-blue-50 border-blue-600 shadow-sm"
+                                                            : "bg-white border-transparent hover:bg-gray-50"
                                                             }`}
                                                     >
-                                                        <div>
-                                                            <Tooltip content={prog.nombre_grado}>
-                                                                <span className={`font-semibold text-md ${isSelected ? 'text-blue-700' : 'text-gray-700'}`}>
-                                                                    {prog.nombre_grado.charAt(0).toUpperCase() + prog.nombre_grado.slice(1).toLowerCase()}
-                                                                </span>
-                                                            </Tooltip>
-                                                            <Tooltip content={prog.nombre_grado.charAt(0).toUpperCase() + prog.nombre_grado.slice(1).toLowerCase() + " en " + prog.nombre_programa}>
-                                                                <span className="text-md text-gray-500 ml-1">
-                                                                    {"en " + prog.nombre_programa}
-                                                                </span>
+                                                        <div className="mb-2">
+                                                            <Tooltip content={`${prog.nombre_grado.charAt(0).toUpperCase() + prog.nombre_grado.slice(1).toLowerCase()} en ${prog.nombre_programa}`}>
+                                                                <div className="line-clamp-1">
+                                                                    <span className={`text-md font-semibold ${isSelected ? 'text-blue-800' : 'text-gray-800'}`}>
+                                                                        {prog.nombre_grado.charAt(0).toUpperCase() + prog.nombre_grado.slice(1).toLowerCase()}
+                                                                    </span>
+                                                                    <span className="text-md text-gray-500 ml-1">
+                                                                        en {prog.nombre_programa}
+                                                                    </span>
+                                                                </div>
                                                             </Tooltip>
                                                         </div>
 
-                                                        {/* Barra de Progreso Mini */}
-                                                        <div key={i} className="flex items-center justify-between p-4 bg-slate-50/80 rounded-2xl border border-slate-100 h-[72px]">
-
-                                                            <span>Progreso</span>
-                                                            <span>{prog.con_nota}/{total}</span>
+                                                        {/* Barra de Progreso Mini (Comprimida) */}
+                                                        <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+                                                            <span className="font-medium">Progreso</span>
+                                                            <span>{prog.con_nota}/{total} ({Math.round(porcentaje)}%)</span>
                                                         </div>
                                                         <Progress
                                                             size="sm"
@@ -642,7 +645,7 @@ function InicioDocente() {
                                                 <tr>
                                                     <th className="px-4 align-middle text-center text-slate-500 font-black text-[10px] uppercase tracking-[0.2em] h-12 border-b border-slate-200 w-16 hidden sm:table-cell first:rounded-tl-[2rem]">N°</th>
                                                     <th className="px-4 align-middle text-left text-slate-500 font-black text-[10px] uppercase tracking-[0.2em] h-12 border-b border-slate-200">POSTULANTE</th>
-                                                    <th className="px-4 align-middle text-center text-slate-500 font-black text-[10px] uppercase tracking-[0.2em] h-12 border-b border-slate-200 w-48 lg:w-64">{isEntrevista ? "NOTA ENTREVISTA" : "NOTA CV"}</th>
+                                                    <th className="px-4 align-middle text-center text-slate-500 font-black text-[10px] uppercase tracking-[0.2em] h-12 border-b border-slate-200 w-48 lg:w-64">{isEntrevista ? "NOTA ENTREVISTA" : "NOTA CV (máx " + maxNota + ")"}</th>
                                                     <th className="px-4 align-middle text-center text-slate-500 font-black text-[10px] uppercase tracking-[0.2em] h-12 border-b border-slate-200 w-24 last:rounded-tr-[2rem]">ACCIONES</th>
                                                 </tr>
                                             </thead>
@@ -676,7 +679,7 @@ function InicioDocente() {
                                                                         avatarProps={{
                                                                             src: fotos[postulante.id] || `https://ui-avatars.com/api/?name=${postulante.nombres}+${postulante.ap_paterno}&background=3B82F6&color=FFFFFF&bold=true`,
                                                                             className: "shadow-md border-2 border-white ring-1 ring-blue-100 w-10 h-10 lg:w-12 lg:h-12 text-large shrink-0 bg-blue-50",
-                                                                            style: { width: 40, height: 40 }
+                                                                            style: { width: 60, height: 60 }
                                                                         }}
                                                                     />
                                                                 </td>

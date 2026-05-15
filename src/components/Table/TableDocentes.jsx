@@ -43,6 +43,7 @@ import axios from "../../axios";
 import useDocentes from "../../data/Docentes/dataDocentes";
 import ModalConfirm from "../Modal/Confirmation/ModalConfirm";
 import { useTableFilters } from "../../hooks/useTableFilters";
+import M_NewDocente from "../../layouts/Docente/Docente/M_NewDocente";
 
 export const columns = [
     { name: "ID", uid: "id", sortable: true },
@@ -69,9 +70,6 @@ export default function TableDocentes() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [selectedDocente, setSelectedDocente] = useState(null);
-    const [modo, setModo] = useState("nuevo"); // "nuevo" o "editar"
-    const [showPassword, setShowPassword] = useState(false);
-    const [loadingGuardado, setLoadingGuardado] = useState(false);
 
     // Filtro adicional por tipo
     const [tipoFilter, setTipoFilter] = useState("all");
@@ -96,86 +94,39 @@ export default function TableDocentes() {
         }
     });
 
-    // Form states
-    const [formData, setFormData] = useState({
-        nombres: "",
-        ap_paterno: "",
-        ap_materno: "",
-        dni: "",
-        email: "",
-        password: "",
-        tipo: "cv",
-    });
-
     const handleOpenModal = (docente = null) => {
-        if (docente) {
-            setModo("editar");
-            setSelectedDocente(docente);
-            setFormData({
-                nombres: docente.nombres,
-                ap_paterno: docente.ap_paterno,
-                ap_materno: docente.ap_materno,
-                dni: docente.dni,
-                email: docente.email,
-                password: "",
-                tipo: docente.tipo,
-            });
-        } else {
-            setModo("nuevo");
-            setSelectedDocente(null);
-            setFormData({
-                nombres: "",
-                ap_paterno: "",
-                ap_materno: "",
-                dni: "",
-                email: "",
-                password: "",
-                tipo: "cv",
-            });
-        }
+        setSelectedDocente(docente);
         setIsModalOpen(true);
     };
 
-    const handleFormChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: name === 'email' ? value.toLowerCase() : value.toUpperCase()
-        }));
-    };
-
-    const handleSave = async () => {
-        // Validaciones básicas
-        if (!formData.nombres || !formData.ap_paterno || !formData.ap_materno || !formData.dni || !formData.email) {
-            toast.error("Por favor, completa todos los campos obligatorios");
-            return;
-        }
-
-        if (modo === "nuevo" && !formData.password) {
-            toast.error("La contraseña es obligatoria para nuevos docentes");
-            return;
-        }
-
-        setLoadingGuardado(true);
+    const handleSave = async (data, modo) => {
         try {
             if (modo === "nuevo") {
-                await axios.post("/docentes", formData);
+                await axios.post("/docentes", data);
                 toast.success("Docente creado exitosamente");
             } else {
-                const updateData = { ...formData };
+                const updateData = { ...data };
                 if (!updateData.password) delete updateData.password; // No actualizar password si está vacía
-                await axios.post(`/docentes/${selectedDocente.id}`, updateData);
+                await axios.post(`/docentes/${data.id}`, updateData);
                 toast.success("Docente actualizado exitosamente");
             }
             setIsModalOpen(false);
             refetch();
         } catch (error) {
-            const msg = error.response?.data?.message || "Ocurrió un error al guardar";
+            const data = error.response?.data;
+            let msg = data?.message || "Ocurrió un error al guardar";
+            
+            // Si hay errores de validación, extraer el primero
+            if (data?.errors && Object.keys(data.errors).length > 0) {
+                const firstErrorKey = Object.keys(data.errors)[0];
+                msg = data.errors[firstErrorKey][0];
+            }
+            
             toast.error(msg);
-        } finally {
-            setLoadingGuardado(false);
         }
     };
+
+
 
     const handleToggleEstado = (docente) => {
         setSelectedDocente(docente);
@@ -417,108 +368,12 @@ export default function TableDocentes() {
                 )}
             </Table>
 
-            {/* Modal de CRUD */}
-            <Modal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                size="3xl"
-                backdrop="blur"
-            >
-                <ModalContent>
-                    <ModalHeader className="flex flex-col gap-1 text-slate-800">
-                        {modo === "nuevo" ? "Registrar Nuevo Docente" : "Editar Datos del Docente"}
-                    </ModalHeader>
-                    <ModalBody>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <Input
-                                label="Nombres"
-                                name="nombres"
-                                value={formData.nombres}
-                                onChange={handleFormChange}
-                                isRequired
-                                variant="bordered"
-                                className="uppercase"
-                            />
-                            <div className="grid grid-cols-2 gap-2">
-                                <Input
-                                    label="Ap. Paterno"
-                                    name="ap_paterno"
-                                    value={formData.ap_paterno}
-                                    onChange={handleFormChange}
-                                    isRequired
-                                    variant="bordered"
-                                />
-                                <Input
-                                    label="Ap. Materno"
-                                    name="ap_materno"
-                                    value={formData.ap_materno}
-                                    onChange={handleFormChange}
-                                    isRequired
-                                    variant="bordered"
-                                />
-                            </div>
-                            <Input
-                                label="DNI"
-                                name="dni"
-                                maxLength={8}
-                                value={formData.dni}
-                                onChange={handleFormChange}
-                                isRequired
-                                variant="bordered"
-                            />
-                            <Input
-                                label="Correo Electrónico"
-                                name="email"
-                                type="email"
-                                value={formData.email}
-                                onChange={handleFormChange}
-                                isRequired
-                                variant="bordered"
-                            />
-                            <Select
-                                label="Tipo de Evaluación"
-                                name="tipo"
-                                selectedKeys={[formData.tipo]}
-                                onChange={(e) => setFormData(p => ({ ...p, tipo: e.target.value }))}
-                                variant="bordered"
-                                isRequired
-                            >
-                                <SelectItem key="cv" value="cv">Evaluador por Expediente (CV)</SelectItem>
-                                <SelectItem key="entrevista" value="entrevista">Evaluador por Entrevista</SelectItem>
-                            </Select>
-                            <div className="relative">
-                                <Input
-                                    label={modo === "editar" ? "Nueva Contraseña (opcional)" : "Contraseña"}
-                                    name="password"
-                                    type={showPassword ? "text" : "password"}
-                                    value={formData.password}
-                                    onChange={handleFormChange}
-                                    variant="bordered"
-                                    isRequired={modo === "nuevo"}
-                                />
-                                <button
-                                    className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 outline-none"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                >
-                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                                </button>
-                            </div>
-                        </div>
-                        <Divider className="my-2" />
-                        <p className="text-xs text-slate-500 italic">
-                            {modo === "editar" ? "* Deje la contraseña en blanco si no desea cambiarla." : "* La contraseña será requerida para el primer inicio de sesión del docente."}
-                        </p>
-                    </ModalBody>
-                    <ModalFooter>
-                        <Button color="danger" variant="light" onPress={() => setIsModalOpen(false)} isDisabled={loadingGuardado}>
-                            Cancelar
-                        </Button>
-                        <Button color="primary" onPress={handleSave} isLoading={loadingGuardado}>
-                            {modo === "nuevo" ? "Crear Docente" : "Guardar Cambios"}
-                        </Button>
-                    </ModalFooter>
-                </ModalContent>
-            </Modal>
+            <M_NewDocente 
+                isOpen={isModalOpen} 
+                onClose={() => setIsModalOpen(false)} 
+                onSave={handleSave} 
+                docenteToEdit={selectedDocente} 
+            />
 
             {/* Modal de Confirmación para Inhabilitar */}
             <ModalConfirm

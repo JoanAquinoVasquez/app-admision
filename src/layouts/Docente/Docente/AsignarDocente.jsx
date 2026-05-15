@@ -182,7 +182,16 @@ function AsignarDocente() {
                 fetchDocentes();
             }
         } catch (error) {
-            toast.error(error.response?.data?.message || "Error al agregar docente");
+            const data = error.response?.data;
+            let msg = data?.message || "Error al agregar docente";
+            
+            // Si hay errores de validación, extraer el primero
+            if (data?.errors && Object.keys(data.errors).length > 0) {
+                const firstErrorKey = Object.keys(data.errors)[0];
+                msg = data.errors[firstErrorKey][0];
+            }
+            
+            toast.error(msg);
         }
     };
 
