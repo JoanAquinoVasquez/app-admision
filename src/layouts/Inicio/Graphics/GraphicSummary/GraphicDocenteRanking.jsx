@@ -32,8 +32,13 @@ export default function GraphicDocenteRanking() {
 
                 return { fullName, shortName, firstNames, total, evaluados, pendientes, pct };
             })
-            // Ordenar ASC por % → los cuellos de botella arriba
-            .sort((a, b) => a.pct - b.pct);
+             // Ordenar DESC por % (mayor avance primero), y si hay empate, por mayor número de inscritos (total)
+             .sort((a, b) => {
+                 if (b.pct !== a.pct) {
+                     return b.pct - a.pct;
+                 }
+                 return b.total - a.total;
+             });
     }, [docenteResumen, activeTab]);
 
     const getBarColor = (pct) => {

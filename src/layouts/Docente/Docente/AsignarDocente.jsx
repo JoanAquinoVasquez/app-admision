@@ -52,6 +52,7 @@ function AsignarDocente() {
     const [searchQuery, setSearchQuery] = useState("");
     const [gradoFilter, setGradoFilter] = useState("all");
     const [statusFilter, setStatusFilter] = useState("all");
+    const [docenteFilter, setDocenteFilter] = useState("all");
     const [isSaving, setIsSaving] = useState(false);
     const [modalAbierto, setModalAbierto] = useState(false);
     const [pendingChanges, setPendingChanges] = useState({});
@@ -94,19 +95,37 @@ function AsignarDocente() {
             // Regla de Visibilidad: CV ve todos, Entrevista solo programas con estado 1
             const matchesPhaseVisibility = selectedTab === "cv" || (selectedTab === "entrevista" && String(p.estado) === "1") || selectedTab === "global";
 
-            let matchesStatus = true;
-            if (statusFilter === "pending") {
-                matchesStatus = selectedTab === "cv" ? !p.docente_id : !p.docente_entrevista_id;
-            } else if (statusFilter === "completed") {
-                matchesStatus = selectedTab === "cv" ? !!p.docente_id : !!p.docente_entrevista_id;
-            } else if (statusFilter === "both_pending") {
-                matchesStatus = !p.docente_id || !p.docente_entrevista_id;
+            let matchesDocente = true;
+            if (selectedTab === "cv") {
+                if (docenteFilter === "unassigned") {
+                    matchesDocente = !p.docente_id;
+                } else if (docenteFilter !== "all") {
+                    matchesDocente = String(p.docente_id) === String(docenteFilter);
+                }
             }
 
-            return matchesSearch && matchesGrado && matchesStatus && matchesPhaseVisibility;
-        }).sort((a, b) => a.nombre.localeCompare(b.nombre));
+            let matchesStatus = true;
+            if (selectedTab !== "cv") {
+                if (statusFilter === "pending") {
+                    matchesStatus = selectedTab === "cv" ? !p.docente_id : !p.docente_entrevista_id;
+                } else if (statusFilter === "completed") {
+                    matchesStatus = selectedTab === "cv" ? !!p.docente_id : !!p.docente_entrevista_id;
+                } else if (statusFilter === "both_pending") {
+                    matchesStatus = !p.docente_id || !p.docente_entrevista_id;
+                }
+            }
 
-    }, [programas, pendingChanges, searchQuery, gradoFilter, statusFilter, selectedTab]);
+            return matchesSearch && matchesGrado && matchesStatus && matchesDocente && matchesPhaseVisibility;
+        }).sort((a, b) => {
+            const inscritosA = a.inscripciones_count ?? 0;
+            const inscritosB = b.inscripciones_count ?? 0;
+            if (inscritosB !== inscritosA) {
+                return inscritosB - inscritosA;
+            }
+            return a.nombre.localeCompare(b.nombre);
+        });
+
+    }, [programas, pendingChanges, searchQuery, gradoFilter, statusFilter, docenteFilter, selectedTab]);
 
     // Lógica de paginación
     const pages = Math.ceil(filteredProgramas.length / rowsPerPage);
@@ -131,10 +150,17 @@ function AsignarDocente() {
     }, [programas, pendingChanges]);
 
 
+    // Resetear página y filtros al cambiar de pestaña
+    useEffect(() => {
+        setPage(1);
+        setStatusFilter("all");
+        setDocenteFilter("all");
+    }, [selectedTab]);
+
     // Resetear página al filtrar o cambiar pestaña
     useEffect(() => {
         setPage(1);
-    }, [searchQuery, gradoFilter, statusFilter, selectedTab]);
+    }, [searchQuery, gradoFilter, statusFilter, docenteFilter]);
 
 
     const handleAssignmentChange = (programaId, field, value) => {
@@ -224,6 +250,9 @@ function AsignarDocente() {
                         <div className="text-slate-700 font-medium leading-tight">
                             {capitalize(programa.grado?.nombre)} en {programa.nombre}
                         </div>
+                        <span className="text-xs text-slate-500 font-normal mt-0.5">
+                            {programa.inscripciones_count ?? 0} {(programa.inscripciones_count ?? 0) === 1 ? 'inscrito' : 'inscritos'}
+                        </span>
                     </div>
                 );
             case "eval-cv":
@@ -343,13 +372,25 @@ function AsignarDocente() {
                                 {grados.map(g => <SelectItem key={String(g.id)}>{g.nombre}</SelectItem>)}
                             </Select>
                         </div>
-                        <div className="md:col-span-3">
-                            <Select placeholder="Estado" selectedKeys={[statusFilter]} onSelectionChange={(k) => setStatusFilter(Array.from(k)[0])} variant="bordered">
-                                <SelectItem key="all">Todos los estados</SelectItem>
-                                <SelectItem key="pending">Pendientes</SelectItem>
-                                <SelectItem key="completed">Completados</SelectItem>
-                            </Select>
-                        </div>
+                        {selectedTab === "cv" ? (
+                            <div className="md:col-span-3">
+                                <Select placeholder="Docente Evaluador" selectedKeys={[docenteFilter]} onSelectionChange={(k) => setDocenteFilter(Array.from(k)[0])} variant="bordered">
+                                    <SelectItem key="all">Todos los docentes</SelectItem>
+                                    <SelectItem key="unassigned">Sin asignar</SelectItem>
+                                    {docentesCV.map(d => (
+                                        <SelectItem key={String(d.id)}>{`${d.ap_paterno} ${d.ap_materno}, ${d.nombres}`}</SelectItem>
+                                    ))}
+                                </Select>
+                            </div>
+                        ) : (
+                            <div className="md:col-span-3">
+                                <Select placeholder="Estado" selectedKeys={[statusFilter]} onSelectionChange={(k) => setStatusFilter(Array.from(k)[0])} variant="bordered">
+                                    <SelectItem key="all">Todos los estados</SelectItem>
+                                    <SelectItem key="pending">Pendientes</SelectItem>
+                                    <SelectItem key="completed">Completados</SelectItem>
+                                </Select>
+                            </div>
+                        )}
                         <div className="md:col-span-2 flex items-center justify-end">
                             <Chip variant="flat" color="primary" className="font-semibold">{filteredProgramas.length} Programas</Chip>
                         </div>

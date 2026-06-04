@@ -58,7 +58,7 @@ export default function TableEvaluacionComponent({ resumenEvaluacion, loading })
     }, []);
 
     const [sortDescriptor, setSortDescriptor] = useState({
-        column: "evaluados_cv",
+        column: "avance_pct",
         direction: "descending",
     });
     const [page, setPage] = useState(1);
@@ -71,18 +71,27 @@ export default function TableEvaluacionComponent({ resumenEvaluacion, loading })
             return apellidos.toLowerCase().replace(/(^\w|\s\w|ó|í|á|é|ú|ñ)/g, m => m.toUpperCase());
         };
 
-        return resumenEvaluacion.map((item, index) => ({
-            id: `${item.id || 'item'}-${index}`,
-            grado_programa: String(item.grado_programa || ""),
-            facultad: String(item.facultad || "Sin Área"),
-            aptos: Number(item.aptos || 0),
-            evaluados_cv: Number(item.evaluados_cv || 0),
-            evaluados_entrevista: Number(item.evaluados_entrevista || 0),
-            cobertura_cv: Number(item.cobertura_cv || 0),
-            cobertura_entrevista: Number(item.cobertura_entrevista || 0),
-            docente_cv: formatName(item.docente_cv_apellidos),
-            docente_entrevista: formatName(item.docente_entrevista_apellidos),
-        }));
+        return resumenEvaluacion.map((item, index) => {
+            const aptos = Number(item.aptos || 0);
+            const cobertura_cv = Number(item.cobertura_cv || 0);
+            const cobertura_entrevista = Number(item.cobertura_entrevista || 0);
+            const avance_pct = (cobertura_cv + cobertura_entrevista) / 2;
+
+            return {
+                id: `${item.id || 'item'}-${index}`,
+                grado_programa: String(item.grado_programa || ""),
+                facultad: String(item.facultad || "Sin Área"),
+                inscritos: Number(item.inscritos || 0),
+                aptos: aptos,
+                evaluados_cv: Number(item.evaluados_cv || 0),
+                evaluados_entrevista: Number(item.evaluados_entrevista || 0),
+                cobertura_cv: cobertura_cv,
+                cobertura_entrevista: cobertura_entrevista,
+                avance_pct: avance_pct,
+                docente_cv: formatName(item.docente_cv_apellidos),
+                docente_entrevista: formatName(item.docente_entrevista_apellidos),
+            };
+        });
     }, [resumenEvaluacion]);
 
     const filteredItems = useMemo(() => {
@@ -101,10 +110,31 @@ export default function TableEvaluacionComponent({ resumenEvaluacion, loading })
 
     const sortedItems = useMemo(() => {
         return [...filteredItems].sort((a, b) => {
-            const first = a[sortDescriptor.column];
-            const second = b[sortDescriptor.column];
-            const cmp = first < second ? -1 : first > second ? 1 : 0;
-            return sortDescriptor.direction === "descending" ? -cmp : cmp;
+            let first = a[sortDescriptor.column];
+            let second = b[sortDescriptor.column];
+
+            if (sortDescriptor.column === "evaluados_cv") {
+                first = a.cobertura_cv;
+                second = b.cobertura_cv;
+            } else if (sortDescriptor.column === "evaluados_entrevista") {
+                first = a.cobertura_entrevista;
+                second = b.cobertura_entrevista;
+            }
+
+            if (first !== second) {
+                const cmp = first < second ? -1 : first > second ? 1 : 0;
+                return sortDescriptor.direction === "descending" ? -cmp : cmp;
+            }
+
+            // Tie breaker: sort by most enrolled/inscritos descending
+            const insA = a.inscritos;
+            const insB = b.inscritos;
+            if (insA !== insB) {
+                return sortDescriptor.direction === "descending" ? insB - insA : insA - insB;
+            }
+
+            // Secondary tie breaker
+            return a.grado_programa.localeCompare(b.grado_programa);
         });
     }, [filteredItems, sortDescriptor]);
 
@@ -213,8 +243,18 @@ export default function TableEvaluacionComponent({ resumenEvaluacion, loading })
                         )}
                     </TableHeader>
                     <TableBody
+                        emptyContent={
+                            loading ? (
+                                <div className="flex flex-col gap-2 w-full p-2">
+                                    <Skeleton className="h-10 w-full rounded-lg" />
+                                    <Skeleton className="h-10 w-full rounded-lg" />
+                                    <Skeleton className="h-10 w-full rounded-lg" />
+                                    <Skeleton className="h-10 w-full rounded-lg" />
+                                    <Skeleton className="h-10 w-full rounded-lg" />
+                                </div>
+                            ) : "No hay datos"
+                        }
                         items={loading ? [] : items}
-                        emptyContent={loading ? "Cargando..." : "No hay datos"}
                     >
                         {(item) => (
                             <TableRow key={item.id}>
