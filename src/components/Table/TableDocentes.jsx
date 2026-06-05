@@ -231,12 +231,12 @@ export default function TableDocentes() {
         if (loading && docentes.length === 0) {
             return (
                 <div className="flex flex-col gap-4">
-                    <div className="flex flex-col sm:flex-row justify-between gap-3 items-end">
-                        <div className="flex gap-2 w-full sm:max-w-2xl">
+                    <div className="flex flex-col sm:flex-row justify-between gap-3 items-stretch sm:items-end">
+                        <div className="flex flex-col sm:flex-row gap-2 w-full sm:max-w-2xl">
                             <Skeleton className="w-full h-10 rounded-lg" />
-                            <Skeleton className="w-[200px] h-10 rounded-lg" />
+                            <Skeleton className="w-full sm:w-[200px] h-10 rounded-lg" />
                         </div>
-                        <Skeleton className="w-[160px] h-10 rounded-lg" />
+                        <Skeleton className="w-full sm:w-[160px] h-10 rounded-lg" />
                     </div>
                 </div>
             );
@@ -244,8 +244,8 @@ export default function TableDocentes() {
 
         return (
             <div className="flex flex-col gap-4">
-                <div className="flex flex-col sm:flex-row justify-between gap-3 items-end">
-                    <div className="flex gap-2 w-full sm:max-w-2xl">
+                <div className="flex flex-col sm:flex-row justify-between gap-3 items-stretch sm:items-end">
+                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:max-w-2xl">
                         <Input
                             isClearable
                             className="w-full"
@@ -257,7 +257,7 @@ export default function TableDocentes() {
                             variant="bordered"
                         />
                         <Select
-                            className="max-w-[200px]"
+                            className="w-full sm:max-w-[200px]"
                             placeholder="Tipo Docente"
                             selectedKeys={[tipoFilter]}
                             onSelectionChange={(keys) => setTipoFilter(Array.from(keys)[0])}
@@ -268,11 +268,11 @@ export default function TableDocentes() {
                             <SelectItem key="entrevista">Entrevista</SelectItem>
                         </Select>
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex gap-3 w-full sm:w-auto justify-end">
                         <Button
                             color="primary"
                             endContent={<Plus size={20} />}
-                            className="font-bold h-10 px-6"
+                            className="font-bold h-10 px-6 w-full sm:w-auto"
                             onPress={() => handleOpenModal()}
                         >
                             Nuevo Docente
@@ -286,7 +286,7 @@ export default function TableDocentes() {
     const bottomContent = useMemo(() => {
         if (loading && docentes.length === 0) {
             return (
-                <div className="py-2 px-2 flex justify-between items-center">
+                <div className="py-2 px-2 flex flex-col sm:flex-row gap-3 justify-between items-center">
                     <Skeleton className="w-[150px] h-5 rounded-lg" />
                     <Skeleton className="w-[300px] h-8 rounded-lg" />
                 </div>
@@ -294,7 +294,7 @@ export default function TableDocentes() {
         }
 
         return (
-            <div className="py-2 px-2 flex justify-between items-center">
+            <div className="py-2 px-2 flex flex-col sm:flex-row gap-3 justify-between items-center">
                 <span className="text-small text-default-400">
                     {filteredItems.length} docentes encontrados
                 </span>
@@ -334,7 +334,8 @@ export default function TableDocentes() {
                 bottomContent={bottomContent}
                 bottomContentPlacement="outside"
                 classNames={{
-                    wrapper: "shadow-sm border border-slate-100 rounded-xl bg-white p-0 overflow-hidden",
+                    wrapper: "shadow-sm border border-slate-100 rounded-xl bg-white p-0 overflow-x-auto",
+                    table: "min-w-[800px] w-full",
                     th: "bg-slate-50 text-slate-800 font-bold py-4 border-b border-divider",
                     td: "py-3"
                 }}

@@ -16,7 +16,7 @@ function GestionDocentes() {
                 </div>
             </div>
             
-            <div className="bg-white rounded-2xl p-6 shadow-xl shadow-slate-200/50 min-w-[320px]">
+            <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-xl shadow-slate-200/50 min-w-[320px]">
                 <TableDocentes />
             </div>
         </div>
