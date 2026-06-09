@@ -66,9 +66,27 @@ export default function TableEvaluacionComponent({ resumenEvaluacion, loading })
     const users = useMemo(() => {
         if (!resumenEvaluacion || !Array.isArray(resumenEvaluacion)) return [];
 
-        const formatName = (apellidos) => {
+        const formatShortName = (apellidos, nombres) => {
             if (!apellidos) return 'No asignado';
-            return apellidos.toLowerCase().replace(/(^\w|\s\w|ó|í|á|é|ú|ñ)/g, m => m.toUpperCase());
+            const cleanAp = apellidos.trim();
+            if (cleanAp === '' || cleanAp.toLowerCase() === 'no asignado') {
+                return 'No asignado';
+            }
+
+            const firstAp = cleanAp.split(/[\s,]+/)[0];
+
+            if (!nombres || nombres.trim() === '' || nombres.toLowerCase() === 'no asignado') {
+                return firstAp.charAt(0).toUpperCase() + firstAp.slice(1).toLowerCase();
+            }
+
+            const firstNom = nombres.trim().split(/[\s,]+/)[0];
+
+            const toTitleCase = (str) => {
+                if (!str) return '';
+                return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+            };
+
+            return `${toTitleCase(firstNom)} ${toTitleCase(firstAp)}`;
         };
 
         return resumenEvaluacion.map((item, index) => {
@@ -88,8 +106,8 @@ export default function TableEvaluacionComponent({ resumenEvaluacion, loading })
                 cobertura_cv: cobertura_cv,
                 cobertura_entrevista: cobertura_entrevista,
                 avance_pct: avance_pct,
-                docente_cv: formatName(item.docente_cv_apellidos),
-                docente_entrevista: formatName(item.docente_entrevista_apellidos),
+                docente_cv: formatShortName(item.docente_cv_apellidos, item.docente_cv_nombres),
+                docente_entrevista: formatShortName(item.docente_entrevista_apellidos, item.docente_entrevista_nombres),
             };
         });
     }, [resumenEvaluacion]);
