@@ -26,7 +26,7 @@ export default function TabEvaluacion() {
     }, [resumenEvaluacion]);
 
     return (
-        <div className="flex flex-col gap-3 w-full overflow-hidden p-1" style={{ height: 'calc(100dvh - 160px)', minHeight: '580px' }}>
+        <div className="flex flex-col gap-3 w-full p-1 h-auto lg:h-[calc(100dvh-160px)] lg:min-h-[580px] overflow-y-auto lg:overflow-hidden">
             {/* 1. FILA DE MÉTRICAS (SUPER COMPACTA) */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 shrink-0">
                 <Card className="p-3 xl:p-5 border-l-4 border-blue-500 shadow-none border bg-white flex flex-row items-center justify-between h-[75px] xl:h-[110px] 2xl:h-[130px]">
@@ -54,10 +54,10 @@ export default function TabEvaluacion() {
                 </Card>
             </div>
 
-            {/* 2. CUERPO PRINCIPAL: TABLA (72%) + GRÁFICO (28%) */}
-            <div className="flex flex-row gap-3 flex-1 min-h-0 w-full">
+            {/* 2. CUERPO PRINCIPAL: TABLA (75%) + GRÁFICO (25%) */}
+            <div className="flex flex-col lg:flex-row gap-3 flex-1 min-h-0 w-full pb-4 lg:pb-0">
                 {/* Lado Izquierdo: La Tabla (Prioridad Máxima) */}
-                <div className="w-[75%] h-full flex flex-col min-w-0">
+                <div className="w-full lg:w-[75%] h-[480px] lg:h-full flex flex-col min-w-0">
                     <TableEvaluacion 
                         resumenEvaluacion={resumenEvaluacion || []} 
                         loading={loadingEvaluacion} 
@@ -65,7 +65,7 @@ export default function TabEvaluacion() {
                 </div>
 
                 {/* Lado Derecho: Ranking de Docentes */}
-                <div className="w-[25%] h-full shrink-0">
+                <div className="w-full lg:w-[25%] h-[380px] lg:h-full shrink-0">
                     <GraphicDocenteRanking />
                 </div>
             </div>

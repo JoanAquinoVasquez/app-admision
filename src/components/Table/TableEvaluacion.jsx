@@ -167,7 +167,7 @@ export default function TableEvaluacionComponent({ resumenEvaluacion, loading })
             case "grado_programa":
                 return (
                     <div className="flex flex-col py-1">
-                        <p className="text-[13px] text-slate-700 leading-tight">{cellValue}</p>
+                        <p className="text-[11px] sm:text-[13px] text-slate-700 leading-tight font-medium">{cellValue}</p>
                     </div>
                 );
             case "evaluados_cv":
@@ -175,26 +175,28 @@ export default function TableEvaluacionComponent({ resumenEvaluacion, loading })
                 const isCV = columnKey === "evaluados_cv";
                 const progressValue = isCV ? user.cobertura_cv : user.cobertura_entrevista;
                 const docente = isCV ? user.docente_cv : user.docente_entrevista;
-                const icon = isCV ? <MdOutlineAssignmentInd className="text-blue-500" /> : <MdFactCheck className="text-emerald-600" />;
+                const icon = isCV ? <MdOutlineAssignmentInd className="text-blue-500 shrink-0" /> : <MdFactCheck className="text-emerald-600 shrink-0" />;
 
                 return (
-                    <div className="flex flex-col gap-4 pr-4">
-                        <div className="flex justify-between items-end">
-                            <div className="flex items-center gap-2">
+                    <div className="flex flex-col gap-1 sm:gap-2 pr-1 sm:pr-4 w-full">
+                        <div className="flex flex-col sm:flex-row justify-between sm:items-end gap-0.5 sm:gap-2">
+                            <div className="flex items-center gap-1 sm:gap-2 min-w-0">
                                 {icon}
-                                <span className={`text-[12px] font-bold ${isCV ? 'text-blue-700' : 'text-emerald-700'} truncate max-w-[140px]`}>
+                                <span className={`text-[11px] sm:text-[12px] font-bold ${isCV ? 'text-blue-700' : 'text-emerald-700'} truncate max-w-[100px] sm:max-w-[140px]`}>
                                     {docente}
                                 </span>
                             </div>
-                            <span className="text-[12px] font-black text-slate-600">{cellValue}/{user.aptos} ({progressValue}%)</span>
+                            <span className="text-[10px] sm:text-[12px] font-black text-slate-600 shrink-0">
+                                {cellValue}/{user.aptos} ({progressValue}%)
+                            </span>
                         </div>
                         <Progress
                             aria-label={`Prog ${user.id}-${columnKey}`}
                             value={progressValue}
-                            size="md"
+                            size="sm"
                             radius="md"
                             color={isCV ? "primary" : "success"}
-                            classNames={{ track: "bg-slate-100", base: "h-2" }}
+                            classNames={{ track: "bg-slate-100", base: "h-1.5 sm:h-2" }}
                         />
                     </div>
                 );
@@ -211,15 +213,15 @@ export default function TableEvaluacionComponent({ resumenEvaluacion, loading })
         >
             <div className="p-2 flex flex-col h-full">
                 {/* Header compacto con buscador */}
-                <div className="flex items-center justify-between mb-2 px-1">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 px-1">
                     <div className="flex items-baseline gap-2">
-                        <h2 className="text-[12px] font-black text-slate-800 uppercase tracking-tighter">Resumen Evaluación</h2>
+                        <h2 className="text-[12px] sm:text-[13px] font-black text-slate-800 uppercase tracking-tighter">Resumen Evaluación</h2>
                         <span className="text-[10px] text-slate-400 font-medium">{admissionConfig.cronograma.periodo}</span>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 w-full sm:w-auto">
                         <Input
                             isClearable
-                            className="w-[200px]"
+                            className="w-full sm:w-[200px]"
                             placeholder="Buscar programa..."
                             size="sm"
                             startContent={<SearchIcon className="text-slate-400" />}
@@ -227,7 +229,7 @@ export default function TableEvaluacionComponent({ resumenEvaluacion, loading })
                             onValueChange={(v) => { setFilterValue(v); setPage(1); }}
                             classNames={{ inputWrapper: "h-8 min-h-8 bg-slate-50 border-none shadow-none" }}
                         />
-                        <Button size="sm" variant="flat" isIconOnly radius="full" className="h-8 w-8 min-w-8">
+                        <Button size="sm" variant="flat" isIconOnly radius="full" className="h-8 w-8 min-w-8 shrink-0">
                             <ChevronDownIcon />
                         </Button>
                     </div>
@@ -240,6 +242,7 @@ export default function TableEvaluacionComponent({ resumenEvaluacion, loading })
                     classNames={{
                         base: "flex-1 min-h-0 flex flex-col overflow-hidden",
                         wrapper: "flex-1 overflow-auto w-full p-0.5 m-0 shadow-none border-none",
+                        table: "min-w-[550px] sm:min-w-0 w-full",
                         th: "bg-slate-50/50 text-slate-500 font-bold uppercase text-[9px] py-1 border-b border-slate-100 h-8",
                         td: "py-2 border-b border-slate-50/50"
                     }}
@@ -251,6 +254,7 @@ export default function TableEvaluacionComponent({ resumenEvaluacion, loading })
                             <TableColumn
                                 key={column.uid}
                                 allowsSorting={column.sortable}
+                                className={column.uid === "facultad" ? "hidden sm:table-cell" : ""}
                                 width={
                                     column.uid === "grado_programa" ? "35%" :
                                         column.uid === "facultad" ? "10%" : "27.5%"
@@ -276,7 +280,11 @@ export default function TableEvaluacionComponent({ resumenEvaluacion, loading })
                     >
                         {(item) => (
                             <TableRow key={item.id}>
-                                {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
+                                {(columnKey) => (
+                                    <TableCell className={columnKey === "facultad" ? "hidden sm:table-cell" : ""}>
+                                        {renderCell(item, columnKey)}
+                                    </TableCell>
+                                )}
                             </TableRow>
                         )}
                     </TableBody>
