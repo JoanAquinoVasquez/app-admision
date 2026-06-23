@@ -14,7 +14,7 @@ import {
 import { useState, useEffect } from "react";
 import { MdCalculate } from "react-icons/md";
 
-const CVScoreCalculatorModal = ({ isOpen, onClose, onApply, initialScore = 0 }) => {
+const CVScoreCalculatorModal = ({ isOpen, onClose, onApply, initialScore = 0, isSegundaEspecialidad = false }) => {
     // 1. Grados Académicos
     const [numBachiller, setNumBachiller] = useState(0);
     const [numMaestria, setNumMaestria] = useState(0);
@@ -129,7 +129,7 @@ const CVScoreCalculatorModal = ({ isOpen, onClose, onApply, initialScore = 0 }) 
                                     </div>
                                 </div>
                                 <div className="flex flex-col gap-2 bg-blue-50/40 p-3 rounded-2xl border border-blue-100 shadow-sm">
-                                    <StepperItem label="Bachiller (3 pts)" value={numBachiller} onChange={setNumBachiller} compact />
+                                    <StepperItem label={isSegundaEspecialidad ? "Título (3 pts)" : "Bachiller (3 pts)"} value={numBachiller} onChange={setNumBachiller} compact />
                                     <StepperItem label="Maestría (5 pts)" value={numMaestria} onChange={setNumMaestria} compact />
                                     <StepperItem label="Doctorado (5 pts)" value={numDoctorado} onChange={setNumDoctorado} compact />
                                 </div>

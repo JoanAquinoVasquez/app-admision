@@ -770,6 +770,10 @@ function InicioDocente() {
                 onClose={onCalcClose}
                 onApply={handleApplyCalc}
                 initialScore={currentCalcId ? notas[currentCalcId] : 0}
+                isSegundaEspecialidad={
+                    programaActual?.id_grado === 3 ||
+                    programaActual?.nombre_grado?.toLowerCase().includes('segunda especialidad')
+                }
             />
         </div>
 
