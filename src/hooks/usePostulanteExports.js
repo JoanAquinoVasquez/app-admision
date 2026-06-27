@@ -68,6 +68,14 @@ const usePostulanteExports = () => {
                     fileName = "reporte_aulas.pdf";
                     break;
 
+                case "Reporte Resumen Aulas PDF":
+                    response = await axios.get(
+                        "/reporte-inscripcion-final/resumen-aulas/pdf",
+                        { responseType: "blob" }
+                    );
+                    fileName = "reporte_resumen_aulas.pdf";
+                    break;
+
                 case "Reporte Aptos Asistencia PDF":
                     response = await axios.get(
                         "/reporte-inscripcion-final/firmas/pdf",
