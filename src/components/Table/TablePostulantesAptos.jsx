@@ -416,6 +416,9 @@ export default function App() {
                                         <DropdownItem key="resumen_aulas" textValue="Reporte Resumen Aulas PDF" onPress={() => onExport("Reporte Resumen Aulas PDF")}>
                                             Reporte Resumen Aulas PDF
                                         </DropdownItem>
+                                        <DropdownItem key="resumen_evaluadores" textValue="Reporte Evaluadores PDF" onPress={() => onExport("Reporte Resumen Evaluadores PDF")}>
+                                            Reporte Evaluadores PDF
+                                        </DropdownItem>
                                         <DropdownItem key="excel" textValue="Reporte Final Notas Excel" onPress={() => onExport("Reporte Aptos Excel")}>
                                             Reporte Final Notas Excel
                                         </DropdownItem>
