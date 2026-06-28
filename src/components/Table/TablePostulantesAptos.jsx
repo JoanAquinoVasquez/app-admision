@@ -106,22 +106,21 @@ export default function App() {
             return []; // Evita errores si aún no hay datos
         }
         return inscripcioNota
-            .filter((item) => item.val_fisico == 1) // Filtra solo los elementos con val_fisico === 1
             .map((item) => {
                 return {
                     id: item.id,
                     postulante_id: item.postulante_id,
                     nombre_completo: [
-                        item.postulante.ap_paterno,
-                        item.postulante.ap_materno,
-                        item.postulante.nombres,
-                    ].join(" "),
-                    grado: item.programa.grado.nombre,
-                    grado_id: item.programa.grado.id,
-                    programa_id: item.programa.id,
-                    programa: item.programa.nombre,
-                    doc_iden: item.postulante.num_iden,
-                    tipo_doc: item.postulante.tipo_doc,
+                        item.postulante?.ap_paterno,
+                        item.postulante?.ap_materno,
+                        item.postulante?.nombres,
+                    ].filter(Boolean).join(" "),
+                    grado: item.programa?.grado?.nombre || "",
+                    grado_id: item.programa?.grado?.id || null,
+                    programa_id: item.programa?.id || null,
+                    programa: item.programa?.nombre || "",
+                    doc_iden: item.postulante?.num_iden || "",
+                    tipo_doc: item.postulante?.tipo_doc || "",
                     voucher: item.codigo,
                     nota_entrevista: item.nota?.entrevista
                         ? item.nota?.entrevista
