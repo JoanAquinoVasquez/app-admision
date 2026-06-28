@@ -187,7 +187,7 @@ export default function TableEvaluacionComponent({ resumenEvaluacion, loading })
                                 </span>
                             </div>
                             <span className="text-[10px] sm:text-[12px] font-black text-slate-600 shrink-0">
-                                {cellValue}/{user.aptos} ({progressValue}%)
+                                {cellValue}/{isCV ? user.aptos : user.inscritos} ({progressValue}%)
                             </span>
                         </div>
                         <Progress
