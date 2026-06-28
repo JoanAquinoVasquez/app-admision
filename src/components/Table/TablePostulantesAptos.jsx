@@ -181,7 +181,13 @@ export default function App() {
             return !isNaN(parseFloat(item.nota_entrevista));
         }).length;
 
-        return { conNotaCv, conNotaEntrevista };
+        const conNota = filteredItems.filter((item) => {
+            return !isNaN(parseFloat(item.nota_expediente)) || 
+                   !isNaN(parseFloat(item.nota_entrevista)) ||
+                   !isNaN(parseFloat(item.nota_examen));
+        }).length;
+
+        return { conNotaCv, conNotaEntrevista, conNota };
     }, [filteredItems]);
 
     const onExport = (type) => {
