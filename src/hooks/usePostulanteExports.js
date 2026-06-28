@@ -47,10 +47,19 @@ const usePostulanteExports = () => {
                     break;
 
                 case "Plantilla Notas Entrevista":
-                    response = await axios.get("/postulantes-aptos-multiple", {
-                        responseType: "blob",
-                    });
-                    fileName = "plantilla_entrevista.pdf";
+                    {
+                        const params = {};
+                        if (gradoFilter !== "all" && gradoFilter)
+                            params.grado = gradoFilter;
+                        if (programaFilter && programaFilter.length > 0)
+                            params.programa = programaFilter;
+
+                        response = await axios.get("/postulantes-aptos-multiple", {
+                            params,
+                            responseType: "blob",
+                        });
+                        fileName = "plantilla_entrevista.pdf";
+                    }
                     break;
 
                 case "Reporte Final":
