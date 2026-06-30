@@ -294,7 +294,6 @@ export default function App() {
         const cellValue = user[columnKey];
 
         if (columnKey === "nota_expediente") {
-            console.log("DEBUG - Postulante:", user.nombre_completo, "nota:", cellValue, "estado:", user.estado, "val_fisico:", user.val_fisico);
             if (cellValue !== "-") {
                 return (
                     <div className="flex flex-col items-center">
@@ -330,7 +329,7 @@ export default function App() {
         if (columnKey === "doc_iden") {
             return (
                 <div className="flex flex-col items-center justify-center text-center">
-                    <p className="font-medium text-sm text-slate-700">
+                    <p className="font-medium text-[11px] text-slate-700">
                         {user.tipo_doc}: {cellValue}
                     </p>
                     {user.celular && (
@@ -345,7 +344,7 @@ export default function App() {
         if (["id", "nota_entrevista", "nota_examen"].includes(columnKey)) {
             return (
                 <div className="flex flex-col items-center">
-                    <p className="font-medium capitalize text-sm text-default-500">
+                    <p className="font-medium capitalize text-[11px] text-slate-700">
                         {cellValue}
                     </p>
                 </div>
