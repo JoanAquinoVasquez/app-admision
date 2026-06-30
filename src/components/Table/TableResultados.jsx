@@ -104,7 +104,7 @@ export default function TableResultados({ ingresantesPrograma, grados, loading: 
         filteredItems,
     } = useTableFilters(users, {
         initialRowsPerPage: 5,
-        initialSortColumn: "ingresantes_total",
+        initialSortColumn: "promedio_nota",
         initialSortDirection: "descending",
         customFilter: gradoCustomFilter,
     });
