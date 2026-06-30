@@ -47,18 +47,6 @@ export const statusOptions = [
     { name: "Observado", uid: "2" },
 ];
 
-export const NOTES_FILTER_OPTIONS = [
-    { key: "all", textValue: "Todos" },
-    { key: "con_cv", textValue: "Con Nota CV" },
-    { key: "sin_cv", textValue: "Sin Nota CV" },
-    { key: "con_entrevista", textValue: "Con Nota Entrevista" },
-    { key: "sin_entrevista", textValue: "Sin Nota Entrevista" },
-    { key: "con_examen", textValue: "Con Nota Examen" },
-    { key: "sin_examen", textValue: "Sin Nota Examen" },
-    { key: "con_todas", textValue: "Con todas las notas" },
-    { key: "sin_ninguna", textValue: "Sin ninguna nota" },
-];
-
 export function capitalize(s) {
     return s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : "";
 }
@@ -112,37 +100,56 @@ export default function App() {
     // ✅ Estado que indica si es la carga inicial (para mostrar Skeletons solo la primera vez)
     const isInitialLoading = dataLoading && (!inscripcioNota || inscripcioNota.length === 0);
 
-    const [notasFilter, setNotasFilter] = useState("all");
+    const [notasFilter, setNotasFilter] = useState(new Set([]));
+    const [aperturadoFilter, setAperturadoFilter] = useState(new Set([]));
 
-    const notesCustomFilter = useCallback((data) => {
-        if (!notasFilter || notasFilter === "all") return data;
-        return data.filter((item) => {
-            const hasCv = item.nota_expediente !== "-" && item.nota_expediente !== null && item.nota_expediente !== undefined;
-            const hasEntrevista = item.nota_entrevista !== "-" && item.nota_entrevista !== null && item.nota_entrevista !== undefined;
-            const hasExamen = item.nota_examen !== "-" && item.nota_examen !== null && item.nota_examen !== undefined;
-            
-            switch (notasFilter) {
-                case "con_cv":
-                    return hasCv;
-                case "sin_cv":
-                    return !hasCv;
-                case "con_entrevista":
-                    return hasEntrevista;
-                case "sin_entrevista":
-                    return !hasEntrevista;
-                case "con_examen":
-                    return hasExamen;
-                case "sin_examen":
-                    return !hasExamen;
-                case "con_todas":
-                    return hasCv && hasEntrevista && hasExamen;
-                case "sin_ninguna":
-                    return !hasCv && !hasEntrevista && !hasExamen;
-                default:
-                    return true;
-            }
-        });
-    }, [notasFilter]);
+    const combinedCustomFilter = useCallback((data) => {
+        let filtered = [...data];
+
+        // 1) Filtro de Notas (Múltiple Selección)
+        if (notasFilter && notasFilter.size > 0) {
+            filtered = filtered.filter((item) => {
+                const hasCv = item.nota_expediente !== "-" && item.nota_expediente !== null && item.nota_expediente !== undefined;
+                const hasEntrevista = item.nota_entrevista !== "-" && item.nota_entrevista !== null && item.nota_entrevista !== undefined;
+                const hasExamen = item.nota_examen !== "-" && item.nota_examen !== null && item.nota_examen !== undefined;
+
+                for (const filter of notasFilter) {
+                    if (filter === "con_cv" && !hasCv) return false;
+                    if (filter === "sin_cv" && hasCv) return false;
+                    if (filter === "con_entrevista" && !hasEntrevista) return false;
+                    if (filter === "sin_entrevista" && hasEntrevista) return false;
+                    if (filter === "con_examen" && !hasExamen) return false;
+                    if (filter === "sin_examen" && hasExamen) return false;
+                }
+                return true;
+            });
+        }
+
+        // 2) Filtro de Programas Aperturados (Múltiple Selección)
+        if (aperturadoFilter && aperturadoFilter.size > 0 && aperturadoFilter.size < 2) {
+            const onlyAperturado = aperturadoFilter.has("aperturado");
+            filtered = filtered.filter((item) => {
+                const isAperturado = item.programa_estado === 1;
+                return onlyAperturado ? isAperturado : !isAperturado;
+            });
+        }
+
+        return filtered;
+    }, [notasFilter, aperturadoFilter]);
+
+    const getNotasFilterLabel = () => {
+        if (!notasFilter || notasFilter.size === 0) return "Todos (Notas)";
+        
+        const labels = [];
+        if (notasFilter.has("con_cv")) labels.push("Con CV");
+        if (notasFilter.has("sin_cv")) labels.push("Sin CV");
+        if (notasFilter.has("con_entrevista")) labels.push("Con Entrevista");
+        if (notasFilter.has("sin_entrevista")) labels.push("Sin Entrevista");
+        if (notasFilter.has("con_examen")) labels.push("Con Examen");
+        if (notasFilter.has("sin_examen")) labels.push("Sin Examen");
+        
+        return labels.length > 0 ? labels.join(", ") : "Todos (Notas)";
+    };
 
     // ✅ Aseguramos que `inscripcioNota` tenga datos antes de mapear
     const users = useMemo(() => {
@@ -172,6 +179,7 @@ export default function App() {
                     nota_expediente: item.nota?.cv ? item.nota?.cv : "-",
                     nota_examen: item.nota?.examen ? item.nota?.examen : "-",
                     estado: item.val_fisico,
+                    programa_estado: item.programa?.estado,
                 };
             });
     }, [inscripcioNota]);
@@ -200,7 +208,7 @@ export default function App() {
         onRowsPerPageChange,
         filteredItems,
     } = useTableFilters(users, {
-        customFilter: notesCustomFilter,
+        customFilter: combinedCustomFilter,
     });
 
     const [selectedKeys, setSelectedKeys] = useState(new Set([]));
@@ -334,8 +342,8 @@ export default function App() {
                     onSuccess={fetchInscripcionNota}
                 />
 
-                {/* 1) Fila de Búsqueda y Filtro de Notas */}
-                <div className="w-full flex flex-col sm:flex-row gap-3">
+                {/* 1) Fila de Búsqueda y Filtros de Notas/Apertura */}
+                <div className="w-full flex flex-col md:flex-row gap-3">
                     <div className="flex-1">
                         {isInitialLoading ? (
                             <Skeleton className="w-full h-12 rounded-lg" />
@@ -354,22 +362,80 @@ export default function App() {
                             />
                         )}
                     </div>
-                    <div className="w-full sm:w-[220px] shrink-0">
+                    <div className="flex flex-col sm:flex-row gap-2 shrink-0">
                         {isInitialLoading ? (
-                            <Skeleton className="w-full h-12 rounded-lg" />
+                            <>
+                                <Skeleton className="w-full sm:w-[200px] h-12 rounded-lg" />
+                                <Skeleton className="w-full sm:w-[200px] h-12 rounded-lg" />
+                            </>
                         ) : (
-                            <Select
-                                label="Filtro de Notas"
-                                variant="flat"
-                                className="w-full h-12 text-sm"
-                                placeholder="Todos"
-                                defaultItems={NOTES_FILTER_OPTIONS}
-                                selectedKey={notasFilter !== "all" ? notasFilter : null}
-                                onSelectionChange={(key) => {
-                                    setNotasFilter(key || "all");
-                                    setPage(1);
-                                }}
-                            />
+                            <>
+                                {/* Filtro de Notas Dropdown */}
+                                <Dropdown shouldBlockScroll={false}>
+                                    <DropdownTrigger>
+                                        <Button
+                                            variant="bordered"
+                                            size="sm"
+                                            endContent={<ChevronDownIcon className="text-slate-400" />}
+                                            className="h-12 w-full sm:w-[200px] justify-between bg-white border-slate-200 hover:border-blue-400 font-normal transition-colors shadow-sm text-sm"
+                                        >
+                                            <span className="truncate">
+                                                {notasFilter.size === 0
+                                                    ? "Todos (Notas)"
+                                                    : getNotasFilterLabel()}
+                                            </span>
+                                        </Button>
+                                    </DropdownTrigger>
+                                    <DropdownMenu
+                                        aria-label="Filtro de Notas"
+                                        closeOnSelect={false}
+                                        selectedKeys={notasFilter}
+                                        selectionMode="multiple"
+                                        onSelectionChange={(keys) => {
+                                            setNotasFilter(keys);
+                                            setPage(1);
+                                        }}
+                                    >
+                                        <DropdownItem key="con_cv">Con Nota CV</DropdownItem>
+                                        <DropdownItem key="sin_cv">Sin Nota CV</DropdownItem>
+                                        <DropdownItem key="con_entrevista">Con Nota Entrevista</DropdownItem>
+                                        <DropdownItem key="sin_entrevista">Sin Nota Entrevista</DropdownItem>
+                                        <DropdownItem key="con_examen">Con Nota Examen</DropdownItem>
+                                        <DropdownItem key="sin_examen">Sin Nota Examen</DropdownItem>
+                                    </DropdownMenu>
+                                </Dropdown>
+
+                                {/* Filtro de Programas Aperturados Dropdown */}
+                                <Dropdown shouldBlockScroll={false}>
+                                    <DropdownTrigger>
+                                        <Button
+                                            variant="bordered"
+                                            size="sm"
+                                            endContent={<ChevronDownIcon className="text-slate-400" />}
+                                            className="h-12 w-full sm:w-[200px] justify-between bg-white border-slate-200 hover:border-blue-400 font-normal transition-colors shadow-sm text-sm"
+                                        >
+                                            <span className="truncate">
+                                                {aperturadoFilter.size === 0 || aperturadoFilter.size === 2
+                                                    ? "Todos (Apertura)"
+                                                    : aperturadoFilter.has("aperturado") ? "Aperturados" : "No Aperturados"}
+                                            </span>
+                                        </Button>
+                                    </DropdownTrigger>
+                                    <DropdownMenu
+                                        aria-label="Filtro de Apertura"
+                                        closeOnSelect={false}
+                                        selectedKeys={aperturadoFilter}
+                                        selectionMode="multiple"
+                                        onSelectionChange={(keys) => {
+                                            setAperturadoFilter(keys);
+                                            setPage(1);
+                                        }}
+                                    >
+                                        <DropdownItem key="aperturado">Aperturados</DropdownItem>
+                                        <DropdownItem key="no_aperturado">No Aperturados</DropdownItem>
+                                    </DropdownMenu>
+                                </Dropdown>
+                            </>
                         )}
                     </div>
                 </div>
@@ -560,6 +626,7 @@ export default function App() {
         onExport,
         dataLoading,
         notasFilter,
+        aperturadoFilter,
     ]);
 
     const bottomContent = useMemo(
