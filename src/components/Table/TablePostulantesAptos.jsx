@@ -129,7 +129,7 @@ export default function App() {
         if (aperturadoFilter && aperturadoFilter.size > 0 && aperturadoFilter.size < 2) {
             const onlyAperturado = aperturadoFilter.has("aperturado");
             filtered = filtered.filter((item) => {
-                const isAperturado = item.programa_estado === 1;
+                const isAperturado = Number(item.programa_estado) === 1;
                 return onlyAperturado ? isAperturado : !isAperturado;
             });
         }
