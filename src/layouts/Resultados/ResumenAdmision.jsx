@@ -37,6 +37,7 @@ const ResumenAdmision = ({ resumenGeneral, loading }) => {
                     acc.desiste += curr.desiste || 0;
                     acc.ausentes += curr.ausentes || 0;
                     acc.ingresantes += curr.ingresantes || 0;
+                    acc.no_evaluado += curr.no_evaluado || 0;
                     return acc;
                 },
                 {
@@ -47,6 +48,7 @@ const ResumenAdmision = ({ resumenGeneral, loading }) => {
                     desiste: 0,
                     ausentes: 0,
                     ingresantes: 0,
+                    no_evaluado: 0,
                 }
             );
         } else {
@@ -66,6 +68,7 @@ const ResumenAdmision = ({ resumenGeneral, loading }) => {
         desiste,
         ausentes,
         ingresantes,
+        no_evaluado,
     } = resumen;
 
     const total = inscritos || 0;
@@ -78,6 +81,7 @@ const ResumenAdmision = ({ resumenGeneral, loading }) => {
             "Devolución",
             "Reserva",
             "Desiste",
+            "Falta Evaluar",
         ],
         datasets: [
             {
@@ -88,6 +92,7 @@ const ResumenAdmision = ({ resumenGeneral, loading }) => {
                     devolucion,
                     reserva,
                     desiste,
+                    no_evaluado || 0,
                 ],
                 backgroundColor: [
                     "#10B981",
@@ -96,6 +101,7 @@ const ResumenAdmision = ({ resumenGeneral, loading }) => {
                     "#FBBF24",
                     "#9CA3AF",
                     "#F472B6",
+                    "#8B5CF6",
                 ],
                 borderColor: "#fff",
                 borderWidth: 2,
@@ -133,7 +139,7 @@ const ResumenAdmision = ({ resumenGeneral, loading }) => {
     };
 
     return (
-        <div className="flex flex-col h-full w-full max-w-sm mx-auto px-2">
+        <div className="flex flex-col justify-center h-full w-full max-w-sm mx-auto px-2 gap-4">
             <h2 className="text-center text-lg font-semibold mt-2 mb-1">
                 Estado de Admisión
             </h2>
@@ -142,7 +148,7 @@ const ResumenAdmision = ({ resumenGeneral, loading }) => {
                 label="Selecciona el grado"
                 selectedKeys={[gradoSeleccionado || ""]}
                 onChange={(e) => handleChange(e.target.value)}
-                className="w-full mb-4"
+                className="w-full"
                 disallowEmptySelection={false}
                 placeholder="Todos los grados"
                 size="sm"
@@ -157,9 +163,9 @@ const ResumenAdmision = ({ resumenGeneral, loading }) => {
                 ))}
             </Select>
 
-            {/* Contenedor de la Dona - Ahora centrado perfectamente sin la leyenda de Chart.js */}
-            <div className="relative w-full h-[320px] flex items-center justify-center">
-                <div className="w-full h-full p-2">
+            {/* Contenedor de la Dona - Altura reducida para ahorrar espacio */}
+            <div className="relative w-full h-[210px] flex items-center justify-center">
+                <div className="w-full h-full p-1">
                     <Doughnut
                         data={data}
                         options={options}
@@ -167,27 +173,41 @@ const ResumenAdmision = ({ resumenGeneral, loading }) => {
                     />
                 </div>
 
-                {/* Texto Central - z-10 para estar sobre el gráfico y top-1/2 para centrado real */}
+                {/* Texto Central ajustado a menor tamaño */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none z-10">
-                    <p className="text-gray-500 text-sm font-medium leading-none mb-1">Total inscritos</p>
-                    <p className="text-6xl font-black text-slate-800 tracking-tighter">{total}</p>
+                    <p className="text-gray-500 text-[11px] font-semibold leading-none mb-0.5 uppercase tracking-wider">Total</p>
+                    <p className="text-4xl font-black text-slate-800 tracking-tighter">{total}</p>
                 </div>
             </div>
 
-            {/* Leyenda Personalizada - Pegada abajo y con control total */}
-            <div className="mt-auto pt-4 pb-2">
-                <div className="flex flex-wrap justify-center gap-x-4 gap-y-2">
-                    {data.labels.map((label, index) => (
-                        <div key={index} className="flex items-center gap-1.5">
-                            <div
-                                className="w-3 h-3 rounded-full shadow-sm"
-                                style={{ backgroundColor: data.datasets[0].backgroundColor[index] }}
-                            />
-                            <span className="text-[15px] font-semibold text-slate-600">
-                                {label}
-                            </span>
-                        </div>
-                    ))}
+            {/* Leyenda Personalizada - Distribuida en 2 Columnas para compactar el espacio */}
+            <div className="pt-3 pb-2 px-1 border-t border-slate-100/60">
+                <div className="grid grid-cols-2 gap-x-3 gap-y-2">
+                    {data.labels.map((label, index) => {
+                        const val = data.datasets[0].data[index] || 0;
+                        const pct = total > 0 ? ((val / total) * 100).toFixed(1) : "0.0";
+                        return (
+                            <div key={index} className="flex items-center justify-between py-0.5 text-xs">
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                    <div
+                                        className="w-2.5 h-2.5 rounded-full shadow-sm flex-shrink-0"
+                                        style={{ backgroundColor: data.datasets[0].backgroundColor[index] }}
+                                    />
+                                    <span className="font-semibold text-slate-600 truncate">
+                                        {label}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-1 text-right flex-shrink-0 ml-1">
+                                    <span className="font-bold text-slate-800">
+                                        {val}
+                                    </span>
+                                    <span className="text-[10px] text-slate-400 font-medium">
+                                        ({pct}%)
+                                    </span>
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         </div>

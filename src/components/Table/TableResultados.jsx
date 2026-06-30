@@ -324,15 +324,6 @@ export default function TableResultados({ ingresantesPrograma, grados, loading: 
                     )}
                 </div>
 
-                {/* Stats and Results Info */}
-                <div className="flex justify-between items-center px-2 py-1 bg-blue-50/50 rounded-lg">
-                    <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                        <span className="text-blue-700 text-[11px] font-bold uppercase tracking-wider">
-                            {`${filteredItems.length} programas`}
-                        </span>
-                    </div>
-                </div>
             </div>
         );
     }, [

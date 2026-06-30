@@ -34,7 +34,7 @@ const CustomTooltip = ({ active, payload, label }) => {
                     Pend: {data.pendientes || 0} | Dev:
                     {data.devolucion || 0} | Res:{data.reserva || 0}
                 </p>
-                <p>Desiste: {data.desiste || 0}</p>
+                <p>Desiste: {data.desiste || 0} | Falta Evaluar: {data.no_evaluado || 0}</p>
                 <hr className="my-1" />
                 <p className="font-bold">Total: {data.total}</p>
             </div>
@@ -153,6 +153,12 @@ const GraficoEstadoPorEdad = ({ resumenEdad, loading }) => {
                         stackId={"a"}
                         fill="#F472B6"
                         name="Desiste"
+                    />
+                    <Bar
+                        dataKey="no_evaluado"
+                        stackId="b"
+                        fill="#8B5CF6"
+                        name="Falta Evaluar"
                     />
                 </BarChart>
             </ResponsiveContainer>
