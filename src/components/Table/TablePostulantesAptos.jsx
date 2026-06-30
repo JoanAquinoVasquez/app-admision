@@ -291,9 +291,39 @@ export default function App() {
     const renderCell = useCallback((user, columnKey) => {
         const cellValue = user[columnKey];
 
-        if (["id", "nota_expediente", "nota_entrevista", "nota_examen"].includes(columnKey)) {
+        if (columnKey === "nota_expediente") {
+            if (cellValue !== "-") {
+                return (
+                    <div className="flex flex-col items-center">
+                        <span className="font-semibold text-sm text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
+                            {cellValue}
+                        </span>
+                    </div>
+                );
+            }
+
+            if (user.estado === 1) {
+                return (
+                    <div className="flex flex-col items-center">
+                        <Chip size="sm" variant="flat" color="warning" className="font-semibold text-[11px]">
+                            Falta Evaluar
+                        </Chip>
+                    </div>
+                );
+            } else {
+                return (
+                    <div className="flex flex-col items-center">
+                        <Chip size="sm" variant="flat" color="danger" className="font-semibold text-[11px]">
+                            No trajo CV
+                        </Chip>
+                    </div>
+                );
+            }
+        }
+
+        if (["id", "nota_entrevista", "nota_examen"].includes(columnKey)) {
             return (
-                <div className="flex flex-col">
+                <div className="flex flex-col items-center">
                     <p className="font-medium capitalize text-sm text-default-500">
                         {cellValue}
                     </p>
