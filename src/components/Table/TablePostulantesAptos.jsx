@@ -47,6 +47,18 @@ export const statusOptions = [
     { name: "Observado", uid: "2" },
 ];
 
+export const NOTES_FILTER_OPTIONS = [
+    { key: "all", textValue: "Todos" },
+    { key: "con_cv", textValue: "Con Nota CV" },
+    { key: "sin_cv", textValue: "Sin Nota CV" },
+    { key: "con_entrevista", textValue: "Con Nota Entrevista" },
+    { key: "sin_entrevista", textValue: "Sin Nota Entrevista" },
+    { key: "con_examen", textValue: "Con Nota Examen" },
+    { key: "sin_examen", textValue: "Sin Nota Examen" },
+    { key: "con_todas", textValue: "Con todas las notas" },
+    { key: "sin_ninguna", textValue: "Sin ninguna nota" },
+];
+
 export function capitalize(s) {
     return s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : "";
 }
@@ -99,6 +111,38 @@ export default function App() {
 
     // ✅ Estado que indica si es la carga inicial (para mostrar Skeletons solo la primera vez)
     const isInitialLoading = dataLoading && (!inscripcioNota || inscripcioNota.length === 0);
+
+    const [notasFilter, setNotasFilter] = useState("all");
+
+    const notesCustomFilter = useCallback((data) => {
+        if (!notasFilter || notasFilter === "all") return data;
+        return data.filter((item) => {
+            const hasCv = item.nota_expediente !== "-" && item.nota_expediente !== null && item.nota_expediente !== undefined;
+            const hasEntrevista = item.nota_entrevista !== "-" && item.nota_entrevista !== null && item.nota_entrevista !== undefined;
+            const hasExamen = item.nota_examen !== "-" && item.nota_examen !== null && item.nota_examen !== undefined;
+            
+            switch (notasFilter) {
+                case "con_cv":
+                    return hasCv;
+                case "sin_cv":
+                    return !hasCv;
+                case "con_entrevista":
+                    return hasEntrevista;
+                case "sin_entrevista":
+                    return !hasEntrevista;
+                case "con_examen":
+                    return hasExamen;
+                case "sin_examen":
+                    return !hasExamen;
+                case "con_todas":
+                    return hasCv && hasEntrevista && hasExamen;
+                case "sin_ninguna":
+                    return !hasCv && !hasEntrevista && !hasExamen;
+                default:
+                    return true;
+            }
+        });
+    }, [notasFilter]);
 
     // ✅ Aseguramos que `inscripcioNota` tenga datos antes de mapear
     const users = useMemo(() => {
@@ -155,7 +199,9 @@ export default function App() {
         onClear,
         onRowsPerPageChange,
         filteredItems,
-    } = useTableFilters(users);
+    } = useTableFilters(users, {
+        customFilter: notesCustomFilter,
+    });
 
     const [selectedKeys, setSelectedKeys] = useState(new Set([]));
     const [visibleColumns, setVisibleColumns] = useState(
@@ -288,24 +334,44 @@ export default function App() {
                     onSuccess={fetchInscripcionNota}
                 />
 
-                {/* 1) Fila de Búsqueda */}
-                <div className="w-full">
-                    {isInitialLoading ? (
-                        <Skeleton className="w-full h-12 rounded-lg" />
-                    ) : (
-                        <Input
-                            isClearable
-                            className="w-full h-12 focus:outline-none"
-                            classNames={{
-                                input: "placeholder:text-gray-800 placeholder:opacity-100 text-gray-900",
-                            }}
-                            placeholder="Buscar Postulante..."
-                            startContent={<SearchIcon />}
-                            value={filterValue}
-                            onClear={onClear}
-                            onValueChange={onSearchChange}
-                        />
-                    )}
+                {/* 1) Fila de Búsqueda y Filtro de Notas */}
+                <div className="w-full flex flex-col sm:flex-row gap-3">
+                    <div className="flex-1">
+                        {isInitialLoading ? (
+                            <Skeleton className="w-full h-12 rounded-lg" />
+                        ) : (
+                            <Input
+                                isClearable
+                                className="w-full h-12 focus:outline-none"
+                                classNames={{
+                                    input: "placeholder:text-gray-800 placeholder:opacity-100 text-gray-900",
+                                }}
+                                placeholder="Buscar Postulante..."
+                                startContent={<SearchIcon />}
+                                value={filterValue}
+                                onClear={onClear}
+                                onValueChange={onSearchChange}
+                            />
+                        )}
+                    </div>
+                    <div className="w-full sm:w-[220px] shrink-0">
+                        {isInitialLoading ? (
+                            <Skeleton className="w-full h-12 rounded-lg" />
+                        ) : (
+                            <Select
+                                label="Filtro de Notas"
+                                variant="flat"
+                                className="w-full h-12 text-sm"
+                                placeholder="Todos"
+                                defaultItems={NOTES_FILTER_OPTIONS}
+                                selectedKey={notasFilter !== "all" ? notasFilter : null}
+                                onSelectionChange={(key) => {
+                                    setNotasFilter(key || "all");
+                                    setPage(1);
+                                }}
+                            />
+                        )}
+                    </div>
                 </div>
 
                 {/* 2) Fila de Filtros Avanzados y Acciones Principales */}
@@ -493,6 +559,7 @@ export default function App() {
         fetchInscripcionNota,
         onExport,
         dataLoading,
+        notasFilter,
     ]);
 
     const bottomContent = useMemo(
