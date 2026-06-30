@@ -139,7 +139,7 @@ export default function App() {
 
     const getNotasFilterLabel = () => {
         if (!notasFilter || notasFilter.size === 0) return "Todos (Notas)";
-        
+
         const labels = [];
         if (notasFilter.has("con_cv")) labels.push("Con CV");
         if (notasFilter.has("sin_cv")) labels.push("Sin CV");
@@ -147,7 +147,7 @@ export default function App() {
         if (notasFilter.has("sin_entrevista")) labels.push("Sin Entrevista");
         if (notasFilter.has("con_examen")) labels.push("Con Examen");
         if (notasFilter.has("sin_examen")) labels.push("Sin Examen");
-        
+
         return labels.length > 0 ? labels.join(", ") : "Todos (Notas)";
     };
 
@@ -237,9 +237,9 @@ export default function App() {
         }).length;
 
         const conNota = filteredItems.filter((item) => {
-            return !isNaN(parseFloat(item.nota_expediente)) || 
-                   !isNaN(parseFloat(item.nota_entrevista)) ||
-                   !isNaN(parseFloat(item.nota_examen));
+            return !isNaN(parseFloat(item.nota_expediente)) ||
+                !isNaN(parseFloat(item.nota_entrevista)) ||
+                !isNaN(parseFloat(item.nota_examen));
         }).length;
 
         return { conNotaCv, conNotaEntrevista, conNota };
@@ -333,7 +333,7 @@ export default function App() {
                         {user.tipo_doc}: {cellValue}
                     </p>
                     {user.celular && (
-                        <p className="text-[11px] text-slate-500 font-semibold mt-0.5">
+                        <p className="text-[10px] text-slate-500 font-semibold mt-0.5">
                             Cel: {user.celular}
                         </p>
                     )}
