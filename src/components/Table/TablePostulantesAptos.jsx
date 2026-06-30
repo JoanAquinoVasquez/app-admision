@@ -33,7 +33,7 @@ export const columns = [
     { name: "ID", uid: "id", sortable: true },
     { name: "Nombres Completos", uid: "nombre_completo", sortable: true },
     { name: "Grado y Programa", uid: "grado", sortable: true },
-    { name: "Doc. Identidad", uid: "doc_iden", sortable: true },
+    { name: "Contacto", uid: "doc_iden", sortable: true },
     { name: "Nota CV", uid: "nota_expediente", sortable: true },
     { name: "Nota Entrevista", uid: "nota_entrevista", sortable: true },
     { name: "Nota Examen", uid: "nota_examen", sortable: true },
@@ -172,6 +172,7 @@ export default function App() {
                     programa: item.programa?.nombre || "",
                     doc_iden: item.postulante?.num_iden || "",
                     tipo_doc: item.postulante?.tipo_doc || "",
+                    celular: item.postulante?.celular || "",
                     voucher: item.codigo,
                     nota_entrevista: item.nota?.entrevista
                         ? item.nota?.entrevista
@@ -179,6 +180,7 @@ export default function App() {
                     nota_expediente: item.nota?.cv ? item.nota?.cv : "-",
                     nota_examen: item.nota?.examen ? item.nota?.examen : "-",
                     estado: item.val_fisico,
+                    val_fisico: item.val_fisico,
                     programa_estado: item.programa?.estado,
                 };
             });
@@ -292,6 +294,7 @@ export default function App() {
         const cellValue = user[columnKey];
 
         if (columnKey === "nota_expediente") {
+            console.log("DEBUG - Postulante:", user.nombre_completo, "nota:", cellValue, "estado:", user.estado, "val_fisico:", user.val_fisico);
             if (cellValue !== "-") {
                 return (
                     <div className="flex flex-col items-center">
@@ -302,7 +305,10 @@ export default function App() {
                 );
             }
 
-            if (user.estado == 1) {
+            // Validación robusta: chequear val_fisico y estado (por si acaso viene como boolean, string o número)
+            const yaTrajoCv = user.val_fisico == 1 || user.val_fisico === true || user.estado == 1 || user.estado === true;
+
+            if (yaTrajoCv) {
                 return (
                     <div className="flex flex-col items-center">
                         <Chip size="sm" variant="flat" color="warning" className="font-semibold text-[11px]">
@@ -319,6 +325,21 @@ export default function App() {
                     </div>
                 );
             }
+        }
+
+        if (columnKey === "doc_iden") {
+            return (
+                <div className="flex flex-col items-center justify-center text-center">
+                    <p className="font-medium text-sm text-slate-700">
+                        {user.tipo_doc}: {cellValue}
+                    </p>
+                    {user.celular && (
+                        <p className="text-[11px] text-slate-500 font-semibold mt-0.5">
+                            Cel: {user.celular}
+                        </p>
+                    )}
+                </div>
+            );
         }
 
         if (["id", "nota_entrevista", "nota_examen"].includes(columnKey)) {
