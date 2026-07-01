@@ -255,6 +255,7 @@ export default function App() {
             programaFilter: programaFilter,
             aperturadoFilter: aperturadoFilter,
             notasFilter: notasFilter,
+            filterValue: filterValue,
         });
     }
 

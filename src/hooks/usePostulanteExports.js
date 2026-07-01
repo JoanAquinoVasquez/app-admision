@@ -17,7 +17,7 @@ const usePostulanteExports = () => {
     };
 
     const handleExport = async (type, options = {}) => {
-        const { selectedPrograms, gradoFilter, programaFilter, aperturadoFilter, notasFilter } = options;
+        const { selectedPrograms, gradoFilter, programaFilter, aperturadoFilter, notasFilter, filterValue } = options;
 
         if (type === "CV" && !selectedPrograms?.length) {
             toast.error("Por favor, selecciona al menos un programa.");
@@ -125,6 +125,11 @@ const usePostulanteExports = () => {
                         // Filtro de notas
                         if (notasFilter && notasFilter.size > 0) {
                             params.notas = Array.from(notasFilter);
+                        }
+
+                        // Filtro de búsqueda
+                        if (filterValue) {
+                            params.search = filterValue;
                         }
 
                         response = await axios.get(
