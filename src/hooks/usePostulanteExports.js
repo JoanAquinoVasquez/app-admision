@@ -112,9 +112,9 @@ const usePostulanteExports = () => {
                 case "Reporte Personalizado Excel":
                     {
                         const params = {};
-                        if (gradoFilter !== "all" && gradoFilter)
+                        if (gradoFilter && gradoFilter !== "all" && typeof gradoFilter !== "object")
                             params.grado = gradoFilter;
-                        if (programaFilter && programaFilter.length > 0)
+                        if (programaFilter && Array.isArray(programaFilter) && programaFilter.length > 0)
                             params.programa = programaFilter;
 
                         // Filtro de apertura
@@ -153,9 +153,9 @@ const usePostulanteExports = () => {
                 case "Excel":
                     {
                         const params = {};
-                        if (gradoFilter !== "all" && gradoFilter)
+                        if (gradoFilter && gradoFilter !== "all" && typeof gradoFilter !== "object")
                             params.grado = gradoFilter;
-                        if (programaFilter && programaFilter.length > 0)
+                        if (programaFilter && Array.isArray(programaFilter) && programaFilter.length > 0)
                             params.programa = programaFilter;
 
                         response = await axios.get("/reporte-inscripcion", {
