@@ -17,7 +17,7 @@ const usePostulanteExports = () => {
     };
 
     const handleExport = async (type, options = {}) => {
-        const { selectedPrograms, gradoFilter, programaFilter } = options;
+        const { selectedPrograms, gradoFilter, programaFilter, aperturadoFilter, notasFilter } = options;
 
         if (type === "CV" && !selectedPrograms?.length) {
             toast.error("Por favor, selecciona al menos un programa.");
@@ -107,6 +107,35 @@ const usePostulanteExports = () => {
                         { responseType: "blob" }
                     );
                     fileName = "reporte_aptos.xlsx";
+                    break;
+
+                case "Reporte Personalizado Excel":
+                    {
+                        const params = {};
+                        if (gradoFilter !== "all" && gradoFilter)
+                            params.grado = gradoFilter;
+                        if (programaFilter && programaFilter.length > 0)
+                            params.programa = programaFilter;
+
+                        // Filtro de apertura
+                        if (aperturadoFilter && aperturadoFilter.size === 1) {
+                            params.aperturado = aperturadoFilter.has("aperturado") ? 1 : 0;
+                        }
+
+                        // Filtro de notas
+                        if (notasFilter && notasFilter.size > 0) {
+                            params.notas = Array.from(notasFilter);
+                        }
+
+                        response = await axios.get(
+                            "/reporte-inscripcion-personalizado/excel",
+                            {
+                                params,
+                                responseType: "blob",
+                            }
+                        );
+                        fileName = "reporte_personalizado.xlsx";
+                    }
                     break;
 
                 case "Reporte Ingresantes Excel":

@@ -110,12 +110,14 @@ export default function App() {
         if (notasFilter && notasFilter.size > 0) {
             filtered = filtered.filter((item) => {
                 const hasCv = item.nota_expediente !== "-" && item.nota_expediente !== null && item.nota_expediente !== undefined;
+                const yaTrajoCv = item.val_fisico == 1 || item.val_fisico === true;
                 const hasEntrevista = item.nota_entrevista !== "-" && item.nota_entrevista !== null && item.nota_entrevista !== undefined;
                 const hasExamen = item.nota_examen !== "-" && item.nota_examen !== null && item.nota_examen !== undefined;
 
                 for (const filter of notasFilter) {
                     if (filter === "con_cv" && !hasCv) return false;
-                    if (filter === "sin_cv" && hasCv) return false;
+                    if (filter === "no_trajo_cv" && (hasCv || yaTrajoCv)) return false;
+                    if (filter === "falta_evaluar" && (hasCv || !yaTrajoCv)) return false;
                     if (filter === "con_entrevista" && !hasEntrevista) return false;
                     if (filter === "sin_entrevista" && hasEntrevista) return false;
                     if (filter === "con_examen" && !hasExamen) return false;
@@ -142,7 +144,8 @@ export default function App() {
 
         const labels = [];
         if (notasFilter.has("con_cv")) labels.push("Con CV");
-        if (notasFilter.has("sin_cv")) labels.push("Sin CV");
+        if (notasFilter.has("no_trajo_cv")) labels.push("No trajo CV");
+        if (notasFilter.has("falta_evaluar")) labels.push("Falta Evaluar");
         if (notasFilter.has("con_entrevista")) labels.push("Con Entrevista");
         if (notasFilter.has("sin_entrevista")) labels.push("Sin Entrevista");
         if (notasFilter.has("con_examen")) labels.push("Con Examen");
@@ -179,7 +182,7 @@ export default function App() {
                         : "-",
                     nota_expediente: item.nota?.cv ? item.nota?.cv : "-",
                     nota_examen: item.nota?.examen ? item.nota?.examen : "-",
-                    estado: item.val_fisico,
+                    estado: item.estado,
                     val_fisico: item.val_fisico,
                     programa_estado: item.programa?.estado,
                 };
@@ -250,6 +253,8 @@ export default function App() {
             selectedPrograms: selectedKeysPrograma,
             gradoFilter: gradoFilter,
             programaFilter: programaFilter,
+            aperturadoFilter: aperturadoFilter,
+            notasFilter: notasFilter,
         });
     }
 
@@ -304,8 +309,8 @@ export default function App() {
                 );
             }
 
-            // Validación robusta: chequear val_fisico y estado (por si acaso viene como boolean, string o número)
-            const yaTrajoCv = user.val_fisico == 1 || user.val_fisico === true || user.estado == 1 || user.estado === true;
+            // Validación: chequear val_fisico si ha traído expediente
+            const yaTrajoCv = user.val_fisico == 1 || user.val_fisico === true;
 
             if (yaTrajoCv) {
                 return (
@@ -447,7 +452,8 @@ export default function App() {
                                         }}
                                     >
                                         <DropdownItem key="con_cv">Con Nota CV</DropdownItem>
-                                        <DropdownItem key="sin_cv">Sin Nota CV</DropdownItem>
+                                        <DropdownItem key="no_trajo_cv">No trajo CV</DropdownItem>
+                                        <DropdownItem key="falta_evaluar">Falta Evaluar</DropdownItem>
                                         <DropdownItem key="con_entrevista">Con Nota Entrevista</DropdownItem>
                                         <DropdownItem key="sin_entrevista">Sin Nota Entrevista</DropdownItem>
                                         <DropdownItem key="con_examen">Con Nota Examen</DropdownItem>
@@ -608,6 +614,9 @@ export default function App() {
                                         </DropdownItem>
                                         <DropdownItem key="excel" textValue="Reporte Final Notas Excel" onPress={() => onExport("Reporte Aptos Excel")}>
                                             Reporte Final Notas Excel
+                                        </DropdownItem>
+                                        <DropdownItem key="personalizado_excel" textValue="Reporte Personalizado Excel" onPress={() => onExport("Reporte Personalizado Excel")}>
+                                            Reporte Personalizado Excel
                                         </DropdownItem>
                                     </DropdownMenu>
                                 </Dropdown>
