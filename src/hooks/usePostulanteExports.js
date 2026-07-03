@@ -101,6 +101,14 @@ const usePostulanteExports = () => {
                     fileName = "reporte_aptos_firmas.pdf";
                     break;
 
+                case "Reporte Complementario Asistencia PDF":
+                    response = await axios.get(
+                        "/reporte-inscripcion-final/complementario/pdf",
+                        { responseType: "blob" }
+                    );
+                    fileName = "reporte_asistencia_complementario.pdf";
+                    break;
+
                 case "Reporte Aptos Excel":
                     response = await axios.get(
                         "/reporte-inscripcion-final/excel",
