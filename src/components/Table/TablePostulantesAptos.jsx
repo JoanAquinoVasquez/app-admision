@@ -607,6 +607,9 @@ export default function App() {
                                         <DropdownItem key="complementario" textValue="Asistencia Complementario PDF" onPress={() => onExport("Reporte Complementario Asistencia PDF")}>
                                             Asistencia Complementario PDF (Aula 02)
                                         </DropdownItem>
+                                        <DropdownItem key="complementario_entrevista" textValue="Entrevista Complementaria PDF" onPress={() => onExport("Reporte Complementario Entrevista PDF")}>
+                                            Entrevista Complementaria PDF (Aula 02)
+                                        </DropdownItem>
                                         <DropdownItem key="aulas" textValue="Plantilla Aulas PDF" onPress={() => onExport("Reporte Aulas PDF")}>
                                             Plantilla Aulas PDF
                                         </DropdownItem>
