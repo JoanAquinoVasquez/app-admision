@@ -147,6 +147,7 @@ export default function App() {
         const endpointMap = {
             "Ingresantes por Programa PDF": "reporte-ingresantes-programa",
             "Reporte Ingresantes PDF": "reporte-final-notas",
+            "Reporte Ingresantes y Méritos PDF": "reporte-final-meritos",
             "Reporte Resultados Excel": "reporte-notas-final-excel",
             "Reporte Programas Aperturados": "programas-aperturados-pdf",
             "Reporte Programas No Aperturados": "programas-no-aperturados-pdf",
@@ -155,6 +156,7 @@ export default function App() {
         const fileExtensionMap = {
             "Ingresantes por Programa PDF": "pdf",
             "Reporte Ingresantes PDF": "pdf",
+            "Reporte Ingresantes y Méritos PDF": "pdf",
             "Reporte Resultados Excel": "xlsx",
             "Reporte Programas Aperturados": "pdf",
             "Reporte Programas No Aperturados": "pdf",
@@ -427,6 +429,7 @@ export default function App() {
                                 <DropdownMenu>
                                     <DropdownItem textValue="Ingresantes por Programa PDF" onPress={() => handleExportMultiple("Ingresantes por Programa PDF")}>N° Ingresantes por Programa PDF</DropdownItem>
                                     <DropdownItem textValue="Reporte Ingresantes PDF" onPress={() => handleExportMultiple("Reporte Ingresantes PDF")}>Reporte Ingresantes PDF</DropdownItem>
+                                    <DropdownItem textValue="Reporte Ingresantes y Méritos PDF" onPress={() => handleExportMultiple("Reporte Ingresantes y Méritos PDF")}>Reporte Ingresantes y Méritos PDF</DropdownItem>
                                     <DropdownItem textValue="Reporte Resultados Excel" onPress={() => handleExportMultiple("Reporte Resultados Excel")}>Reporte Resultados Excel</DropdownItem>
                                     <DropdownItem textValue="Reporte Programas Aperturados" onPress={() => handleExportMultiple("Reporte Programas Aperturados")}>Reporte Programas Aperturados</DropdownItem>
                                     <DropdownItem textValue="Reporte Programas No Aperturados" onPress={() => handleExportMultiple("Reporte Programas No Aperturados")}>Reporte Programas No Aperturados</DropdownItem>
