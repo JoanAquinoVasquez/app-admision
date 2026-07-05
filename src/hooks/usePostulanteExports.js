@@ -69,6 +69,13 @@ const usePostulanteExports = () => {
                     fileName = "reporte_final.pdf";
                     break;
 
+                case "Reporte Final Meritos":
+                    response = await axios.get("/reporte-final-meritos", {
+                        responseType: "blob",
+                    });
+                    fileName = "reporte_meritos.pdf";
+                    break;
+
                 case "Reporte Aulas PDF":
                     response = await axios.get(
                         "/reporte-inscripcion-final/aulas/pdf",
