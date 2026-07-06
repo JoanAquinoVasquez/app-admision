@@ -52,7 +52,7 @@ export const useAdmissionStageConfig = () => {
                         "Ya puedes consultar la lista de ingresantes del proceso de admisión.",
                     buttonText: "Consultar Resultados",
                     buttonLink:
-                        "/admision-epg/",
+                        "https://drive.google.com/file/d/1ySw6QMIMXLtlhxJmPia7trm3hXsPuw2e/view?usp=sharing",
                     isActive: true,
                 };
             case "STANDBY":

@@ -31,8 +31,15 @@ const VistaFinalizada = () => {
         mensaje = "El proceso de admisión ha concluido.";
         detalle = (
             <>
-                Los resultados han sido publicados el{" "}
-                <strong>{fechas.resultados_publicacion}</strong>. Revisa la sección de resultados.
+                Los resultados han sido publicados. Consulta la lista oficial de ingresantes{" "}
+                <a
+                    href="https://drive.google.com/file/d/1ySw6QMIMXLtlhxJmPia7trm3hXsPuw2e/view?usp=sharing"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline text-blue-700 hover:text-blue-900 font-bold"
+                >
+                    haciendo clic aquí
+                </a>.
             </>
         );
     } else if (etapa === "STANDBY") {
