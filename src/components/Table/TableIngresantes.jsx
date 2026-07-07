@@ -171,8 +171,17 @@ export default function App() {
             return;
         }
 
+        const params = {};
+        if (gradoFilter && gradoFilter !== "all") {
+            params.grado = gradoFilter;
+        }
+        if (programaFilter && programaFilter !== "all") {
+            params.programa = programaFilter;
+        }
+
         setIsExporting(true);
         const exportPromise = axios.get(url, {
+            params,
             responseType: "blob",
         });
 
