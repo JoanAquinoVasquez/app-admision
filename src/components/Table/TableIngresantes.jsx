@@ -149,9 +149,9 @@ export default function App() {
             "Ingresantes por Programa Excel": "reporte-ingresantes-programa/excel",
             "Cargo Entrega Constancias": "reporte-cargo-constancias-excel",
             "Estadísticas Admisión Excel": "reporte-estadisticas-admision-excel",
-            "Reporte Ingresantes PDF": "reporte-final-notes",
+            "Reporte Ingresantes PDF": "reporte-final-notas",
             "Reporte Ingresantes y Méritos PDF": "reporte-final-meritos",
-            "Reporte Resultados Excel": "reporte-notes-final-excel",
+            "Reporte Resultados Excel": "reporte-notas-final-excel",
             "Reporte Programas Aperturados": "programas-aperturados-pdf",
             "Reporte Programas No Aperturados": "programas-no-aperturados-pdf",
         };
