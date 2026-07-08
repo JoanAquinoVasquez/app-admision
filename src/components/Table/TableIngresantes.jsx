@@ -147,9 +147,11 @@ export default function App() {
         const endpointMap = {
             "Ingresantes por Programa PDF": "reporte-ingresantes-programa",
             "Ingresantes por Programa Excel": "reporte-ingresantes-programa/excel",
-            "Reporte Ingresantes PDF": "reporte-final-notas",
+            "Cargo Entrega Constancias": "reporte-cargo-constancias-excel",
+            "Estadísticas Admisión Excel": "reporte-estadisticas-admision-excel",
+            "Reporte Ingresantes PDF": "reporte-final-notes",
             "Reporte Ingresantes y Méritos PDF": "reporte-final-meritos",
-            "Reporte Resultados Excel": "reporte-notas-final-excel",
+            "Reporte Resultados Excel": "reporte-notes-final-excel",
             "Reporte Programas Aperturados": "programas-aperturados-pdf",
             "Reporte Programas No Aperturados": "programas-no-aperturados-pdf",
         };
@@ -157,6 +159,8 @@ export default function App() {
         const fileExtensionMap = {
             "Ingresantes por Programa PDF": "pdf",
             "Ingresantes por Programa Excel": "xlsx",
+            "Cargo Entrega Constancias": "xlsx",
+            "Estadísticas Admisión Excel": "xlsx",
             "Reporte Ingresantes PDF": "pdf",
             "Reporte Ingresantes y Méritos PDF": "pdf",
             "Reporte Resultados Excel": "xlsx",
@@ -443,6 +447,8 @@ export default function App() {
                                     <DropdownItem textValue="Reporte Ingresantes PDF" onPress={() => handleExportMultiple("Reporte Ingresantes PDF")}>Reporte Ingresantes PDF</DropdownItem>
                                     <DropdownItem textValue="Reporte Ingresantes y Méritos PDF" onPress={() => handleExportMultiple("Reporte Ingresantes y Méritos PDF")}>Reporte Ingresantes y Méritos PDF</DropdownItem>
                                     <DropdownItem textValue="Reporte Resultados Excel" onPress={() => handleExportMultiple("Reporte Resultados Excel")}>Reporte Resultados Excel</DropdownItem>
+                                    <DropdownItem textValue="Cargo Entrega Constancias" onPress={() => handleExportMultiple("Cargo Entrega Constancias")}>Cargo Entrega Constancias Excel</DropdownItem>
+                                    <DropdownItem textValue="Estadísticas Admisión Excel" onPress={() => handleExportMultiple("Estadísticas Admisión Excel")}>Reporte Estadísticas Admisión Excel</DropdownItem>
                                     <DropdownItem textValue="Reporte Programas Aperturados" onPress={() => handleExportMultiple("Reporte Programas Aperturados")}>Reporte Programas Aperturados</DropdownItem>
                                     <DropdownItem textValue="Reporte Programas No Aperturados" onPress={() => handleExportMultiple("Reporte Programas No Aperturados")}>Reporte Programas No Aperturados</DropdownItem>
                                 </DropdownMenu>
