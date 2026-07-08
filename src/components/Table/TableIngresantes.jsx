@@ -178,11 +178,24 @@ export default function App() {
         }
 
         const params = {};
-        if (gradoFilter && gradoFilter !== "all") {
-            params.grado = gradoFilter;
+        const extractValue = (filter) => {
+            if (filter instanceof Set) {
+                return Array.from(filter)[0];
+            }
+            if (filter && typeof filter === 'object' && filter.size !== undefined) {
+                return Array.from(filter)[0];
+            }
+            return filter;
+        };
+
+        const g = extractValue(gradoFilter);
+        const p = extractValue(programaFilter);
+
+        if (g && g !== "all") {
+            params.grado = g;
         }
-        if (programaFilter && programaFilter !== "all") {
-            params.programa = programaFilter;
+        if (p && p !== "all") {
+            params.programa = p;
         }
 
         setIsExporting(true);
