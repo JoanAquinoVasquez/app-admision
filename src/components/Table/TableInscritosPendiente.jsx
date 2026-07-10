@@ -231,6 +231,12 @@ export default function App() {
                 case "Voucher":
                     res = await axios.get("/reservas/vouchers", { responseType: "blob" });
                     break;
+                case "Todos":
+                    res = await axios.get("/inhabilitadas/reporte/todos", { responseType: "blob" });
+                    break;
+                case "Pendiente":
+                    res = await axios.get("/inhabilitadas/reporte/pendientes", { responseType: "blob" });
+                    break;
                 default:
                     throw new Error("Tipo de reporte no válido");
             }
@@ -581,6 +587,12 @@ export default function App() {
                                     </DropdownTrigger>
                                     <DropdownMenu>
                                         <DropdownItem
+                                            textValue="Reporte Pendientes"
+                                            onPress={() => handleExportMultiple("Pendiente")}
+                                        >
+                                            Reporte Pendientes
+                                        </DropdownItem>
+                                        <DropdownItem
                                             textValue="Reporte Devolución"
                                             onPress={() => handleExportMultiple("Devolucion")}
                                         >
@@ -597,6 +609,12 @@ export default function App() {
                                             onPress={() => handleExportMultiple("Voucher")}
                                         >
                                             Reporte Vouchers Reservados
+                                        </DropdownItem>
+                                        <DropdownItem
+                                            textValue="Reporte General (Todos)"
+                                            onPress={() => handleExportMultiple("Todos")}
+                                        >
+                                            Reporte General (Todos)
                                         </DropdownItem>
                                     </DropdownMenu>
                                 </Dropdown>
