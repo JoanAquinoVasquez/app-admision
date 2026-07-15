@@ -3,7 +3,7 @@ export const admissionConfig = {
         examen_admision: 'domingo 28 de Junio',
         fecha_fin_inscricion: '24 de Junio',
         periodo: '2026-I',
-        etapa_manual: 'RESULTADOS', // Valores: 'PREINSCRIPCION', 'INSCRIPCION', 'CERRADO', 'STANDBY' o null
+        etapa_manual: 'INSCRIPCION', // Valores: 'PREINSCRIPCION', 'INSCRIPCION', 'CERRADO', 'STANDBY' o null
         fechas_control: {
             // Preinscripción
             inicio_preinscripcion: '2026-02-01',
