@@ -77,51 +77,44 @@ const usePostulanteExports = () => {
                     break;
 
                 case "Reporte Aulas PDF":
-                    response = await axios.get(
-                        "/reporte-inscripcion-final/aulas/pdf",
-                        { responseType: "blob" }
-                    );
-                    fileName = "reporte_aulas.pdf";
-                    break;
-
                 case "Reporte Resumen Aulas PDF":
-                    response = await axios.get(
-                        "/reporte-inscripcion-final/resumen-aulas/pdf",
-                        { responseType: "blob" }
-                    );
-                    fileName = "reporte_resumen_aulas.pdf";
-                    break;
-
                 case "Reporte Resumen Evaluadores PDF":
-                    response = await axios.get(
-                        "/reporte-inscripcion-final/resumen-evaluadores/pdf",
-                        { responseType: "blob" }
-                    );
-                    fileName = "reporte_resumen_evaluadores.pdf";
-                    break;
-
                 case "Reporte Aptos Asistencia PDF":
-                    response = await axios.get(
-                        "/reporte-inscripcion-final/firmas/pdf",
-                        { responseType: "blob" }
-                    );
-                    fileName = "reporte_aptos_firmas.pdf";
-                    break;
-
                 case "Reporte Complementario Asistencia PDF":
-                    response = await axios.get(
-                        "/reporte-inscripcion-final/complementario/pdf",
-                        { responseType: "blob" }
-                    );
-                    fileName = "reporte_asistencia_complementario.pdf";
-                    break;
-
                 case "Reporte Complementario Entrevista PDF":
-                    response = await axios.get(
-                        "/reporte-inscripcion-final/complementario-entrevista/pdf",
-                        { responseType: "blob" }
-                    );
-                    fileName = "plantilla_entrevista_complementaria.pdf";
+                    {
+                        const params = {};
+                        if (gradoFilter && gradoFilter !== "all" && typeof gradoFilter !== "object")
+                            params.grado = gradoFilter;
+                        if (programaFilter && Array.isArray(programaFilter) && programaFilter.length > 0)
+                            params.programa = programaFilter;
+
+                        let url = "";
+                        if (type === "Reporte Aulas PDF") {
+                            url = "/reporte-inscripcion-final/aulas/pdf";
+                            fileName = "reporte_aulas.pdf";
+                        } else if (type === "Reporte Resumen Aulas PDF") {
+                            url = "/reporte-inscripcion-final/resumen-aulas/pdf";
+                            fileName = "reporte_resumen_aulas.pdf";
+                        } else if (type === "Reporte Resumen Evaluadores PDF") {
+                            url = "/reporte-inscripcion-final/resumen-evaluadores/pdf";
+                            fileName = "reporte_resumen_evaluadores.pdf";
+                        } else if (type === "Reporte Aptos Asistencia PDF") {
+                            url = "/reporte-inscripcion-final/firmas/pdf";
+                            fileName = "reporte_aptos_firmas.pdf";
+                        } else if (type === "Reporte Complementario Asistencia PDF") {
+                            url = "/reporte-inscripcion-final/complementario/pdf";
+                            fileName = "reporte_asistencia_complementario.pdf";
+                        } else if (type === "Reporte Complementario Entrevista PDF") {
+                            url = "/reporte-inscripcion-final/complementario-entrevista/pdf";
+                            fileName = "plantilla_entrevista_complementaria.pdf";
+                        }
+
+                        response = await axios.get(url, {
+                            params,
+                            responseType: "blob",
+                        });
+                    }
                     break;
 
                 case "Reporte Aptos Excel":
