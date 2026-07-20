@@ -65,9 +65,7 @@ const INITIAL_VISIBLE_COLUMNS = [
     "num_iden",
     "merito_programa",
     "merito_general",
-    "nota_final",
-    "matricula_pagada",
-    "pension_pagada",
+    "nota_final"
 ];
 
 export default function App() {
@@ -154,6 +152,7 @@ export default function App() {
             "Reporte Resultados Excel": "reporte-notas-final-excel",
             "Reporte Programas Aperturados": "programas-aperturados-pdf",
             "Reporte Programas No Aperturados": "programas-no-aperturados-pdf",
+            "Reporte General de Inscritos con Resumen": "reporte-inscripcion-resumen-excel",
         };
 
         const fileExtensionMap = {
@@ -166,6 +165,7 @@ export default function App() {
             "Reporte Resultados Excel": "xlsx",
             "Reporte Programas Aperturados": "pdf",
             "Reporte Programas No Aperturados": "pdf",
+            "Reporte General de Inscritos con Resumen": "xlsx",
         };
 
         const url = endpointMap[type];
@@ -462,6 +462,7 @@ export default function App() {
                                     <DropdownItem textValue="Reporte Resultados Excel" onPress={() => handleExportMultiple("Reporte Resultados Excel")}>Reporte Resultados Excel</DropdownItem>
                                     <DropdownItem textValue="Cargo Entrega Constancias" onPress={() => handleExportMultiple("Cargo Entrega Constancias")}>Cargo Entrega Constancias Excel</DropdownItem>
                                     <DropdownItem textValue="Estadísticas Admisión Excel" onPress={() => handleExportMultiple("Estadísticas Admisión Excel")}>Reporte Estadísticas Admisión Excel</DropdownItem>
+                                    <DropdownItem textValue="Reporte General de Inscritos con Resumen" onPress={() => handleExportMultiple("Reporte General de Inscritos con Resumen")}>Reporte General de Inscritos con Resumen Excel</DropdownItem>
                                     <DropdownItem textValue="Reporte Programas Aperturados" onPress={() => handleExportMultiple("Reporte Programas Aperturados")}>Reporte Programas Aperturados</DropdownItem>
                                     <DropdownItem textValue="Reporte Programas No Aperturados" onPress={() => handleExportMultiple("Reporte Programas No Aperturados")}>Reporte Programas No Aperturados</DropdownItem>
                                 </DropdownMenu>
