@@ -75,7 +75,8 @@ export default function App({ resumenPreInscripcion, loading: dataLoading, grado
         if (!resumenPreInscripcion || resumenPreInscripcion.length === 0) {
             return []; // Evita errores si aún no hay datos
         }
-        return resumenPreInscripcion.map((item) => ({
+        return resumenPreInscripcion.map((item, index) => ({
+            rowKey: `preinscripcion-resumen-${index}`,
             id: item.grado_programa, // Usamos el nombre como ID único temporalmente
             grado_programa: item.grado_programa,
             preinscritos: item.preinscritos,
@@ -464,7 +465,7 @@ export default function App({ resumenPreInscripcion, loading: dataLoading, grado
                 >
                     {(item) => (
                         <TableRow
-                            key={item.grado_programa}
+                            key={item.rowKey}
                             className="p-1 text-sm leading-tight"
                         >
                             {(columnKey) => (

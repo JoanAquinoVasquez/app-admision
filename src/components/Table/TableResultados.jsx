@@ -54,7 +54,8 @@ export default function TableResultados({ ingresantesPrograma, grados, loading: 
         if (!ingresantesPrograma || ingresantesPrograma.length === 0) {
             return []; // Evita errores si aún no hay datos
         }
-        return ingresantesPrograma.map((item) => ({
+        return ingresantesPrograma.map((item, index) => ({
+            rowKey: `resultados-resumen-${index}`,
             id: item.grado_programa, // use unique id
             grado_programa: item.grado_programa,
             ingresantes_total: item.ingresantes_total,
@@ -417,7 +418,7 @@ export default function TableResultados({ ingresantesPrograma, grados, loading: 
                 >
                     {(item) => (
                         <TableRow
-                            key={item.grado_programa}
+                            key={item.rowKey}
                             className="p-1 text-sm leading-tight"
                         >
                             {(columnKey) => (

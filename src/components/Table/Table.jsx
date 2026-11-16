@@ -113,7 +113,8 @@ export default function App({ resumenInscripcion, loading }) {
         if (!resumenInscripcion || resumenInscripcion.length === 0) {
             return []; // Evita errores si aún no hay datos
         }
-        return resumenInscripcion.map((item) => ({
+        return resumenInscripcion.map((item, index) => ({
+            rowKey: `inscripcion-resumen-${index}`,
             grado_programa: item.grado_programa,
             inscritos: item.inscritos,
             validados: item.validados,
@@ -574,7 +575,7 @@ export default function App({ resumenInscripcion, loading }) {
                 >
                     {(item) => (
                         <TableRow
-                            key={item.grado_programa}
+                            key={item.rowKey}
                             className="p-1 text-sm leading-tight"
                         >
                             {(columnKey) => (

@@ -3,11 +3,6 @@ import useGrado from "../../data/dataGrados";
 // import Spinner from "../../components/Spinner/Spinner"; // Spinner
 import { toast } from "react-hot-toast";
 import {
-    Modal,
-    ModalContent,
-    ModalHeader,
-    ModalBody,
-    ModalFooter,
     Table,
     TableHeader,
     TableColumn,
@@ -16,7 +11,6 @@ import {
     TableCell,
     Input,
     Button,
-    Checkbox,
     DropdownTrigger,
     Dropdown,
     DropdownMenu,
@@ -25,9 +19,9 @@ import {
     Skeleton,
 } from "@heroui/react";
 import useInscripcionInhabilitada from "../../data/Inscripcion/dataInscripcionesInhabilitadas";
-import Select from "../../components/Select/Select";
 import axios from "../../axios";
 import ModalConfirm from "../Modal/Confirmation/ModalConfirm";
+import InhabilitarProgramasModal from "./modals/InhabilitarProgramasModal";
 import useProgramasHabilitados from "../../data/Inscripcion/dataProgramasHabilitados";
 import useProgramasInhabilitados from "../../data/Inscripcion/dataProgramasInhabilitados";
 import SelectGradoPrograma from "../Select/SelectGradoPrograma";
@@ -179,44 +173,6 @@ export default function App() {
         }
     }, [gradoFilter, filterByGrado]);
 
-    const [currentPage, setCurrentPage] = useState(1);
-    const [modalGradoFilter, setModalGradoFilter] = useState("all");
-    const [programSearchValue, setProgramSearchValue] = useState("");
-    const programasPerPage = 7;
-
-    // Filtrar programas por búsqueda y grado específico del modal
-    const searchFilteredProgramas = useMemo(() => {
-        let filtered = filteredProgramasHabilitados;
-
-        // Si el filtro del modal no es "all", filtramos por ese grado
-        if (modalGradoFilter !== "all") {
-            filtered = programasHabilitados.filter(p => p.grado_id == modalGradoFilter);
-        }
-
-        if (!programSearchValue) return filtered;
-        return filtered.filter(programa =>
-            programa.nombre.toLowerCase().includes(programSearchValue.toLowerCase())
-        );
-    }, [programasHabilitados, filteredProgramasHabilitados, programSearchValue, modalGradoFilter]);
-
-    // Usamos los programas filtrados para calcular las páginas
-    const totalProgramas = searchFilteredProgramas.length;
-    const totalPages =
-        totalProgramas > 0 ? Math.ceil(totalProgramas / programasPerPage) : 1;
-
-    // Calcular el índice de los programas en la página actual
-    const indexOfLastProgram = currentPage * programasPerPage;
-    const indexOfFirstProgram = indexOfLastProgram - programasPerPage;
-    const currentProgramas = searchFilteredProgramas.slice(
-        indexOfFirstProgram,
-        indexOfLastProgram
-    );
-
-    // Resetear página cuando cambia la búsqueda
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [programSearchValue]);
-
     const handleExportMultiple = async (type) => {
         setIsExporting(true);
         const exportPromise = (async () => {
@@ -288,7 +244,7 @@ export default function App() {
 
     const renderActions = (user) => (
         <div className="relative flex justify-end items-center gap-2">
-            <Dropdown shouldBlockScroll={false}>
+            <Dropdown shouldBlockScroll={false} disableAnimation>
                 <DropdownTrigger>
                     <Button
                         isIconOnly
@@ -692,9 +648,6 @@ export default function App() {
         grados,
         programasInhabilitados,
         gradoFilter,
-        currentProgramas,
-        currentPage,
-        totalPages,
     ]);
 
     const bottomContent = useMemo(
@@ -747,201 +700,16 @@ export default function App() {
                 isLoading={loading}
             />
 
-            <Modal
-                size="2xl"
+            <InhabilitarProgramasModal
                 isOpen={isModalOpen}
                 onOpenChange={setIsModalOpen}
-                isDismissable={false}
-                shouldBlockScroll={false}
-                scrollBehavior="inside"
-                backdrop="opaque"
-            >
-                <ModalContent>
-                    {(onClose) => (
-                        <>
-                            <ModalHeader className="flex flex-col gap-1">
-                                Inhabilitar Programas
-                                <p className="text-sm text-default-500 font-normal">
-                                    Seleccione los programas que desea inhabilitar. <span className="font-semibold text-primary">Esta acción es irreversible.</span>
-                                </p>
-                            </ModalHeader>
-                            <ModalBody className="p-0">
-                                <div className="sticky top-0 z-20 bg-white px-6 py-4 border-b border-default-100">
-                                    <Select
-                                        label="Grado Académico"
-                                        variant="flat"
-                                        className="w-full h-12 text-sm"
-                                        defaultItems={grados.map((item) => ({
-                                            key: item.id.toString(),
-                                            textValue: item.nombre,
-                                            ...item,
-                                        }))}
-                                        selectedKey={
-                                            modalGradoFilter !== "all"
-                                                ? modalGradoFilter
-                                                : null
-                                        }
-                                        onSelectionChange={(grado_id) => {
-                                            if (grado_id === null) {
-                                                setModalGradoFilter("all");
-                                            } else {
-                                                setModalGradoFilter(grado_id);
-                                            }
-                                        }}
-                                    />
-
-                                    <div className="flex flex-col gap-3 mt-4">
-                                        <div className="flex items-center justify-between">
-                                            <p className="font-semibold text-default-700">
-                                                Programas Disponibles
-                                            </p>
-                                            {selectedProgramas.length > 0 && (
-                                                <Chip size="sm" color="primary" variant="flat">
-                                                    {selectedProgramas.length} seleccionado{selectedProgramas.length !== 1 ? 's' : ''}
-                                                </Chip>
-                                            )}
-                                        </div>
-                                        {modalGradoFilter !== "all" && (
-                                            <Input
-                                                isClearable
-                                                className="w-full"
-                                                placeholder="Buscar programa..."
-                                                startContent={<SearchIcon />}
-                                                value={programSearchValue}
-                                                onClear={() => setProgramSearchValue("")}
-                                                onValueChange={setProgramSearchValue}
-                                                size="sm"
-                                            />
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div className="px-6 py-4">
-
-                                    <div className="pr-1">
-                                        {modalGradoFilter === "all" ? (
-                                            <div className="flex flex-col items-center justify-center py-8 text-center">
-                                                <svg className="w-16 h-16 text-default-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                                                </svg>
-                                                <p className="text-default-400 font-medium">
-                                                    Seleccione un grado académico para ver los programas disponibles
-                                                </p>
-                                            </div>
-                                        ) : currentProgramas.length > 0 ? (
-                                            <>
-                                                <div className="space-y-2">
-                                                    {currentProgramas.map(
-                                                        (item) => (
-                                                            <div
-                                                                key={item.id}
-                                                                className={`p-3 rounded-lg border-2 transition-all cursor-pointer hover:shadow-md ${selectedProgramas.includes(item.id)
-                                                                    ? 'border-primary bg-primary-50 shadow-sm'
-                                                                    : 'border-default-200 hover:border-default-300'
-                                                                    }`}
-                                                                onClick={() => handleProgramSelection(item.id)}
-                                                            >
-                                                                <div className="flex items-start gap-3">
-                                                                    <Checkbox
-                                                                        id={`programa-${item.id}`}
-                                                                        name={`programa-${item.id}`}
-                                                                        isSelected={selectedProgramas.includes(item.id)}
-                                                                        onChange={() => handleProgramSelection(item.id)}
-                                                                        color="primary"
-                                                                    />
-                                                                    <div className="flex-1">
-                                                                        <p className="font-medium text-default-700">
-                                                                            {item.nombre}
-                                                                        </p>
-                                                                        <p className="text-xs text-default-500 mt-1">
-                                                                            {item.inscripciones_count} {item.inscripciones_count === 1 ? 'inscrito' : 'inscritos'}
-                                                                        </p>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        )
-                                                    )}
-                                                </div>
-
-                                                {totalPages > 1 && (
-                                                    <div className="flex items-center justify-center mt-4 space-x-2">
-                                                        <Button
-                                                            size="sm"
-                                                            isDisabled={
-                                                                currentPage ===
-                                                                1
-                                                            }
-                                                            onPress={() =>
-                                                                setCurrentPage(
-                                                                    (prev) =>
-                                                                        prev - 1
-                                                                )
-                                                            }
-                                                        >
-                                                            Anterior
-                                                        </Button>
-
-                                                        <span className="text-xs font-medium">
-                                                            Página {currentPage}{" "}
-                                                            de {totalPages}
-                                                        </span>
-
-                                                        <Button
-                                                            size="sm"
-                                                            isDisabled={
-                                                                currentPage >=
-                                                                totalPages
-                                                            }
-                                                            onPress={() =>
-                                                                setCurrentPage(
-                                                                    (prev) =>
-                                                                        prev + 1
-                                                                )
-                                                            }
-                                                        >
-                                                            Siguiente
-                                                        </Button>
-                                                    </div>
-                                                )}
-                                            </>
-                                        ) : (
-                                            <div className="flex flex-col items-center justify-center py-8 text-center">
-                                                <svg className="w-16 h-16 text-default-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                </svg>
-                                                <p className="text-default-400 font-medium">
-                                                    No hay programas disponibles para este grado
-                                                </p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </ModalBody>
-                            <ModalFooter className="gap-2">
-                                <Button
-                                    color="default"
-                                    variant="light"
-                                    onPress={onClose}
-                                >
-                                    Cancelar
-                                </Button>
-                                <Button
-                                    color="primary"
-                                    name="inhabilitar"
-                                    isDisabled={!selectedProgramas.length}
-                                    onPress={() =>
-                                        inhabilitarProgramas(
-                                            selectedProgramas
-                                        )
-                                    }
-                                >
-                                    Inhabilitar {selectedProgramas.length > 0 && `(${selectedProgramas.length})`}
-                                </Button>
-                            </ModalFooter>
-                        </>
-                    )}
-                </ModalContent>
-            </Modal>
+                grados={grados ?? []}
+                programasHabilitados={programasHabilitados ?? []}
+                filteredProgramasHabilitados={filteredProgramasHabilitados ?? []}
+                selectedProgramas={selectedProgramas}
+                onTogglePrograma={handleProgramSelection}
+                onSubmit={inhabilitarProgramas}
+            />
 
             <Table
                 aria-label="Tabla de postulantes con inscripciones pendientes"

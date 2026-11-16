@@ -112,6 +112,10 @@ const CambiarProgramaModal = ({
                                 onSelectionChange={handleGradoChange}
                                 isRequired
                                 variant="bordered"
+                                popoverProps={{
+                                    "data-react-aria-top-layer": "true",
+                                    disableAnimation: true,
+                                }}
                                 classNames={{
                                     trigger: "bg-white",
                                 }}
@@ -142,6 +146,10 @@ const CambiarProgramaModal = ({
                                 isRequired
                                 isDisabled={!selectedGrado || filteredProgramas.length === 0}
                                 variant="bordered"
+                                popoverProps={{
+                                    "data-react-aria-top-layer": "true",
+                                    disableAnimation: true,
+                                }}
                                 classNames={{
                                     trigger: "bg-white",
                                 }}

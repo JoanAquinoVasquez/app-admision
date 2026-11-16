@@ -1,11 +1,11 @@
 import axios from 'axios';
-import { toast } from 'react-hot-toast';
+import { getApiBaseUrl } from './config/apiUrl';
 
 // Configure axios instance
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 axios.defaults.headers.common['Accept'] = 'application/json';
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+axios.defaults.baseURL = getApiBaseUrl('http://localhost:8000');
 
 // Also make axios available globally for backward compatibility
 window.axios = axios;

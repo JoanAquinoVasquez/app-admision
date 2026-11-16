@@ -1,11 +1,12 @@
 import axios from 'axios';
+import { getApiBaseUrl } from '../../config/apiUrl';
 
 /**
  * Cliente API centralizado con configuración base
  * Maneja automáticamente la estructura de respuesta del backend
  */
 const apiClient = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || '/admision-epg/api',
+    baseURL: getApiBaseUrl('/admision-epg/api'),
     withCredentials: true, // Importante para enviar cookies de sesión
     headers: {
         'Content-Type': 'application/json',

@@ -13,7 +13,13 @@ import { admissionConfig } from "../../config/admission.js";
 
 const SidebarMenu = () => {
     const [isExpanded, setIsExpanded] = useState(false);
-    const { userData } = useUser();
+    const {
+        userData,
+        admissionProcesses,
+        selectedAdmissionProcess,
+        unifiedAdmissionEnabled,
+        selectAdmissionProcess,
+    } = useUser();
     const [isLgScreen, setIsLgScreen] = useState(false);
     const { pathname } = useLocation();
 
@@ -257,9 +263,36 @@ const SidebarMenu = () => {
                 </div>
 
                 <div className="px-4 mt-1 text-center">
-                    <h2 className="text-md font-semibold text-gray-600">
-                        Admisión {admissionConfig.cronograma.periodo}
-                    </h2>
+                    {unifiedAdmissionEnabled ? (
+                        <div className="text-left">
+                            <label htmlFor="admission-process" className="block text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                Proceso de admisión
+                            </label>
+                            <select
+                                id="admission-process"
+                                value={selectedAdmissionProcess?.id || ""}
+                                onChange={(event) => selectAdmissionProcess(event.target.value)}
+                                className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                                disabled={admissionProcesses.length < 2}
+                            >
+                                {admissionProcesses.map((process) => (
+                                    <option key={process.id} value={process.id}>
+                                        {process.codigo} · {process.estado === "cerrado" ? "Consulta" : process.estado === "preparacion" ? "Preparación" : "Activo"}
+                                    </option>
+                                ))}
+                            </select>
+                            {selectedAdmissionProcess?.solo_lectura && (
+                                <p className="mt-1 text-xs text-amber-700">Este proceso está en modo consulta.</p>
+                            )}
+                            {admissionProcesses.length === 0 && (
+                                <p className="mt-1 text-xs text-gray-500">No tienes procesos asignados.</p>
+                            )}
+                        </div>
+                    ) : (
+                        <h2 className="text-md font-semibold text-gray-600">
+                            Admisión {admissionConfig.cronograma.periodo}
+                        </h2>
+                    )}
                     <div className="border-b border-gray-200 mt-2 mb-6"></div>
                 </div>
 
