@@ -80,7 +80,7 @@ export default function FormularioUnificado({ isAdmin = false, isModal = false }
 
     // Hooks de datos
     const { grados } = useGrados();
-    const { programas, filteredProgramas, filterByGrado } = useProgramas();
+    const { programas, filteredProgramas, filterByGrado, loading: programasLoading } = useProgramas();
 
     // Hook personalizado para el formulario
     const {
@@ -123,6 +123,7 @@ export default function FormularioUnificado({ isAdmin = false, isModal = false }
                         filteredProgramas={filteredProgramas}
                         programaOptions={programaOptions}
                         filterByGrado={filterByGrado}
+                        programasLoading={programasLoading}
                     />
                 );
             case 2:

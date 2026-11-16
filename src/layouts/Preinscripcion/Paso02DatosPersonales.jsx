@@ -36,7 +36,15 @@ export default function Paso02DatosPersonales({
 
     // Hooks especializados
     const { validateStep2 } = useFormValidation();
-    const { dniData } = useDniVerification(formData.num_iden, formData.tipo_doc);
+    const { dniData, isLoading: isSearchingDni } = useDniVerification(formData.num_iden, formData.tipo_doc);
+    useEffect(() => {
+        if (isSearchingDni) {
+            toast.loading("Buscando datos en RENIEC...", { id: "reniec-dni-search" });
+        } else {
+            toast.dismiss("reniec-dni-search");
+        }
+        return () => toast.dismiss("reniec-dni-search");
+    }, [isSearchingDni]);
     const { preInscripcion, fetchPreInscripcion } = usePreInscripcionRegistrado();
     const {
         departamentos,

@@ -23,6 +23,7 @@ const Select = ({
     const containerRef = useRef(null);
     const dropdownRef = useRef(null);
     const inputRef = useRef(null);
+    const activeOptionRef = useRef(null);
 
     // ── Hooks de estado ──────────────────────────────────────────────────────
     const { isOpen, open, close, toggle } = useSelectState();
@@ -31,6 +32,20 @@ const Select = ({
     const { filteredItems, searchQuery, setSearchQuery, resetFilter } = useSelectFilter(defaultItems);
     
     const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
+    const [activeIndex, setActiveIndex] = useState(-1);
+
+    useEffect(() => {
+        if (!isOpen || loading || filteredItems.length === 0) {
+            setActiveIndex(-1);
+            return;
+        }
+        const selectedIndex = filteredItems.findIndex(item => String(item.key) === String(selectedKey));
+        setActiveIndex(selectedIndex >= 0 ? selectedIndex : 0);
+    }, [isOpen, loading, filteredItems, selectedKey]);
+
+    useEffect(() => {
+        activeOptionRef.current?.scrollIntoView({ block: "nearest" });
+    }, [activeIndex]);
 
     // ── Valor de la Tabla (Fuente de Verdad) ─────────────────────────────────
     const selectedItem = useMemo(() =>
@@ -100,9 +115,25 @@ const Select = ({
     };
 
     const handleKeyDown = (e) => {
+        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+            e.preventDefault();
+            if (!isOpen) {
+                recalcCoords();
+                resetFilter();
+                open();
+                return;
+            }
+            if (filteredItems.length > 0 && !loading) {
+                const direction = e.key === "ArrowDown" ? 1 : -1;
+                setActiveIndex(current => current < 0
+                    ? (direction > 0 ? 0 : filteredItems.length - 1)
+                    : (current + direction + filteredItems.length) % filteredItems.length);
+            }
+            return;
+        }
         if (e.key === "Enter" && isOpen) {
             e.preventDefault();
-            if (filteredItems.length > 0) handleSelect(filteredItems[0]);
+            if (activeIndex >= 0 && filteredItems[activeIndex]) handleSelect(filteredItems[activeIndex]);
         }
         if (e.key === "Escape") close();
     };
@@ -136,6 +167,8 @@ const Select = ({
                     coords={coords}
                     dropdownRef={dropdownRef}
                     loading={loading}
+                    activeIndex={activeIndex}
+                    activeOptionRef={activeOptionRef}
                 />
             )}
         </div>

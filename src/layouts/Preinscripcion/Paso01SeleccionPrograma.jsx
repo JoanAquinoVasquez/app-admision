@@ -18,6 +18,7 @@ export default function Paso01SeleccionPrograma({
     filteredProgramas,
     programaOptions,
     filterByGrado,
+    programasLoading = false,
     yaVerificado,
 }) {
     // Estado local
@@ -28,21 +29,12 @@ export default function Paso01SeleccionPrograma({
         formData.programa_id || null
     );
 
-    // Cuando los programas se carguen y formData.grado_id existe, filtra
-    useEffect(() => {
-        if (programas.length > 0 && selectedGradoId) {
-            filterByGrado(selectedGradoId);
-        }
-    }, [programas, selectedGradoId]);
-
-    // Cuando cambie el grado seleccionado, filtra
+    // Filtra cuando cambie el grado o termine la carga inicial.
     useEffect(() => {
         if (selectedGradoId) {
-            // Reinicia el programa seleccionado al cambiar de grado
-            setSelectedProgramaId(null);
             filterByGrado(selectedGradoId);
         }
-    }, [selectedGradoId]);
+    }, [selectedGradoId, programas, filterByGrado]);
 
     // Cuando los programas ya estén filtrados, intenta restaurar el programa_id
     useEffect(() => {
@@ -123,6 +115,7 @@ export default function Paso01SeleccionPrograma({
                         }}
                         isRequired
                         disabled={!selectedGradoId}
+                        loading={programasLoading}
                     />
 
                     <Button color="primary" onPress={handleNext}>

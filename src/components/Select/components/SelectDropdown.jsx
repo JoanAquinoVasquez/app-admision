@@ -16,7 +16,7 @@ import { Spinner } from "@heroui/react";
  * - loading:       boolean — muestra un estado de carga
  */
 
-const SelectDropdown = ({ items, selectedKey, onSelect, coords, dropdownRef, loading }) => {
+const SelectDropdown = ({ items, selectedKey, onSelect, coords, dropdownRef, loading, activeIndex, activeOptionRef }) => {
     const style = {
         position: "fixed",
         top: coords.top ?? "auto",
@@ -39,16 +39,17 @@ const SelectDropdown = ({ items, selectedKey, onSelect, coords, dropdownRef, loa
                         <span className="text-[10px] font-medium non-italic">Cargando...</span>
                     </li>
                 ) : items.length > 0 ? (
-                    items.map((item) => (
+                    items.map((item, index) => (
                         <li
                             key={item.key}
+                            ref={index === activeIndex ? activeOptionRef : null}
                             onMouseDown={(e) => {
                                 // preventDefault evita que el input pierda el foco antes de seleccionar
                                 e.preventDefault();
                                 onSelect(item);
                             }}
                             className={`flex items-center px-3 py-2 mx-0.5 my-0.5 text-sm rounded-lg cursor-pointer transition-colors
-                                ${selectedKey !== null && selectedKey !== undefined && String(item.key) === String(selectedKey)
+                                ${index === activeIndex
                                     ? "bg-primary-100 text-primary font-semibold"
                                     : "text-gray-700 hover:bg-gray-100"
                                 }`}
